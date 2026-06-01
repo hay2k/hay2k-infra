@@ -5,6 +5,24 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — Amendment to 20260601-11 — Full observability scope + alert levels
+
+**Rationale:** Clarification — ensure the observability design covers the full
+scope (not just Prometheus/Grafana) and defines alert levels. Amendment to
+20260601-11 (same topic); 20260601-11 remains the current prompt of record.
+Document only.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | OBSERVABILITY.md | §2 expanded into a 12-row full-scope table: node health, GPU utilization, CPU/RAM/disk/network, **NFS/shared-storage health**, **Slurm/job visibility**, **agent runtime heartbeat**, **worker stalled detection**, **GitHub sync status**, **backup/restore status**, **background runtime throttling**, **Slack-alerting self-check**, logs — each with collector, signals, and typical level; added notes on the harder signals. |
+| 2 | OBSERVABILITY.md | New §6.1 **alert levels** (info / warning / critical / **approval-required**) with meaning, action/owner, and Slack routing; approval-required defined as the monitoring-side surfacing of a governance gate (GOVERNANCE.md §2) tied to the escalation chain. New §6.2 signal→level mapping table. |
+
+**Net:** observability now spans the full operational surface; alerts are
+classified into four levels, with **approval-required** wired to the User
+escalation path. Nothing deployed.
+
+---
+
 ## 2026-06-01 — 20260601-11 — Monitoring & observability strategy
 
 **Rationale:** Design how the cluster, GPUs, jobs, and agent runtime are
