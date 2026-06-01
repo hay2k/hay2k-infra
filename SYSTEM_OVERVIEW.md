@@ -69,6 +69,7 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── PROJECT_LIFECYCLE.md
     ├── DIRECTORY_STANDARD.md
     ├── AGENT_ARCHITECTURE.md
+    ├── AGENT_RUNTIME.md
     ├── RESOURCE_POLICY.md
     ├── BACKUP_AND_RECOVERY.md
     ├── SECRETS_POLICY.md
@@ -79,7 +80,7 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-0{1..9}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-{01..10}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -113,6 +114,7 @@ citekey or it does not exist.
 | STORAGE_ARCHITECTURE.md | Which shared-storage approach (NFS/Gluster/Ceph/Syncthing/object), and why? |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
+| AGENT_RUNTIME.md | How do agents actually run (Claude Code + tmux→Slurm), and what are their lifecycles? |
 | RESOURCE_POLICY.md | How are GPU, CPU, RAM, and disk shared across domains? |
 | BACKUP_AND_RECOVERY.md | What is backed up, how is it restored, how do we migrate servers? |
 | INFRA_CHANGELOG.md | What changed in the infrastructure, when, and why? |
@@ -141,5 +143,5 @@ Prompts of record: `20260601-01_bootstrap.md` (archived);
 `-02_bootstrap_revision.md`, `-03_governance_refinement.md`,
 `-04_secrets_policy.md`, `-05_environment_policy.md`,
 `-06_risk_ratification.md`, `-07_presentation_and_agent_tiers.md`,
-`-08_node_role_design.md` (kept milestones); and
-`20260601-09_storage_evaluation.md` (current).
+`-08_node_role_design.md`, `-09_storage_evaluation.md` (kept milestones); and
+`20260601-10_agent_runtime.md` (current).

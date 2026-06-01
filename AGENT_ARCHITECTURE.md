@@ -136,11 +136,11 @@ agent or task hard-codes a hostname.
   (GOVERNANCE.md §10).
 - Significant instructions are archived as versioned prompts (GOVERNANCE.md §8).
 
-## 8. Implementation note (deferred)
+## 8. Implementation note
 
-This document defines the *operating model*, not a specific multi-agent
-framework. The mechanism that implements these tiers (a framework, a queue, or
-manual operator discipline) is a deferred decision. Implementing it may use
+This document defines the *operating model*; the **runtime that implements these
+tiers is designed in AGENT_RUNTIME.md** (hybrid: Claude Code for cognition, tmux
+→ Slurm for persistence/execution). It is a design — no runtime is deployed. Implementing it may use
 low-risk prerequisites freely (GOVERNANCE.md §2.1) and other necessary tooling
 per the medium-risk policy (§2.2); a high-risk component (e.g. a message queue
 or a shared execution backend) requires explicit User approval (§2.3). The

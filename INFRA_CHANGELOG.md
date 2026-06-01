@@ -5,6 +5,28 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-10 — NFS ratified + Agent Runtime design
+
+**Rationale:** Ratify the shared-storage recommendation (NFS) and design how
+agents actually run. Document only — no installs, services, runtime, or
+projects.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | STORAGE_ARCHITECTURE.md | Status → **NFS ratified** as canonical primary shared FS; §5 retitled "Decision (ratified)"; MinIO deferred, Syncthing measured-optimization, Ceph/Gluster not justified. Deployment deferred. |
+| 2 | GOVERNANCE.md | §11 shared-storage entry → **RATIFIED** (NFS canonical; deploy deferred; NFS server/MinIO high-risk §2.3). |
+| 3 | RESOURCE_POLICY.md | §7 shared-storage entry → ratified NFS; deployment deferred. |
+| 4 | **AGENT_RUNTIME.md** | **Created.** Runtime model evaluation (tmux-centric / Claude-Code-centric / **hybrid recommended**); per-tier execution & lifecycle (Domain Orchestrator, Supervisor, Senior Engineer, Worker) covering lifespan, spawning, retirement, communication, logging, escalation, failure handling; cross-cutting substrate/logging/failure/tooling-risk; migration. |
+| 5 | AGENT_ARCHITECTURE.md | §8 now points to AGENT_RUNTIME.md as the runtime design. |
+| 6 | SYSTEM_OVERVIEW.md | Doc map + tree + prompts updated (AGENT_RUNTIME added). |
+| 7 | prompts/20260601-10_agent_runtime.md | **Created** current prompt of record; 09 marked kept. |
+
+**Recommended runtime:** hybrid — Claude Code (cognition) + tmux→Slurm
+(persistence/execution); uses only pre-approved tooling (tmux §2.1; Claude Code
+itself), so no new approvals to realize at small scale. **Nothing deployed.**
+
+---
+
 ## 2026-06-01 — 20260601-09 — Shared storage evaluation
 
 **Rationale:** Address the top open decision from node-role design — shared

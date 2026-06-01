@@ -1,8 +1,8 @@
 # STORAGE ARCHITECTURE
 
-**Status:** Design / evaluation (2026-06-01, 20260601-09). **No storage service
-is installed or deployed — this evaluates options and recommends one, pending
-User ratification.**
+**Status:** Ratified design (2026-06-01; recommendation ratified 20260601-10).
+**NFS is the canonical primary shared filesystem.** No storage service is
+installed or deployed — deployment is a later implementation phase.
 **Scope:** Shared-storage strategy for the 3-node cluster — the enabler for
 node-agnostic Workers and a cluster-wide `resources/` (NODE_ARCHITECTURE.md §3,
 RESOURCE_POLICY.md §7).
@@ -88,7 +88,14 @@ Real AI clusters layer storage by role rather than picking one:
 This is additive and staged — add tiers only when a tier's need is demonstrated
 (GOVERNANCE.md §0), never all at once.
 
-## 5. Recommendation (pending User ratification)
+## 5. Decision (ratified 20260601-10)
+
+Ratified: **NFS = canonical primary shared filesystem.** MinIO/object storage
+remains a deferred second-tier design; Syncthing/local caching is an
+optimization only if demonstrated by measurements; Ceph and GlusterFS are not
+justified for the current 3-node cluster. **Deployment is deferred to a later
+implementation phase — no NFS service installed, no shared-storage directories
+created.**
 
 1. **Adopt NFS as the primary shared filesystem.** Export a cluster-shared tree
    (`resources/`, shared project areas, Slurm state) from a server role on the
