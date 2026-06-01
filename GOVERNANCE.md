@@ -281,3 +281,10 @@ preconditions:
   foundational runtime, already present) + **pptxgenjs** (medium-risk,
   project-local only, `package-lock.json` pinned). **Implementation deferred —
   pptxgenjs not installed, no templates/pipelines created.**
+- ~~Node-role strategy~~ — **DESIGNED 20260601-08** (NODE_ARCHITECTURE.md):
+  hybrid control-plane (`gpu-01` primary + `gpu-02` backup) with symmetric
+  compute across all 3 nodes. Design only; no node dirs/services.
+- **Shared storage (NFS / cluster FS)** — **OPEN** (20260601-08): enabler for
+  node-agnostic Workers and a cluster-wide `resources/`. Top new decision.
+- **Node hostname/role realization & cluster networking** — **OPEN**
+  (20260601-08): realize roles only when services are deployed (with approval).

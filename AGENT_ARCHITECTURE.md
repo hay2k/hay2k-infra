@@ -111,6 +111,11 @@ question.
 - The agent topology (Worker ⊂ project ⊂ domain) mirrors the directory topology
   on purpose.
 
+**Node placement (NODE_ARCHITECTURE.md):** Domain Orchestrators and Supervisors
+run on the control node (`gpu-01`, failover `gpu-02`); Senior Engineers run
+anywhere; **Workers/tasks are node-agnostic** and run on any compute node. No
+agent or task hard-codes a hostname.
+
 ## 6. Anti-hallucination duties by role
 
 (Full policy: GOVERNANCE.md §5.)

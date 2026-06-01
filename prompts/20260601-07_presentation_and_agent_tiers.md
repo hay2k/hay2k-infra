@@ -1,6 +1,8 @@
 # 20260601-07 — Presentation/Output Automation + Senior Engineer Tier
 
-> **STATUS: CURRENT.** Supersedes `20260601-06_risk_ratification.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-08_node_role_design.md`.**
+> Current policy of record is 20260601-08. (Its escalation chain was amended the
+> same day — Senior Engineer is a side review role; see INFRA_CHANGELOG.md.)
 
 **Prompt ID:** 20260601-07
 **Date:** 2026-06-01
