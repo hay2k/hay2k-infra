@@ -31,11 +31,11 @@ The layered default, in order of preference:
 |------|------|---------|---------------------------------|
 | **Apptainer / SIF** | Rootless, daemonless container runtime; single-file immutable `.sif` images; HPC/multi-user friendly; GPU via `--nv` | **Primary container runtime.** Single-file images are trivially SHA256-checksummed and archived; no root daemon. | **High-risk §2.3 → User approval** (listed) |
 | **Docker** | Daemon-based containers (root daemon), large ecosystem | **Not default.** Root daemon = shared attack surface, poor multi-user fit. Apptainer can pull/convert Docker images, so Docker is rarely needed. Use only for a specific need (e.g. `compose` services). | **High-risk §2.3 → User approval** (listed) |
-| **Conda / Mamba** | Cross-language package/env manager | **Fallback only.** Solver drift hurts reproducibility unless `conda-lock` is used; heavyweight base env with multi-user impact. | **Medium-risk → Supervisor judgment + documentation** (characteristics: shared tooling, base-env impact) |
-| **uv** | Fast Python project/dependency manager; `uv.lock`; single static binary | **Default Python env tool.** Reproducible locked venvs; meets all five §2.1 low-risk characteristics (CLI / single-host / no daemon / no listener / easily removable). | **Low-risk §2.1 → pre-approvable** (recommend ratifying into the canonical §2.1 list) |
+| **Conda / Mamba** | Cross-language package/env manager | **Fallback only.** Solver drift hurts reproducibility unless `conda-lock` is used; heavyweight base env with multi-user impact. | **Medium-risk → Supervisor judgment + documentation** (ratified 20260601-06) |
+| **uv** | Fast Python project/dependency manager; `uv.lock`; single static binary | **Default Python env tool.** Reproducible locked venvs; meets all five §2.1 low-risk characteristics (CLI / single-host / no daemon / no listener / easily removable). | **Low-risk §2.1 → pre-approved** (ratified into the canonical §2.1 list 20260601-06) |
 | **System packages** (dnf/rpm) | OS-level libraries/tools | **Foundational only.** Needs root, affects all domains, hurts reproducibility. Not for project deps. | Foundational set pre-approved; anything else system-level → **User approval** |
-| **Nextflow** | Dataflow workflow engine (JVM); nf-core ecosystem; scheduler/cloud integration | **Secondary workflow engine.** Choose when you need nf-core or heavy scaling. JVM runtime, reusable service-like. | **High-risk (§2.3 characteristics) → User approval** (recommend ratifying into §2.3) |
-| **Snakemake** | Python-native workflow engine (`Snakefile`); integrates with conda/containers | **Default workflow engine.** Lighter, Pythonic, pairs with uv/containers; usually installed *project-local* as a pip/uv dependency. | Project-local dependency → **none**; global install → **medium-risk (Supervisor)** |
+| **Nextflow** | Dataflow workflow engine (JVM); nf-core ecosystem; scheduler/cloud integration | **Secondary workflow engine.** Choose when you need nf-core or heavy scaling. | **Medium-risk → Supervisor judgment** (ratified 20260601-06). The engine itself is not high-risk; its **shared execution backend** (Slurm, Kubernetes, Seqera/Nextflow Tower) **remains High-risk §2.3 → User approval**. |
+| **Snakemake** | Python-native workflow engine (`Snakefile`); integrates with conda/containers | **Default workflow engine.** Lighter, Pythonic, pairs with uv/containers; usually installed *project-local* as a pip/uv dependency. | Project-local dependency → **none**; global install → **medium-risk (Supervisor)**. Shared backends remain high-risk §2.3. |
 
 ## 2. What is installed GLOBALLY (shared, minimal, version-logged)
 
@@ -123,9 +123,13 @@ Apply this decision procedure (stop at the first match):
    the container from step 3).
 5. **Is a required package conda-only and impractical to containerize?**
    → **conda/mamba** + committed `conda-lock.yml` (fallback; document why).
-6. **Installing a high-risk runtime** (Apptainer, Docker, Nextflow)? → it is a
-   §2.3 decision: **escalate for User approval**. Workers/Orchestrators do not
-   self-approve these (AGENT_ARCHITECTURE.md).
+6. **Installing a high-risk component** (Apptainer, Docker, or a shared
+   execution backend — Slurm, Kubernetes, Seqera/Nextflow Tower)? → it is a
+   §2.3 decision: **escalate for User approval**. A workflow-engine binary
+   itself (Nextflow, Snakemake) and Conda/Mamba are **medium-risk** — a
+   **Supervisor** decides and documents (§2.2). `uv` is low-risk (§2.1).
+   Workers/Orchestrators do not self-approve high-risk components
+   (AGENT_ARCHITECTURE.md).
 
 Default bias: prefer the highest applicable tier (container/workflow) for
 anything that will be kept or shared; drop to uv for lightweight Python work;

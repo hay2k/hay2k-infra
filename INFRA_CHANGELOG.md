@@ -5,6 +5,29 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-06 — Risk-tier ratification + Presentation Automation deferral
+
+**Rationale:** Ratify the interpretive install-risk classifications into
+GOVERNANCE.md §2's canonical (operator-authored) lists, and refine the
+workflow-engine classification: the engine binary is not itself high-risk —
+only its shared execution backend is. Also open a documented deferred decision
+for presentation automation. No installs.
+
+| # | Document | Change | Rationale |
+|---|----------|--------|-----------|
+| 1 | GOVERNANCE.md | §2.1: **`uv` added** to the canonical low-risk pre-approved list. | Ratified low-risk. |
+| 2 | GOVERNANCE.md | §2.2: **Conda/Mamba** and **workflow engines (Nextflow, Snakemake)** named as medium-risk examples; clarified engine-binary = medium, shared backend = high. | Ratified medium-risk; Nextflow reclassified High→Medium. |
+| 3 | GOVERNANCE.md | §2.3: added **shared execution/orchestration backends (Slurm, Kubernetes, Seqera/Nextflow Tower)**; noted engine-vs-backend split. | Keep shared backends high-risk. |
+| 4 | GOVERNANCE.md | §11: added **Presentation automation** deferred decision (Node.js + pptxgenjs, reproducible PPTX) — OPEN, document only. | Per instruction. |
+| 5 | ENVIRONMENT_POLICY.md | §1 table: uv = pre-approved §2.1; Conda/Mamba = medium (ratified); Nextflow = medium with backend-high caveat; Snakemake note. §7 step 6 rewritten (high-risk = Apptainer/Docker/shared backends; engines + conda = medium; uv = low). | Sync policy to ratified tiers. |
+| 6 | prompts/20260601-06_risk_ratification.md | **Created** as current prompt of record; 05 marked kept. | Prompt versioning (GOVERNANCE.md §8). |
+
+**Net effect on Nextflow:** High-risk → **Medium-risk** (Supervisor judgment).
+Slurm, Kubernetes, Tower, and shared execution backends remain **High-risk**
+(User approval). Nothing installed.
+
+---
+
 ## 2026-06-01 — 20260601-05 — Environment management policy
 
 **Rationale:** Resolve the long-open environment-manager decision with a policy
