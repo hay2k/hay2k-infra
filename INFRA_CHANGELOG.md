@@ -5,6 +5,36 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — Operation: GitHub remote + first push (off-host backup established)
+
+**Rationale:** Execute the Phase 2 remote step — give the precious-but-small
+tier an off-host home, closing the "zero disaster recovery" gap flagged since
+bootstrap (BACKUP_AND_RECOVERY.md §1, §6). Operational execution; no separate
+prompt archived.
+
+- **Auth:** dedicated ed25519 key `~/.ssh/hay2k-infra_ed25519` (generated
+  20260601-04, no passphrase, perms 600, **outside the repo** per
+  SECRETS_POLICY.md §3). Registered on GitHub (account-level, user `hay2k`).
+- **Host trust:** GitHub host key verified against the published ed25519
+  fingerprint `SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU` before being
+  added to `~/.ssh/known_hosts` (not blindly accepted).
+- **SSH config:** `~/.ssh/config` binds `Host github.com` to the dedicated key
+  with `IdentitiesOnly yes` (machine-specific; not in any repo).
+- **Connectivity:** `ssh -T git@github.com` → "Hi hay2k! You've successfully
+  authenticated" ✅.
+- **Remote:** `origin = git@github.com:hay2k/hay2k-infra.git` (private repo).
+- **Push:** `main` pushed and tracking `origin/main` at commit `a167c13`.
+- **Scratch clone test:** clone succeeded; HEAD matched `a167c13`; working tree
+  clean and up to date with `origin/main`; 15 tracked files (9 root governance
+  docs, 4 prompts, `hooks/pre-commit`, `.gitignore`); prompt archive present
+  (01–04). Scratch dir removed.
+
+**Note:** secrets are NOT in this remote and never will be (SECRETS_POLICY.md
+§6); only the precious-but-small governance tier is backed up here. Bulk
+precious data and the encrypted secrets-backup channel remain open.
+
+---
+
 ## 2026-06-01 — 20260601-04 — Secrets management policy (Phase 2)
 
 **Rationale (overall):** Close the secrets-management gap that was open since
