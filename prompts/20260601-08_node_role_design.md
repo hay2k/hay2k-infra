@@ -1,7 +1,7 @@
 # 20260601-08 — Node Role Design
 
-> **STATUS: CURRENT.** Supersedes `20260601-07_presentation_and_agent_tiers.md`
-> (kept).
+> **STATUS: KEPT — superseded by `20260601-09_storage_evaluation.md`.**
+> Current prompt of record is 20260601-09.
 
 **Prompt ID:** 20260601-08
 **Date:** 2026-06-01

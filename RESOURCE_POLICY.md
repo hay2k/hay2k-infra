@@ -97,8 +97,10 @@ cost.
 ## 7. Deferred decisions
 
 - **Shared storage (NFS / cluster FS)** — the enabler for node-agnostic Workers
-  and a cluster-wide `resources/` (NODE_ARCHITECTURE.md §3, §5). **Top new
-  decision introduced by the cluster.**
+  and a cluster-wide `resources/` (NODE_ARCHITECTURE.md §3, §5). **Evaluated in
+  STORAGE_ARCHITECTURE.md (NFS recommended); pending User ratification.**
+- **Cluster networking / interconnect** (1 GbE vs 10/25 GbE+) — decisive for
+  shared-FS bandwidth (STORAGE_ARCHITECTURE.md §6).
 - Cluster GPU/job scheduler choice (Slurm; only when contention is real).
 - Whether to enforce hard disk quotas per domain.
 - Storage redundancy / a second data volume per node (see BACKUP_AND_RECOVERY.md

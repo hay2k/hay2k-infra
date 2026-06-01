@@ -5,6 +5,25 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-09 — Shared storage evaluation
+
+**Rationale:** Address the top open decision from node-role design — shared
+storage. Evaluation only; no storage service installed.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | **STORAGE_ARCHITECTURE.md** | **Created.** Evaluation of NFS / GlusterFS / Ceph / Syncthing / object storage / hybrids across 10 criteria (3-node suitability, simplicity, maintenance, performance, AI suitability, Slurm, Apptainer, shared models, domain separation, backup); summary matrix; per-option verdicts; **recommendation = NFS primary + MinIO later + Syncthing-if-measured; avoid Ceph/Gluster at 3 nodes** (pending User ratification). |
+| 2 | GOVERNANCE.md | §11 shared-storage entry → **EVALUATED** (NFS recommended, pending ratification; NFS server/MinIO = high-risk §2.3). |
+| 3 | RESOURCE_POLICY.md | §7: shared-storage entry points to the evaluation; added **cluster networking/interconnect** as a decisive dependency. |
+| 4 | NODE_ARCHITECTURE.md | §3 critical-enabler note references the evaluation. |
+| 5 | SYSTEM_OVERVIEW.md | Doc map + tree + prompts updated. |
+| 6 | prompts/20260601-09_storage_evaluation.md | **Created** current prompt of record; 08 marked kept. |
+
+**Recommendation (non-binding):** NFS as the primary shared filesystem. **No
+storage service installed; no decision ratified.**
+
+---
+
 ## 2026-06-01 — 20260601-08 — Node role design + single-host→cluster correction
 
 **Rationale:** Design node roles for the 3-node cluster and reconcile the
