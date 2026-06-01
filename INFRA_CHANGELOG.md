@@ -5,6 +5,28 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — Amendment to 20260601-07 — Senior Engineer is a side review role
+
+**Rationale:** Correct the agent model: the Senior Engineer is **not** part of
+the primary escalation chain. Workers escalate **directly to Supervisors**.
+Senior Engineers provide review, architecture guidance, reproducibility review,
+and quality assurance (a side function / quality gate). Recorded as an amendment
+to 20260601-07 (same topic, same session); 20260601-07 remains the current
+prompt of record.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | AGENT_ARCHITECTURE.md | §1/§2: Senior Engineer redefined as a **side review role, not in the chain**; hierarchy diagram redrawn with SE attached to the side; Worker now "escalates to its Supervisor". §3.1 escalation chain → **Worker → Supervisor → Domain Orchestrator → User**; §3.2 retitled "side review" and clarified SE advises/reviews but does not relay escalations. |
+| 2 | GOVERNANCE.md | §3 escalation path → **Worker → Supervisor → Domain Orchestrator → User**; added that the Senior Engineer is a side role; §3a retitled "Senior Engineer — side review". |
+| 3 | SYSTEM_OVERVIEW.md | §5 operating model: chain corrected; Senior Engineer described as sitting beside the chain. |
+| 4 | INFRA_CHANGELOG.md | This entry. |
+
+**Net:** primary escalation chain is now Worker → Supervisor → Domain
+Orchestrator → User; Senior Engineer review (§3a / AGENT_ARCHITECTURE.md §3.2)
+is unchanged in its triggers but explicitly out-of-chain.
+
+---
+
 ## 2026-06-01 — 20260601-07 — Presentation/Output automation ratified + Senior Engineer tier
 
 **Rationale:** Ratify presentation automation as a supported capability (Node.js
