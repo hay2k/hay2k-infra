@@ -1,0 +1,127 @@
+# =============================================================================
+# infra/ .gitignore — conservative.
+# This repo tracks GOVERNANCE: markdown docs and the prompt archive only.
+# Everything that is a secret, regenerable, large, or transient is excluded.
+# When in doubt, it stays OUT. Force-add intentional exceptions with `git add -f`.
+# =============================================================================
+
+# ---- Secrets & credentials --------------------------------------------------
+.env
+.env.*
+*.env
+secrets/
+*.secret
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.token
+*token*
+*credential*
+*password*
+.netrc
+.npmrc
+.pypirc
+*.kdbx
+service-account*.json
+gcloud-*.json
+aws-credentials*
+.aws/
+.ssh/
+
+# ---- Citation source-of-truth secrets (keep .bib only if intentionally added)
+zotero-api-key*
+better-bibtex*.json
+
+# ---- Logs -------------------------------------------------------------------
+*.log
+logs/
+log/
+*.out
+nohup.out
+
+# ---- Caches -----------------------------------------------------------------
+.cache/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+.huggingface/
+.cache_huggingface/
+*.cache
+
+# ---- Datasets ---------------------------------------------------------------
+data/
+datasets/
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.arrow
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.gz
+*.bz2
+*.xz
+*.7z
+
+# ---- Model weights / checkpoints --------------------------------------------
+models/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.onnx
+*.gguf
+*.ggml
+*.tflite
+*.pb
+
+# ---- Containers / images ----------------------------------------------------
+*.sif
+*.simg
+*.img
+*.qcow2
+*.iso
+*.tar.zst
+
+# ---- Temporary / generated outputs ------------------------------------------
+tmp/
+temp/
+scratch/
+results/
+outputs/
+*.tmp
+*.temp
+*.swp
+*.bak
+*~
+
+# ---- Large generated figures/binaries (commit small vector PDFs deliberately)
+# Governance requires figures as PNG + vector PDF; commit those intentionally
+# with `git add -f` from a project, not from here. This repo holds docs only.
+*.mp4
+*.mov
+*.avi
+*.wav
+*.flac
+
+# ---- OS / editor cruft ------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
