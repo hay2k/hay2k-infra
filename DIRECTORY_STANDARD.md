@@ -84,8 +84,10 @@ There is a real risk of two directories meaning the same thing. The rule:
 
 - **`resources/`** holds assets that are *domain-agnostic and shared by 2+
   domains*: base model weights, public datasets, citation library exports,
-  fonts, license files. It is created only when such a genuinely shared asset
-  first exists.
+  fonts, license files, and **shared container images (`*.sif`) / image caches**
+  (ENVIRONMENT_POLICY.md §4). It is created only when such a genuinely shared
+  asset first exists. Environment *definitions* and *lockfiles* (`*.def`,
+  `uv.lock`, etc.) stay project-local and version-controlled, not here.
 - **`<domain>/<project>/data/`** holds assets *specific to one project*.
 
 Test: *"Would deleting this break more than one domain?"* If yes → `resources`.

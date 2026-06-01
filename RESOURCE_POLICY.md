@@ -53,10 +53,12 @@ organizational independence.
 
 The single 1.8 TB volume holds everything and has **no redundancy**. Therefore:
 
-- **Shared large assets go in `resources/`** (model weights, public datasets),
-  stored **once** and referenced read-only by every domain (DIRECTORY_STANDARD.md
-  §4). Re-downloading or duplicating a 100 GB model per project is prohibited —
-  it wastes the scarcest resource.
+- **Shared large assets go in `resources/`** (model weights, public datasets,
+  shared container images per ENVIRONMENT_POLICY.md §4), stored **once** and
+  referenced read-only by every domain (DIRECTORY_STANDARD.md §4). Re-downloading
+  or duplicating a 100 GB model or image per project is prohibited — it wastes
+  the scarcest resource. (Containers access the GPUs via `apptainer --nv`; GPU
+  allocation still follows §2.)
 - Every domain is expected to live within a **soft disk budget**. No hard
   quotas at bootstrap, but each domain's Supervisor is responsible for its
   footprint and must escalate before a single project exceeds ~200 GB.

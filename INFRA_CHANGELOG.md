@@ -5,6 +5,33 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-05 — Environment management policy
+
+**Rationale:** Resolve the long-open environment-manager decision with a policy
+(no installs). Codifies the operating principle "containers first, workflow
+engines first, conda fallback, system packages foundational-only" and gives
+Claude Code a decision procedure so environment choices are consistent and
+reproducible (GOVERNANCE.md §4).
+
+| # | Document | Change | Rationale |
+|---|----------|--------|-----------|
+| 1 | **ENVIRONMENT_POLICY.md** | **Created.** Operating principle; evaluation of Apptainer/Docker/Conda-Mamba/uv/system-packages/Nextflow/Snakemake; what is global vs project-local vs `resources/`; install-risk classification; SHA256/version logging; the container-vs-conda-vs-system decision procedure. | New governance document for environments. |
+| 2 | GOVERNANCE.md | §4.2 now references ENVIRONMENT_POLICY (lockfile + image digest + driver/CUDA); §11 marks **environment manager RESOLVED** and version-control remote RESOLVED. | Bind reproducibility to the policy; close deferred items. |
+| 3 | SYSTEM_OVERVIEW.md | Added ENVIRONMENT_POLICY.md to the §6 map and the file tree; prompts-of-record updated to 05. | Keep map/tree complete. |
+| 4 | DIRECTORY_STANDARD.md | §4: shared container images (`*.sif`)/caches belong in `resources/`; env *definitions/lockfiles* stay project-local. | Avoid duplicated purpose; place build artifacts correctly. |
+| 5 | RESOURCE_POLICY.md | §4: shared images in `resources/` stored once; containers use `apptainer --nv` for GPUs. | Disk/GPU consistency. |
+| 6 | prompts/20260601-05_environment_policy.md | **Created** as current prompt of record; 04 marked kept. | Prompt versioning (GOVERNANCE.md §8). |
+
+**Risk classifications recorded (derived from §2 characteristics):** uv =
+low-risk §2.1 (pre-approvable; recommend ratifying into the canonical list);
+Conda/Mamba = medium-risk (Supervisor); Apptainer & Docker = high-risk §2.3
+(listed); Nextflow = high-risk by characteristics (recommend ratifying into
+§2.3); Snakemake = ordinary project-local dependency (global install =
+medium-risk). **No tool installed** — Apptainer, Docker, Conda/Mamba, Nextflow,
+Snakemake remain uninstalled per instruction.
+
+---
+
 ## 2026-06-01 — Operation: GitHub remote + first push (off-host backup established)
 
 **Rationale:** Execute the Phase 2 remote step — give the precious-but-small

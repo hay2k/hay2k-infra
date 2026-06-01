@@ -1,6 +1,8 @@
 # 20260601-04 — Secrets Management Policy (Phase 2)
 
-> **STATUS: CURRENT.** Supersedes `20260601-03_governance_refinement.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-05_environment_policy.md`.**
+> Remains the record of the secrets-management policy; current policy of record
+> is 20260601-05.
 
 **Prompt ID:** 20260601-04
 **Date:** 2026-06-01

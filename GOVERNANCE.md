@@ -132,9 +132,11 @@ Escalation path: **Worker → Orchestrator → Supervisor → User.**
 Every result must be reproducible by another operator on a clean host:
 
 1. **Code** is version-controlled; the exact commit is recorded with results.
-2. **Environment** is captured as a manifest (lockfile + recorded driver/CUDA
-   versions). When an environment manager is chosen (a deferred decision —
-   GOVERNANCE.md §10), it must produce a committed lockfile.
+2. **Environment** is captured as a manifest (lockfile + container image digest
+   + recorded driver/CUDA versions) per **ENVIRONMENT_POLICY.md** —
+   containers/workflow engines first, uv for Python, conda only as fallback.
+   Every environment must produce a committed lockfile and/or a SHA256-pinned
+   image.
 3. **Data** is referenced by content hash (§6), not by mutable path alone.
 4. **Randomness** is seeded and the seed recorded.
 5. **Prompts** that produced AI output are versioned and referenced by ID (§8).
@@ -230,9 +232,11 @@ These are open and listed in full in the bootstrap deliverable's "Missing
 decisions" section; pointers here so the rules above are honest about their
 preconditions:
 
-- Environment/dependency manager (affects §4).
-- Version-control host and remote (affects §4, BACKUP_AND_RECOVERY.md). *Local
-  git initialized 20260601-03; remote still open.*
+- ~~Environment/dependency manager~~ — **RESOLVED 20260601-05**
+  (ENVIRONMENT_POLICY.md): containers/workflow engines first, uv for Python,
+  conda fallback, system packages foundational-only. Tools not yet installed.
+- ~~Version-control host and remote~~ — **RESOLVED**: GitHub private repo
+  `hay2k/hay2k-infra`, off-host push live since 2026-06-01.
 - Zotero install + storage location on a headless host (affects §7).
 - Backup target / off-host destination (affects BACKUP_AND_RECOVERY.md);
   encrypted secrets-backup channel still open (SECRETS_POLICY.md §6).

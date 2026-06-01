@@ -68,11 +68,12 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── RESOURCE_POLICY.md
     ├── BACKUP_AND_RECOVERY.md
     ├── SECRETS_POLICY.md
+    ├── ENVIRONMENT_POLICY.md
     ├── INFRA_CHANGELOG.md
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-0{1..4}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-0{1..5}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -98,6 +99,7 @@ citekey or it does not exist.
 | GOVERNANCE.md | What are the rules and who approves what? |
 | PROJECT_LIFECYCLE.md | How do projects get created, migrated, and retired (the remaining User gates)? |
 | SECRETS_POLICY.md | How are credentials stored, accessed, rotated, and kept out of git? |
+| ENVIRONMENT_POLICY.md | How are software environments built/pinned, and when is it a container vs. conda vs. system package? |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | RESOURCE_POLICY.md | How are GPU, CPU, RAM, and disk shared across domains? |
@@ -124,6 +126,7 @@ The governing rule (GOVERNANCE.md §0): *unnecessary* installations, *unnecessar
 directories, and *speculative* structures are prohibited — but necessary
 infrastructure work proceeds without unnecessary approval overhead.
 
-Prompts of record: `20260601-01_bootstrap.md` (archived),
-`20260601-02_bootstrap_revision.md` and `20260601-03_governance_refinement.md`
-(kept milestones), and `20260601-04_secrets_policy.md` (current).
+Prompts of record: `20260601-01_bootstrap.md` (archived);
+`-02_bootstrap_revision.md`, `-03_governance_refinement.md`,
+`-04_secrets_policy.md` (kept milestones); and
+`20260601-05_environment_policy.md` (current).
