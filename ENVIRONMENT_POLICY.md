@@ -128,9 +128,48 @@ Apply this decision procedure (stop at the first match):
    §2.3 decision: **escalate for User approval**. A workflow-engine binary
    itself (Nextflow, Snakemake) and Conda/Mamba are **medium-risk** — a
    **Supervisor** decides and documents (§2.2). `uv` is low-risk (§2.1).
-   Workers/Orchestrators do not self-approve high-risk components
-   (AGENT_ARCHITECTURE.md).
+   No agent (Worker through Domain Orchestrator) self-approves a high-risk
+   component — it is a User decision (AGENT_ARCHITECTURE.md).
 
 Default bias: prefer the highest applicable tier (container/workflow) for
 anything that will be kept or shared; drop to uv for lightweight Python work;
 use conda/system packages only when the tiers above genuinely cannot serve.
+
+## 8. Output Automation framework
+
+Generation of deliverable artifacts from code is a supported, reproducible
+capability. The framework is deliberately small now and grows by adding output
+types, not by adding tools speculatively (GOVERNANCE.md §0).
+
+**Principle:** the **source artifacts are the source of truth**; generated
+outputs are reproducible build products, never hand-edited and never the
+canonical copy. Outputs are regenerable (excluded from backups as such) and are
+rebuilt from committed source + pinned dependencies.
+
+**Supported output types** (capability documented; only PPTX has a chosen
+implementation today): **PPTX, PDF, HTML, PNG, SVG**. Figures additionally
+follow the PNG **and** vector (PDF/SVG) rule (GOVERNANCE.md §9).
+
+### 8.1 Presentation Automation (approved capability — implementation deferred)
+
+- **Output:** PPTX.
+- **Preferred implementation:** **Node.js** + **pptxgenjs**.
+- **Node.js / npm:** low-risk **foundational runtime**, already present on the
+  base image (GOVERNANCE.md §2.1). Not a project dependency; needs no approval.
+- **pptxgenjs:** **medium-risk, project-local dependency.** Installed **only
+  within project scope** (a project's own `node_modules`), **never globally**.
+  Dependencies must be **pinned**, and **`package-lock.json` is required** and
+  committed.
+- **Source artifacts (the source of truth, version-controlled):** the
+  JavaScript source, `package.json`, and `package-lock.json`.
+- **Generated `.pptx` files are outputs, not source** — regenerable from the
+  above; they live in the project's `results/` and are not the canonical record.
+- **Reproducibility:** `package-lock.json` pins exact versions + integrity
+  hashes (npm's `integrity` field) — this satisfies GOVERNANCE.md §4 for the
+  Node toolchain, analogous to `uv.lock` for Python. Record the Node/npm
+  versions in the project environment manifest (§6).
+
+**Deferred:** `pptxgenjs` is **not installed**; **no templates and no automation
+pipelines** are created yet. This section documents the policy only. When
+implemented, it follows the §7 decision procedure (project-local npm deps;
+containerize only if the deck build must be archived/shared as a unit).

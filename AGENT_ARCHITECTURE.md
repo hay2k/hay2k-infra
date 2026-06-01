@@ -1,7 +1,8 @@
 # AGENT ARCHITECTURE
 
-**Status:** Active from 2026-06-01 (terminology standardized 20260601-03)
-**Purpose:** Define who decides what, and how decisions and ambiguity flow.
+**Status:** Active from 2026-06-01 (hierarchy extended 20260601-07)
+**Purpose:** Define who decides what, how decisions and ambiguity flow, and what
+must be reviewed before implementation.
 
 ---
 
@@ -9,103 +10,131 @@
 
 | Term | Meaning |
 |------|---------|
-| **Agent** | Umbrella term for any autonomous actor below the human (Orchestrator, Supervisor, or Worker). |
-| **Orchestrator** | **Project coordination.** Sequences and assembles work within one approved project; spawns and routes Workers; materializes the project's directories after approval. |
-| **Supervisor** | **Strategy, governance, quality control.** Owns policy interpretation and the quality bar for a domain; resolves ambiguity; decides what escalates to the user. |
-| **Worker** | **Execution unit.** Performs one scoped, reversible task. |
-| **Subagent** | Synonym of **Worker**. |
+| **Agent** | Umbrella term for any autonomous actor below the User (Domain Orchestrator, Supervisor, Senior Engineer, or Worker). |
+| **Domain Orchestrator** | **Domain-level coordination.** Top agent within a domain: sequences work across the domain's projects, coordinates resources, materializes approved projects, escalates high-impact decisions to the User. |
+| **Supervisor Agent** | **Strategy, governance, ambiguity resolution.** Owns policy interpretation for the domain; resolves ambiguity; approves medium-risk decisions. |
+| **Senior Engineer Agent** | **Review.** Architecture review, code-quality review, reproducibility review. First-line technical escalation for Workers; the quality gate before implementation. |
+| **Worker Agent** | **Implementation and execution.** Performs one scoped, reversible task. |
+| **Subagent** | Synonym of **Worker Agent**. |
 
-Do not mix these terms (e.g. do not call a Worker a "Supervisor," or use
-"agent" where a specific role is meant).
+Do not mix these terms (e.g. do not call a Worker a "Supervisor", or use
+"agent" where a specific tier is meant).
 
-## 2. Roles in detail
+## 2. Canonical hierarchy
 
-| Role | Who | Decides | Never does |
-|------|-----|---------|------------|
-| **Human operator** | `hha` (infra_admin) | High-impact, irreversible, cross-domain, and spending decisions (GOVERNANCE.md §2) | Micromanage routine work |
-| **Supervisor** | One per active domain | Strategy, governance, quality control; resolves ambiguity; decides what to escalate | Approve project lifecycle or cross-domain moves (those are the human's) |
-| **Orchestrator** | One per active project | Project coordination: sequencing, task assembly, materializing approved project dirs | Set domain strategy/policy or approve a project (those are above it) |
-| **Worker / Subagent** | Many, ephemeral, task-scoped | Executes one scoped, reversible task | **Ask the human anything directly**; act outside its task scope |
-
-There is **at most one Supervisor per domain** and **at most one Orchestrator
-per project**, and they exist only where there is active work. At bootstrap
-there are **no Orchestrators, Supervisors, or Workers** — only the human and
-these documents.
-
-## 3. The escalation chain (the core rule)
+Authority / reporting order, highest to lowest:
 
 ```
-Worker ──▶ Orchestrator ──▶ Supervisor ──escalate (high-impact only)──▶ Human
-  │            │                │                                         │
-  └─ executes  └─ coordinates   └─ strategy / governance / quality        └─ approvals
+User                  → final authority (high-impact approvals)
+  ▲
+Domain Orchestrator   → domain-level coordination
+  ▲
+Supervisor Agent      → strategy, governance, ambiguity resolution
+  ▲
+Senior Engineer Agent → architecture / code-quality / reproducibility review
+  ▲
+Worker Agent          → implementation and execution   (Subagent = Worker)
 ```
 
-- **Workers never contact the human.** A Worker that is blocked, uncertain, or
-  hits an out-of-scope decision **escalates to its Orchestrator**. This keeps
-  the human's attention scarce and the decision trail single-threaded.
-- **Orchestrators resolve coordination issues** (sequencing, task hand-offs,
-  assembling results) within the project. What they cannot resolve by
-  coordination — ambiguity, policy interpretation, quality/governance — they
-  route to the **Supervisor**.
-- **Supervisors resolve ambiguity whenever possible** using policy
-  (GOVERNANCE.md), context, and the standards. Most ambiguity dies here.
-- **Supervisors escalate to the human only for high-impact decisions** — the
-  rows marked "User" in GOVERNANCE.md §2, plus anything irreversible,
-  cross-domain, externally visible, or costing money.
+| Role | Who | Decides / does | Never does |
+|------|-----|----------------|------------|
+| **User** | `hha` (infra_admin) | High-impact, irreversible, cross-domain, spending decisions (GOVERNANCE.md §2) | Micromanage routine work |
+| **Domain Orchestrator** | One per active domain | Coordinates work across the domain; materializes approved projects; escalates high-impact to User | Approve high-impact items itself; set cross-domain policy |
+| **Supervisor Agent** | One per active domain | Strategy, governance, ambiguity resolution; approves **medium-risk** decisions (GOVERNANCE.md §2.2) | Approve project lifecycle / cross-domain / high-risk (those are the User's) |
+| **Senior Engineer Agent** | As needed per domain/project | Architecture, code-quality, and reproducibility **review**; first-line technical escalation | Set governance/strategy; grant approvals reserved for Supervisor/User |
+| **Worker Agent / Subagent** | Many, ephemeral, task-scoped | Implements one scoped, reversible task | **Contact the User directly**; act outside its task scope |
 
-## 3a. How a Supervisor resolves ambiguity (decision procedure)
+These tiers exist only where there is active work. At bootstrap there are **no
+agents** — only the User and these documents.
+
+## 3. Two flows: escalation and review
+
+### 3.1 Escalation chain (blocked / ambiguous / needs approval)
+
+```
+Worker → Senior Engineer → Supervisor → Domain Orchestrator → User
+```
+
+- **Workers never contact the User.** A blocked or uncertain Worker escalates to
+  its **Senior Engineer** (technical questions, "how should this be built?").
+- **Senior Engineer** resolves technical/engineering questions; governance,
+  policy, or strategy ambiguity it routes to the **Supervisor**.
+- **Supervisor resolves ambiguity whenever possible** using policy
+  (GOVERNANCE.md), precedent, and standards, and approves medium-risk decisions.
+  Most ambiguity dies here.
+- **Domain Orchestrator** handles domain-level coordination and is the last stop
+  before the User; it escalates only genuinely high-impact items.
+- **Only high-impact decisions reach the User** — the rows marked "User" in
+  GOVERNANCE.md §2, plus anything irreversible, cross-domain, externally
+  visible, or costing money.
+
+### 3.2 Review gate (before implementation)
+
+A **Senior Engineer review is required before implementation** for any change
+affecting (GOVERNANCE.md §3a):
+
+- architecture,
+- reproducibility,
+- shared libraries,
+- reusable workflows,
+- infrastructure standards.
+
+This review is **in addition to** any approval: a medium-risk decision the
+Supervisor approves still gets Senior Engineer review if it touches the list
+above. Routine, local, reversible work that touches none of these needs no
+Senior Engineer review.
+
+## 4. How a Supervisor resolves ambiguity (decision procedure)
 
 1. **Check policy.** Does GOVERNANCE.md or a standard already answer it? Apply it.
 2. **Check precedent.** Has a similar case been decided in this domain? Follow it.
 3. **Choose the reversible, minimal option.** If the action is cheap to undo and
    stays in-domain, decide and proceed (documenting the decision).
 4. **Escalate only if** the resolution would be irreversible, cross-domain,
-   external, costly, or would change policy/structure. Then escalate to the
-   human with: the question, the options, the Supervisor's recommendation, and
-   the reason it cannot be resolved locally.
+   external, costly, or would change policy/structure. Escalate via the Domain
+   Orchestrator to the User with: the question, the options, a recommendation,
+   and why it cannot be resolved locally.
 
 A good escalation is a *decision request with a recommendation*, not an open
-question. This respects "supervisors resolve ambiguity whenever possible."
+question.
 
-## 4. Scope boundaries
+## 5. Scope boundaries
 
-- A Worker operates inside **one task** and touches only that task's scope.
-  Cross-project or cross-domain reach is an escalation.
-- An Orchestrator operates inside **one project** and coordinates its Workers.
-  Reaching outside the project is an escalation to the Supervisor.
-- A Supervisor operates inside **one domain**. Cross-domain coordination is an
-  escalation to the human (it is, by definition, a cross-domain decision).
-- This mirrors domain independence (GOVERNANCE.md §1): the agent topology
-  (Worker ⊂ project ⊂ domain) and the directory topology are the same shape on
-  purpose.
+- A **Worker** operates inside **one task** and touches only that task's scope.
+- A **Senior Engineer** reviews within its domain/project; it does not set
+  policy.
+- A **Supervisor** owns governance for **one domain**.
+- A **Domain Orchestrator** coordinates **one domain**; cross-domain
+  coordination is, by definition, a User-level decision (GOVERNANCE.md §1).
+- The agent topology (Worker ⊂ project ⊂ domain) mirrors the directory topology
+  on purpose.
 
-## 5. Anti-hallucination duties by role
+## 6. Anti-hallucination duties by role
 
 (Full policy: GOVERNANCE.md §5.)
 
 - **Workers** ground every factual claim, verify files/APIs/numbers before
-  asserting them, and mark unverified output. When unsure, they escalate rather
-  than guess.
-- **Orchestrators** do not forward ungrounded Worker output up the chain;
-  unverified results are sent back for grounding, not assembled into a result.
-- **Supervisors** (quality control) apply the adversarial check (GOVERNANCE.md
-  §5.6) before presenting any claim that feeds a human-level decision.
-- **The human** is the final backstop but should never be the first line of
-  fact-checking.
+  asserting them, mark unverified output, and escalate rather than guess.
+- **Senior Engineers** reject ungrounded or unreproducible work at the review
+  gate instead of passing it upward; reproducibility review includes checking
+  that lockfiles/image digests/seeds are recorded (GOVERNANCE.md §4).
+- **Supervisors** apply the adversarial check (GOVERNANCE.md §5.6) before any
+  claim feeds a User-level decision.
+- **The User** is the final backstop, never the first line of fact-checking.
 
-## 6. Accountability
+## 7. Accountability
 
-- Every escalation to the human and every Supervisor-level decision that
-  changes structure or policy is documented (GOVERNANCE.md §10).
-- Significant instructions are archived as versioned prompts (GOVERNANCE.md §8),
-  so the chain of *why* a thing was done is reconstructable.
+- Every escalation to the User, every Supervisor approval that changes structure
+  or policy, and every Senior Engineer review of a §3.2 change is documented
+  (GOVERNANCE.md §10).
+- Significant instructions are archived as versioned prompts (GOVERNANCE.md §8).
 
-## 7. Implementation note (deferred)
+## 8. Implementation note (deferred)
 
 This document defines the *operating model*, not a specific multi-agent
-framework or tool. The mechanism that implements Orchestrators, Supervisors,
-and Workers (a framework, a queue, or manual operator discipline) is a deferred
-decision. Implementing it may use low-risk prerequisites freely (GOVERNANCE.md
-§2.1) and other *necessary* tooling per the medium-risk policy (§2.2); a
-high-risk component for orchestration (e.g. a message queue or Kubernetes)
-requires explicit User approval (§2.3). The model holds regardless of mechanism.
+framework. The mechanism that implements these tiers (a framework, a queue, or
+manual operator discipline) is a deferred decision. Implementing it may use
+low-risk prerequisites freely (GOVERNANCE.md §2.1) and other necessary tooling
+per the medium-risk policy (§2.2); a high-risk component (e.g. a message queue
+or a shared execution backend) requires explicit User approval (§2.3). The
+model holds regardless of mechanism.

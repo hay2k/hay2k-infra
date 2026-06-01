@@ -57,7 +57,8 @@ once a project is approved, creating its directories is routine work
 ## 2. Approval matrix
 
 "User approval" means an explicit decision by `hha` (infra_admin). It cannot
-be granted by any agent (Orchestrator, Supervisor, or Worker).
+be granted by any agent (Domain Orchestrator, Supervisor, Senior Engineer, or
+Worker).
 
 | Action | Approver | Why |
 |--------|----------|-----|
@@ -69,12 +70,15 @@ be granted by any agent (Orchestrator, Supervisor, or Worker).
 | **Delete data not regenerable from version control** | **User** | Irreversible |
 | **Spend money / incur external cost** | **User** | Financial impact |
 | **Install a medium-risk component** (§2.2) | Supervisor | Supervisor judgment + documentation |
-| **Install a low-risk prerequisite** (§2.1) | Worker/Orchestrator | Pre-approved — no further approval |
-| **Materialize a reserved domain dir** (one of the six) | Orchestrator | Created with its first approved project; the *project* is what was approved |
-| **Create a necessary directory within the standard** | Orchestrator/Worker | Routine; unnecessary/duplicate/speculative dirs remain prohibited (§0) |
+| **Approve a medium-risk decision** | Supervisor | §2.2; + Senior Engineer review if it touches §3a |
+| **Architecture / reproducibility / shared-lib / reusable-workflow / infra-standard change** | Supervisor approve **+ Senior Engineer review** | Quality gate before implementation (§3a) |
+| **Install a low-risk prerequisite** (§2.1) | Worker | Pre-approved — no further approval |
+| **Materialize a reserved domain dir** (one of the six) | Domain Orchestrator | Created with its first approved project; the *project* is what was approved |
+| **Create a necessary directory within the standard** | Domain Orchestrator/Worker | Routine; unnecessary/duplicate/speculative dirs remain prohibited (§0) |
 | Create a file/dir *inside* an existing approved project | Worker | Routine work |
-| Resolve ambiguity / set strategy or quality bar | Supervisor | The Supervisor's purpose (AGENT_ARCHITECTURE.md) |
-| Coordinate work within an approved project | Orchestrator | Project coordination |
+| Resolve ambiguity / set strategy | Supervisor | The Supervisor's purpose (AGENT_ARCHITECTURE.md) |
+| Architecture / code-quality / reproducibility review | Senior Engineer | Review gate (§3a) |
+| Coordinate work across a domain | Domain Orchestrator | Domain-level coordination |
 | Execute a scoped, reversible task | Worker | Routine work |
 
 Anything not listed that is **irreversible, cross-domain, externally visible,
@@ -90,6 +94,12 @@ Installation is tiered by *risk*, not by whether it is an installation at all:
 
 (`uv` ratified into this list 20260601-06: a single static-binary Python
 manager — CLI, single-host, no daemon, no listener, easily removable.)
+
+**Foundational runtimes** already present on the base image — **Node.js / npm**
+(ratified low-risk 20260601-07) — are treated as foundational, not as project
+dependencies; using them needs no approval. Project-level npm packages
+(e.g. `pptxgenjs`) are a separate, **project-local medium-risk** matter
+(ENVIRONMENT_POLICY.md "Output Automation").
 
 A component qualifies as low-risk (and may be installed without approval) when
 it is **all** of:
@@ -126,15 +136,28 @@ medium-risk per §2.2; only its shared backend is high-risk.)
 
 ## 3. Escalation (summary; full model in AGENT_ARCHITECTURE.md)
 
-Escalation path: **Worker → Orchestrator → Supervisor → User.**
+Escalation path: **Worker → Senior Engineer → Supervisor → Domain Orchestrator
+→ User.**
 
-- **Workers (Subagents) must not ask the user directly.** They escalate upward.
-- **Orchestrators** coordinate work within a project and route what they cannot
-  resolve by coordination to a Supervisor.
+- **Workers (Subagents) must not ask the user directly.** They escalate upward,
+  first to their **Senior Engineer** (technical questions).
+- **Senior Engineers** resolve technical/engineering questions and route
+  governance/policy ambiguity to the Supervisor.
 - **Supervisors resolve ambiguity whenever possible** using policy and context
-  (strategy, governance, quality control).
+  (strategy, governance); they approve medium-risk decisions.
+- **Domain Orchestrators** coordinate the domain and are the last stop before
+  the User.
 - **Only high-impact decisions reach the user** — specifically the rows marked
   "User" in §2, and anything matching the default-to-user clause.
+
+## 3a. Review requirements (Senior Engineer)
+
+Medium-risk decisions may be approved by a **Supervisor** (§2.2). In **addition**,
+any change affecting **architecture, reproducibility, shared libraries, reusable
+workflows, or infrastructure standards** must receive **Senior Engineer review
+before implementation** (architecture / code-quality / reproducibility review).
+Routine, local, reversible work touching none of these needs no such review.
+See AGENT_ARCHITECTURE.md §3.2.
 
 ## 4. Reproducibility (mandatory)
 
@@ -251,10 +274,8 @@ preconditions:
   encrypted secrets-backup channel still open (SECRETS_POLICY.md §6).
 - ~~Secrets management~~ — **RESOLVED 20260601-04** (§6a, SECRETS_POLICY.md):
   file-based + permission-enforced now, encryption required before off-host.
-- **Presentation automation** — **OPEN** (deferred 20260601-06, document only):
-  reproducible PPTX generation via **Node.js** + **pptxgenjs**. To decide before
-  any install: risk tier (Node.js runtime + npm dependency surface), where the
-  Node/npm toolchain lives (global low-risk binary vs project-local), how
-  `package-lock.json` + SHA256 satisfy reproducibility (GOVERNANCE.md §4), and
-  whether slide decks are project artifacts (figures still follow the PNG+vector
-  rule, §9). **Nothing installed.**
+- ~~Presentation automation~~ — **RESOLVED 20260601-07** (ENVIRONMENT_POLICY.md
+  "Output Automation"): approved capability via **Node.js** (low-risk
+  foundational runtime, already present) + **pptxgenjs** (medium-risk,
+  project-local only, `package-lock.json` pinned). **Implementation deferred —
+  pptxgenjs not installed, no templates/pipelines created.**

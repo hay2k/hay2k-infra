@@ -1,6 +1,8 @@
 # 20260601-06 — Risk-Tier Ratification + Presentation Automation Deferral
 
-> **STATUS: CURRENT.** Supersedes `20260601-05_environment_policy.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-07_presentation_and_agent_tiers.md`.**
+> Remains the record of the risk-tier ratification; current policy of record is
+> 20260601-07.
 
 **Prompt ID:** 20260601-06
 **Date:** 2026-06-01

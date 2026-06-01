@@ -73,7 +73,7 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-0{1..6}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-0{1..7}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -82,13 +82,15 @@ domain data (see "Future migration" in BACKUP_AND_RECOVERY.md).
 
 ## 5. Operating model in one paragraph
 
-Humans set policy and approve high-impact, irreversible, or cross-domain
-decisions. **Supervisor** agents own a domain's strategy, governance, and
-quality. **Orchestrator** agents coordinate work within an approved project.
-**Worker** agents (a.k.a. Subagents) do scoped tasks and escalate upward —
-Worker → Orchestrator → Supervisor → human, never directly to the human
-(AGENT_ARCHITECTURE.md). Every infrastructure change is documented; every
-prompt is versioned; every download is hash-verified; every citation has a
+The User sets policy and approves high-impact, irreversible, or cross-domain
+decisions. **Domain Orchestrator** agents coordinate a domain; **Supervisor**
+agents own its strategy, governance, and ambiguity resolution; **Senior
+Engineer** agents review architecture, code quality, and reproducibility; and
+**Worker** agents (a.k.a. Subagents) implement scoped tasks. They escalate
+upward — Worker → Senior Engineer → Supervisor → Domain Orchestrator → User,
+never directly to the User (AGENT_ARCHITECTURE.md). Every infrastructure change
+is documented; every prompt is versioned; every download is hash-verified;
+every citation has a
 citekey or it does not exist.
 
 ## 6. Document map
@@ -128,5 +130,6 @@ infrastructure work proceeds without unnecessary approval overhead.
 
 Prompts of record: `20260601-01_bootstrap.md` (archived);
 `-02_bootstrap_revision.md`, `-03_governance_refinement.md`,
-`-04_secrets_policy.md`, `-05_environment_policy.md` (kept milestones); and
-`20260601-06_risk_ratification.md` (current).
+`-04_secrets_policy.md`, `-05_environment_policy.md`,
+`-06_risk_ratification.md` (kept milestones); and
+`20260601-07_presentation_and_agent_tiers.md` (current).
