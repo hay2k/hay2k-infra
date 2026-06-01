@@ -81,7 +81,9 @@ Default placement (logical, not hardware-locked):
 
 **Critical enabler:** node-agnostic Workers require **shared storage** (or a
 sync strategy) so any node sees the same workspace, `resources/`, and data.
-This is the single most important new decision the cluster introduces (§7).
+This is the single most important new decision the cluster introduces (§7);
+it is evaluated in **STORAGE_ARCHITECTURE.md** (NFS recommended, pending
+ratification).
 
 ## 4. Recommended canonical design
 
