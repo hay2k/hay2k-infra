@@ -1,6 +1,8 @@
 # 20260601-11 — Monitoring & Observability Strategy
 
-> **STATUS: CURRENT.** Supersedes `20260601-10_agent_runtime.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-12_security_hardening.md`.**
+> Current prompt of record is 20260601-12. (Its scope was amended the same day
+> to full observability scope + alert levels; see INFRA_CHANGELOG.md.)
 
 **Prompt ID:** 20260601-11 (assigned per the prompt-versioning policy,
 GOVERNANCE.md §8)

@@ -5,6 +5,25 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-12 — Security & hardening policy
+
+**Rationale:** Give the cluster a proportionate, documented security posture —
+the last major cross-cutting design area. Document only — no hardening, config,
+firewall, account, or service change applied.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | **SECURITY_AND_HARDENING_POLICY.md** | **Created.** Executive summary; principles; **[M]/[R]/[O]** control classification across Host, Network, Filesystem, Secrets, Supply-chain, Agent, Logging/Audit, Backup, Incident Response; per-service future requirements (Slurm/Apptainer/Docker/NFS/Prometheus/Grafana/MinIO); highest-risk register; unresolved User-gated decisions. |
+| 2 | GOVERNANCE.md | §11: security & hardening policy **DESIGNED**; its sub-decisions OPEN/User-gated. |
+| 3 | SYSTEM_OVERVIEW.md | Doc map + tree + prompts updated. |
+| 4 | prompts/20260601-12_security_hardening.md | **Created** current prompt of record; 11 marked kept. |
+
+**Posture:** proportionate, not enterprise (single operator, 3 nodes). Highest
+target = control node `gpu-01`; highest-impact asset = secrets + GitHub deploy
+key. **Nothing applied or installed.**
+
+---
+
 ## 2026-06-01 — Amendment to 20260601-11 — Full observability scope + alert levels
 
 **Rationale:** Clarification — ensure the observability design covers the full

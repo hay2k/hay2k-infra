@@ -297,3 +297,10 @@ preconditions:
   Alertmanager (Loki optional), singleton-on-control + exporters-on-all-nodes;
   Phase 0 zero-install baseline now; full stack is **high-risk §2.3** to deploy.
   Nothing installed.
+- ~~Security & hardening policy~~ — **DESIGNED 20260601-12**
+  (SECURITY_AND_HARDENING_POLICY.md): proportionate baseline (mandatory/
+  recommended/optional controls) for host, network, filesystem, secrets, supply
+  chain, agents, logging, backup, incident response, future services. Nothing
+  applied. Its **unresolved sub-decisions** (SSH MFA, commit signing, auditd,
+  secrets-encryption tool, service-account model, networking) remain OPEN and
+  User-gated (SECURITY_AND_HARDENING_POLICY.md §13).
