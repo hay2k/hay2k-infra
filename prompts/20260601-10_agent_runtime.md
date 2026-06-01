@@ -1,6 +1,7 @@
 # 20260601-10 — Storage Ratification + Agent Runtime Design
 
-> **STATUS: CURRENT.** Supersedes `20260601-09_storage_evaluation.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-11_observability.md`.**
+> Current prompt of record is 20260601-11.
 
 **Prompt ID:** 20260601-10 (assigned per the prompt-versioning policy,
 GOVERNANCE.md §8)

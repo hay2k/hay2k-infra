@@ -76,11 +76,12 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── ENVIRONMENT_POLICY.md
     ├── NODE_ARCHITECTURE.md
     ├── STORAGE_ARCHITECTURE.md
+    ├── OBSERVABILITY.md
     ├── INFRA_CHANGELOG.md
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-{01..10}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-{01..11}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -112,6 +113,7 @@ citekey or it does not exist.
 | ENVIRONMENT_POLICY.md | How are software environments built/pinned, and when is it a container vs. conda vs. system package? |
 | NODE_ARCHITECTURE.md | What is each cluster node's role, and where do services and agents run? |
 | STORAGE_ARCHITECTURE.md | Which shared-storage approach (NFS/Gluster/Ceph/Syncthing/object), and why? |
+| OBSERVABILITY.md | How are the cluster, GPUs, jobs, and agents monitored (metrics/logs/alerts)? |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | AGENT_RUNTIME.md | How do agents actually run (Claude Code + tmux→Slurm), and what are their lifecycles? |
@@ -143,5 +145,6 @@ Prompts of record: `20260601-01_bootstrap.md` (archived);
 `-02_bootstrap_revision.md`, `-03_governance_refinement.md`,
 `-04_secrets_policy.md`, `-05_environment_policy.md`,
 `-06_risk_ratification.md`, `-07_presentation_and_agent_tiers.md`,
-`-08_node_role_design.md`, `-09_storage_evaluation.md` (kept milestones); and
-`20260601-10_agent_runtime.md` (current).
+`-08_node_role_design.md`, `-09_storage_evaluation.md`,
+`-10_agent_runtime.md` (kept milestones); and
+`20260601-11_observability.md` (current).

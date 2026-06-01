@@ -141,7 +141,7 @@ when manual coordination stops scaling.
 | **Apptainer** | Runtime on **all** nodes; runs containerized jobs with `--nv`; images in shared `resources/`. High-risk §2.3. |
 | **Snakemake** | Project-local; runs from control node; uses the Slurm executor once Slurm exists. Medium-risk (§2.2). |
 | **Nextflow** | Engine medium-risk; runs from control node with Slurm executor + Apptainer; the shared execution backend remains high-risk (§2.3). |
-| **Monitoring** | Server (Prometheus+Grafana) on control node; exporters on all nodes. High-risk §2.3. |
+| **Monitoring** | Server (Prometheus+Grafana) on control node; exporters on all nodes. High-risk §2.3. Full strategy in **OBSERVABILITY.md**. |
 | **Agent Runtime** | Orchestrators/Supervisors on control node, Workers cluster-wide, tasks node-agnostic. Mechanism still deferred (AGENT_ARCHITECTURE.md §8). |
 
 ## 7. Governance impact assessment (amendments)
