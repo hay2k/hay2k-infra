@@ -50,7 +50,7 @@ placeholder project / empty organizational tree, prohibited by GOVERNANCE.md
 §0).
 
 What does **not** need approval (just documented): once a project is approved,
-the Orchestrator materializing the project's directories (and the reserved
+the Domain Orchestrator materializing the project's directories (and the reserved
 domain dir for the domain's first project), archiving an inactive project in
 place, and routine in-project work.
 
@@ -58,7 +58,7 @@ place, and routine in-project work.
 
 1. A Supervisor scopes the project and escalates a **decision request with a
    recommendation** (AGENT_ARCHITECTURE.md §3) to the User.
-2. On approval, the project's Orchestrator materializes the domain dir if it is
+2. On approval, the domain's Domain Orchestrator materializes the domain dir if it is
    the domain's first project, then the project tree (DIRECTORY_STANDARD.md §3).
 3. The project `README.md` records name, owner, status, created date, and the
    approving prompt ID (GOVERNANCE.md §8).

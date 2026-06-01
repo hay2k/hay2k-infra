@@ -5,6 +5,31 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-07 — Presentation/Output automation ratified + Senior Engineer tier
+
+**Rationale:** Ratify presentation automation as a supported capability (Node.js
+foundational runtime + project-local pptxgenjs), frame it within a broader
+Output Automation framework, and extend the agent hierarchy with a **Senior
+Engineer** review tier plus a review-before-implementation requirement. No
+installs; no templates/pipelines.
+
+| # | Document | Change | Rationale |
+|---|----------|--------|-----------|
+| 1 | GOVERNANCE.md | §2.1: **Node.js/npm** ratified as low-risk **foundational runtime** (already present); project npm packages are separate/project-local. | Ratify Node.js low-risk. |
+| 2 | GOVERNANCE.md | §11: **Presentation automation RESOLVED** (approved capability, implementation deferred). | Ratification. |
+| 3 | GOVERNANCE.md | §2 matrix: approvers renamed **Orchestrator → Domain Orchestrator**; added **Senior Engineer review** rows; added the architecture/reproducibility/shared-lib/reusable-workflow/infra-standard review row. | New tier + review gate. |
+| 4 | GOVERNANCE.md | §3 escalation chain → **Worker → Senior Engineer → Supervisor → Domain Orchestrator → User**; added **§3a Review requirements**. | New hierarchy. |
+| 5 | AGENT_ARCHITECTURE.md | Rewritten to the five-tier canonical hierarchy (User / Domain Orchestrator / Supervisor / Senior Engineer / Worker=Subagent); two flows documented — escalation and the Senior Engineer review gate (§3.2); roles, scope, anti-hallucination updated. | Core change. |
+| 6 | ENVIRONMENT_POLICY.md | Added **§8 Output Automation framework** (source-of-truth = source artifacts; outputs regenerable; supported types PPTX/PDF/HTML/PNG/SVG) and **§8.1 Presentation Automation** (Node.js foundational; pptxgenjs medium-risk project-local; `package-lock.json` required/pinned; PPTX = output not source). Updated §7 step 6 to "no agent self-approves high-risk". | Document the capability + framework. |
+| 7 | SYSTEM_OVERVIEW.md / PROJECT_LIFECYCLE.md | Propagated terminology: §5 operating model now names all five tiers and the new chain; PROJECT_LIFECYCLE "Orchestrator" → "Domain Orchestrator". | Doc-set consistency. |
+| 8 | prompts/20260601-07_presentation_and_agent_tiers.md | **Created** as current prompt of record; 06 marked kept. | Prompt versioning (GOVERNANCE.md §8). |
+
+**Deferred (unchanged):** pptxgenjs not installed; no templates; no automation
+pipelines. Node.js v22.22.3 / npm 10.9.8 already present on the host (not
+installed here).
+
+---
+
 ## 2026-06-01 — 20260601-06 — Risk-tier ratification + Presentation Automation deferral
 
 **Rationale:** Ratify the interpretive install-risk classifications into
