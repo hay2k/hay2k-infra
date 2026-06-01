@@ -18,22 +18,41 @@ Three pillars: **metrics** (numeric time series), **logs** (events/text),
 **alerts** (thresholds → notification). Distributed **tracing** is **not**
 needed at this scale and is deferred.
 
-## 2. What to observe
+## 2. What to observe (full scope)
 
-| Layer | Signals | Tie-in |
-|-------|---------|--------|
-| **System** (per node) | CPU, RAM, load, disk usage/IO, network | RESOURCE_POLICY.md §3–§4 |
-| **GPU** (per node, 6 GPUs) | utilization, VRAM used/free, temperature, power, ECC errors, per-process usage | central for an AI cluster |
-| **Storage** | per-node disk %, NFS health/latency (once deployed) | disk is the binding constraint (RESOURCE_POLICY.md §4) |
-| **Jobs/workloads** | running jobs, runtime, exit status; queue wait + per-job GPU attribution (once Slurm) | NODE_ARCHITECTURE.md |
-| **Agent runtime** | agent liveness, task success/failure counts, escalations, control-node health/failover | AGENT_RUNTIME.md §5 |
-| **Logs** | journald (system), job logs, **agent/task logs** (append-only on shared storage) | AGENT_RUNTIME.md logging standard |
+| # | Target | Collector / source | Example signals | Typical level |
+|---|--------|--------------------|-----------------|---------------|
+| 1 | **Node health** | node-exporter `up`, uptime, heartbeat | node reachable, unplanned reboot, scrape failure | critical if down |
+| 2 | **GPU utilization** | DCGM-exporter | util %, VRAM used/free, temp, power, ECC, per-process | warning→critical on temp/ECC |
+| 3 | **CPU / RAM / disk / network** | node-exporter | load, RAM %, disk %/IO, NIC throughput/errors | warning (RAM>50%, disk>80%), critical (disk>95%) |
+| 4 | **NFS / shared-storage health** | node-exporter fs + NFS probe (`mountstats`/blackbox) | mount present, server reachable, latency, stale handles, export capacity | critical if unavailable/stale |
+| 5 | **Slurm / job visibility** | slurm-exporter (once Slurm) | queue depth, pending/running, node drain/down, exit codes | warning on backlog, critical on ctld down |
+| 6 | **Agent runtime heartbeat** | agent writes heartbeat (timestamp) to shared storage → metric | Orchestrator/Supervisor liveness; missed heartbeat = agent down | critical if a live agent goes silent |
+| 7 | **Worker stalled detection** | last-progress timestamp + GPU-util-vs-"running" | running but no log/metric movement for N min, or GPU≈0% on an active job | warning→critical (hung job wastes a GPU) |
+| 8 | **GitHub sync status** | git ahead/behind + last-push age (script → metric) | uncommitted changes, unpushed commits, push failing, last-push age | warning (drift), critical (push broken = no off-host backup) |
+| 9 | **Backup / restore status** | last-success + last-verified-restore age per tier | backup age vs policy, last backup failed, **restore never tested** | warning (stale), critical (failed / untested) |
+| 10 | **Background runtime throttling** | per-cgroup/job resource share vs budget | background `runtime` workloads exceeding budget or starving foreground; preemption events | info (throttled OK), warning (over budget) |
+| 11 | **Slack alerting (self)** | Alertmanager delivery status | alert send success/failure (observe the alert channel itself) | critical if alert delivery is broken |
+| 12 | **Logs** | journald + job + **agent/task logs** (append-only, shared storage) | errors, exceptions, escalation events | feeds the above |
 
-**Alert-worthy thresholds (tie to existing policy):** disk > 80% (escalation
-condition, RESOURCE_POLICY.md §4); RAM > ~50% sustained (coordination,
-RESOURCE_POLICY.md §3); GPU over-temp / power / ECC errors; node down; control
-node (`gpu-01`) unhealthy → failover signal (NODE_ARCHITECTURE.md §4); elevated
-job/agent-task failure rate.
+Tie-ins: RESOURCE_POLICY.md §3–§4 (RAM/disk thresholds, background throttling),
+NODE_ARCHITECTURE.md §4 (control-node failover), AGENT_RUNTIME.md §5 (heartbeat,
+stalled workers, logging), BACKUP_AND_RECOVERY.md (sync/backup/restore — note
+that the GitHub push **is** the off-host backup, so #8 and #9 overlap), and
+GOVERNANCE.md §6/§8 (downloads, prompts).
+
+Notes on the harder signals:
+- **Worker stalled (#7)** is distinct from "failed": the process is alive but not
+  progressing. Detect via stalled log/metric output *and* anomalous GPU usage
+  (e.g. a "training" job at ~0% GPU). A stalled job silently wastes a scarce GPU,
+  so it is treated as at least a warning, critical if long-lived.
+- **GitHub sync (#8)** matters because the remote is currently the *only*
+  off-host backup; a broken push means the precious tier is single-copy again.
+- **Backup/restore (#9)** tracks freshness *and* the "untested backup is not a
+  backup" rule (BACKUP_AND_RECOVERY.md §3) — an unverified restore is a standing
+  warning.
+- **Background throttling (#10)** observes fairness: background `runtime` work
+  must yield to foreground; over-budget consumption is the alert.
 
 ## 3. Tool evaluation
 
@@ -73,11 +92,49 @@ VictoriaMetrics, and SaaS for now.
 ## 6. Alerting
 
 Prometheus alert rules → **Alertmanager** → notification. The notification sink
-is **Slack** — but Slack is a deferred high-risk SaaS integration (GOVERNANCE.md
-§2.3); **until it is approved, alerts route locally** (log file / console /
+is **Slack** — a deferred high-risk SaaS integration (GOVERNANCE.md §2.3);
+**until it is approved, alerts route locally** (log file / console /
 email-if-available). Alert rules are defined regardless; only the sink is
-deferred. Alerts should be actionable and few — page on the §2 thresholds, not
-on noise.
+deferred. Alerts should be actionable and few — fire on the §2 signals, not on
+noise.
+
+### 6.1 Alert levels
+
+Every alert carries exactly one level. The level sets routing and who acts.
+
+| Level | Meaning | Action / who | Routing (when Slack is live) |
+|-------|---------|--------------|------------------------------|
+| **info** | Normal lifecycle event; no action | Recorded; daily digest | `#infra-info` / log only |
+| **warning** | Attention soon; trending toward a limit | Supervisor/operator reviews; no immediate danger | `#infra-warn` |
+| **critical** | Immediate action; service/data at risk | Page operator; Domain Orchestrator may act/fail over | `#infra-critical` (page) |
+| **approval-required** | A **User decision** is waiting (a governance gate, not just ops) | Surfaced to the User and tracked until resolved | `#infra-approvals` |
+
+- **approval-required** is the monitoring-side surfacing of a governance gate
+  (GOVERNANCE.md §2): e.g. disk pressure that needs a **delete-non-regenerable-
+  data** decision, a standing GPU reservation request, a cross-domain migration
+  request, or a high-risk install awaiting approval. It is the alert form of a
+  Supervisor → User escalation (AGENT_RUNTIME.md §4) — **never auto-resolved**;
+  it persists until the User decides.
+- **critical** may trigger an automated, *reversible* safe action (e.g. control-
+  node failover, refusing new background jobs); irreversible responses are
+  themselves **approval-required**.
+- Levels integrate with the escalation chain: **warning** is handled within the
+  domain (Supervisor); **critical** engages the Domain Orchestrator;
+  **approval-required** reaches the User.
+
+### 6.2 Example signal → level mapping
+
+| Signal | info | warning | critical | approval-required |
+|--------|:----:|:-------:|:--------:|:-----------------:|
+| Disk usage | | >80% | >95% | deletion of non-regenerable data to recover space |
+| Node reachability | planned reboot | flapping | node down | — |
+| GPU | job done | high temp/util | over-temp/ECC shutdown risk | standing GPU reservation request |
+| NFS / shared storage | — | high latency | unavailable / stale handles | — |
+| Agent heartbeat / worker | — | worker idle | live agent silent / worker stalled (GPU wasted) | — |
+| GitHub sync | in sync | unpushed commits / drift | push broken (no off-host backup) | — |
+| Backup / restore | backup ok | backup stale / restore untested | backup failed | — |
+| Background runtime | throttled (normal) | over budget / starving foreground | — | raise the background budget |
+| Governance | — | — | — | high-risk install / cross-domain migration / project lifecycle |
 
 ## 7. Agent / runtime observability
 
