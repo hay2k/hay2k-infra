@@ -1,34 +1,39 @@
 # RESOURCE POLICY
 
-**Status:** Active from 2026-06-01
-**Scope:** How GPU, CPU, RAM, and disk on this single node are shared across
-four independent domains.
+**Status:** Active from 2026-06-01 (multi-node, corrected 20260601-08)
+**Scope:** How GPU, CPU, RAM, and disk across the **3-node cluster** are shared
+across four independent domains.
 
 ---
 
 ## 1. The capacity reality
 
-| Resource | Total | Notes |
-|----------|-------|-------|
-| GPU | 2 × RTX 6000 Ada (48 GB VRAM each) | Indivisible at the card level by default |
-| CPU | 48 logical cores | Soft-shared |
-| RAM | 188 GiB | Soft-shared |
-| Disk | 1.8 TB, single volume, **no redundancy** | The binding constraint and the single point of failure |
+A **3-node cluster** (`gpu-01`, `gpu-02`, `gpu-03`; node roles in
+NODE_ARCHITECTURE.md):
 
-This is **one host shared by four domains that are otherwise independent.**
-Independence is organizational (GOVERNANCE.md §1); the *physical* resources are
-shared and finite. This document is how we keep shared hardware from breaking
-organizational independence.
+| Resource | Per node | Cluster total | Notes |
+|----------|----------|---------------|-------|
+| GPU | 2 × RTX 6000 Ada (48 GB each) | **6 GPUs / 288 GB VRAM** | Indivisible at the card level by default |
+| CPU | 48 logical cores | 144 | Soft-shared |
+| RAM | 188 GiB | ~564 GiB | Soft-shared |
+| Disk | ~1.8 TB single volume, **no redundancy** | ~5.4 TB **not pooled** | Per-node; **no shared storage yet** — an open decision |
+
+This is **a 3-node cluster shared by four domains that are otherwise
+independent.** Independence is organizational (GOVERNANCE.md §1); the *physical*
+resources are shared and finite. **Disk is per-node and not pooled** — until a
+shared-storage decision is made (§7), data/`resources/` are not automatically
+visible cluster-wide, which constrains node-agnostic work (NODE_ARCHITECTURE.md
+§3, §5).
 
 ## 2. GPU allocation
 
-- Default unit of allocation is **a whole GPU**. A workload claims GPU 0 or
-  GPU 1 explicitly (e.g. via `CUDA_VISIBLE_DEVICES`); it does not silently
-  spread across both.
-- With 2 GPUs and 4 domains, GPUs are **not statically owned** by a domain.
-  They are claimed per-job and released. Long-lived `runtime` workloads that
-  need a permanent GPU are a **User-approved** standing reservation, because
-  they reduce capacity for everyone else.
+- Default unit of allocation is **a whole GPU**, claimed on a specific node
+  (e.g. `gpu-02` GPU 0) via `CUDA_VISIBLE_DEVICES`; a job does not silently
+  spread across cards or nodes.
+- With 6 GPUs across 3 nodes and 4 domains, GPUs are **not statically owned** by
+  a domain. They are claimed per-job and released. Long-lived `runtime`
+  workloads needing a permanent GPU are a **User-approved** standing
+  reservation, because they reduce capacity for everyone else.
 - VRAM oversubscription (multiple jobs on one card) is allowed only when a
   Supervisor has confirmed the combined footprint fits; otherwise one job per
   card.
@@ -51,7 +56,10 @@ organizational independence.
 
 ## 4. Disk — the binding constraint
 
-The single 1.8 TB volume holds everything and has **no redundancy**. Therefore:
+Each node has its own ~1.8 TB volume with **no redundancy**, and the volumes are
+**not pooled** (no shared storage yet). `resources/` can therefore only be
+"shared" within a node until shared storage exists (§7); cross-node sharing is
+currently a sync/copy, which the no-duplication rule discourages. Therefore:
 
 - **Shared large assets go in `resources/`** (model weights, public datasets,
   shared container images per ENVIRONMENT_POLICY.md §4), stored **once** and
@@ -88,7 +96,10 @@ cost.
 
 ## 7. Deferred decisions
 
-- GPU/job scheduler choice (only when contention is real).
+- **Shared storage (NFS / cluster FS)** — the enabler for node-agnostic Workers
+  and a cluster-wide `resources/` (NODE_ARCHITECTURE.md §3, §5). **Top new
+  decision introduced by the cluster.**
+- Cluster GPU/job scheduler choice (Slurm; only when contention is real).
 - Whether to enforce hard disk quotas per domain.
-- Storage redundancy / a second data volume (see BACKUP_AND_RECOVERY.md — the
-  single non-redundant disk is the top infrastructure risk).
+- Storage redundancy / a second data volume per node (see BACKUP_AND_RECOVERY.md
+  — non-redundant per-node disks remain a top infrastructure risk).

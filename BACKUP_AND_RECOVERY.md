@@ -9,9 +9,12 @@ server.
 
 ## 1. Threat model
 
-- **Single non-redundant 1.8 TB disk.** Disk failure loses everything. This is
-  the dominant risk.
-- **Single host.** Host loss = total loss until a backup exists elsewhere.
+- **Per-node non-redundant ~1.8 TB disks (×3), not pooled.** A node's disk
+  failure loses that node's local data. This is the dominant risk.
+- **Node loss.** Losing a node loses its local data until a backup exists
+  elsewhere; losing the **control node** (`gpu-01`) also halts orchestration
+  until failover to `gpu-02` (NODE_ARCHITECTURE.md §4).
+- No shared storage yet — data is currently per-node (RESOURCE_POLICY.md §4).
 - Accidental deletion (mitigated by version control + the §2 approval gates).
 - Silent corruption (mitigated by SHA256 manifests, GOVERNANCE.md §6).
 

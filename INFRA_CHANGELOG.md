@@ -5,6 +5,29 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-08 — Node role design + single-host→cluster correction
+
+**Rationale:** Design node roles for the 3-node cluster and reconcile the
+governance docs, which had assumed a single host. Design only — no installs, no
+services, no node directories.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | **NODE_ARCHITECTURE.md** | **Created.** Node-role analysis (dedicated controller / symmetric / hybrid) across 8 criteria; multi-agent placement; **recommended hybrid control-plane** (`gpu-01` primary + `gpu-02` backup, symmetric compute); single-/all-/never-pinned service taxonomy; roadmap impact (Slurm/Apptainer/Snakemake/Nextflow/monitoring/agent runtime); migration strategy. |
+| 2 | SYSTEM_OVERVIEW.md | **Hardware corrected** single host → **3-node cluster** (6 GPUs, 288 GB VRAM); doc map + tree + prompts updated. |
+| 3 | RESOURCE_POLICY.md | Multi-node capacity (per-node vs cluster totals); GPU allocation per node; **disk is per-node, not pooled**; **shared storage** added as the top open decision. |
+| 4 | AGENT_ARCHITECTURE.md | §5 node-placement note (orchestrators/supervisors on control, Workers node-agnostic). |
+| 5 | BACKUP_AND_RECOVERY.md | Multi-node threat model (per-node disks ×3, control-node loss → failover). |
+| 6 | GOVERNANCE.md | §11: node-role **DESIGNED**; **shared storage** and **node realization / networking** added as OPEN. |
+| 7 | prompts/20260601-08_node_role_design.md | **Created** current prompt of record; 07 marked kept. |
+
+**Recommended design:** hybrid control-plane with symmetric compute — `gpu-01`
+primary control + compute, `gpu-02` backup control + compute, `gpu-03` compute;
+all 6 GPUs usable. **Nothing installed; no node directories or services
+created.** New top decision surfaced: **shared storage** for node-agnostic work.
+
+---
+
 ## 2026-06-01 — Amendment to 20260601-07 — Senior Engineer is a side review role
 
 **Rationale:** Correct the agent model: the Senior Engineer is **not** part of

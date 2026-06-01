@@ -18,19 +18,23 @@ At bootstrap time **none of these projects exist**. This repository of
 documents defines *how* work will be organized and governed *before* any work
 begins. It does not create the work.
 
-## 2. Hardware (as measured 2026-06-01)
+## 2. Hardware (3-node cluster; corrected 20260601-08)
 
-| Resource | Detail |
+The cluster is **three nodes** — `gpu-01`, `gpu-02`, `gpu-03` — each:
+
+| Per-node resource | Detail |
 |----------|--------|
-| GPU | 2 × NVIDIA RTX 6000 Ada Generation (48 GB VRAM each, 96 GB total) |
-| CPU | 48 logical cores |
-| Memory | 188 GiB RAM |
-| Storage | Single 1.8 TB volume mounted at `/` (no separate data mount, no redundancy) |
-| Host topology | Single node — no cluster scheduler, no second machine |
+| OS | Rocky Linux 10 |
+| GPU | 2 × NVIDIA RTX 6000 Ada Generation (48 GB VRAM each, 96 GB/node) |
+| CPU | 48 logical cores (as measured on the bootstrap node) |
+| Memory | 188 GiB RAM (as measured on the bootstrap node) |
+| Storage | Single ~1.8 TB volume at `/` per node (no separate data mount, no redundancy) |
 
-The "GPU cluster" today is **one host**. This is the single most important
-fact for capacity, backup, and migration planning (see RESOURCE_POLICY.md and
-BACKUP_AND_RECOVERY.md).
+**Cluster totals: 6 GPUs, 288 GB VRAM.** Node roles (a hybrid control-plane
+with symmetric compute) are designed in **NODE_ARCHITECTURE.md**. There is **no
+shared storage and no scheduler yet** — both are open decisions
+(RESOURCE_POLICY.md, GOVERNANCE.md §11). The earlier "single host" assumption is
+superseded; capacity, backup, and migration planning now span three nodes.
 
 ## 3. Domains
 
@@ -69,11 +73,12 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── BACKUP_AND_RECOVERY.md
     ├── SECRETS_POLICY.md
     ├── ENVIRONMENT_POLICY.md
+    ├── NODE_ARCHITECTURE.md
     ├── INFRA_CHANGELOG.md
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-0{1..7}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-0{1..8}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -103,6 +108,7 @@ citekey or it does not exist.
 | PROJECT_LIFECYCLE.md | How do projects get created, migrated, and retired (the remaining User gates)? |
 | SECRETS_POLICY.md | How are credentials stored, accessed, rotated, and kept out of git? |
 | ENVIRONMENT_POLICY.md | How are software environments built/pinned, and when is it a container vs. conda vs. system package? |
+| NODE_ARCHITECTURE.md | What is each cluster node's role, and where do services and agents run? |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | RESOURCE_POLICY.md | How are GPU, CPU, RAM, and disk shared across domains? |
@@ -132,5 +138,5 @@ infrastructure work proceeds without unnecessary approval overhead.
 Prompts of record: `20260601-01_bootstrap.md` (archived);
 `-02_bootstrap_revision.md`, `-03_governance_refinement.md`,
 `-04_secrets_policy.md`, `-05_environment_policy.md`,
-`-06_risk_ratification.md` (kept milestones); and
-`20260601-07_presentation_and_agent_tiers.md` (current).
+`-06_risk_ratification.md`, `-07_presentation_and_agent_tiers.md` (kept
+milestones); and `20260601-08_node_role_design.md` (current).
