@@ -86,7 +86,10 @@ Installation is tiered by *risk*, not by whether it is an installation at all:
 
 ### 2.1 Low-risk prerequisites — pre-approved (no further approval)
 
-`git`, `tmux`, `vim`, `curl`, `wget`, `jq`, `tree`, `htop`.
+`git`, `tmux`, `vim`, `curl`, `wget`, `jq`, `tree`, `htop`, `uv`.
+
+(`uv` ratified into this list 20260601-06: a single static-binary Python
+manager — CLI, single-host, no daemon, no listener, easily removable.)
 
 A component qualifies as low-risk (and may be installed without approval) when
 it is **all** of:
@@ -108,12 +111,18 @@ Shared tooling, reusable services, or anything with multi-user impact that is
 the work is necessary, and documents the decision (§10). No User approval
 required, but the rationale must be recorded.
 
+Examples (ratified 20260601-06): **Conda/Mamba**; and **workflow engines**
+themselves (**Nextflow**, **Snakemake**). A workflow engine *binary/runtime* is
+medium-risk; the **shared execution backend it submits to is high-risk** (§2.3).
+
 ### 2.3 High-risk components — explicit User approval required
 
 Slurm, Docker, Apptainer, Prometheus, Grafana, databases, message queues,
-Kubernetes, and any external SaaS integration. These introduce persistent
-services, shared attack surface, or security/reproducibility impact and require
-**explicit User approval**.
+Kubernetes, **shared execution/orchestration backends (e.g. Slurm, Kubernetes,
+Seqera/Nextflow Tower)**, and any external SaaS integration. These introduce
+persistent services, shared attack surface, or security/reproducibility impact
+and require **explicit User approval**. (Note: a workflow engine binary alone is
+medium-risk per §2.2; only its shared backend is high-risk.)
 
 ## 3. Escalation (summary; full model in AGENT_ARCHITECTURE.md)
 
@@ -242,3 +251,10 @@ preconditions:
   encrypted secrets-backup channel still open (SECRETS_POLICY.md §6).
 - ~~Secrets management~~ — **RESOLVED 20260601-04** (§6a, SECRETS_POLICY.md):
   file-based + permission-enforced now, encryption required before off-host.
+- **Presentation automation** — **OPEN** (deferred 20260601-06, document only):
+  reproducible PPTX generation via **Node.js** + **pptxgenjs**. To decide before
+  any install: risk tier (Node.js runtime + npm dependency surface), where the
+  Node/npm toolchain lives (global low-risk binary vs project-local), how
+  `package-lock.json` + SHA256 satisfy reproducibility (GOVERNANCE.md §4), and
+  whether slide decks are project artifacts (figures still follow the PNG+vector
+  rule, §9). **Nothing installed.**

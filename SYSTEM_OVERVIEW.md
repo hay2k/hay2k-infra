@@ -73,7 +73,7 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-0{1..5}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-0{1..6}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -128,5 +128,5 @@ infrastructure work proceeds without unnecessary approval overhead.
 
 Prompts of record: `20260601-01_bootstrap.md` (archived);
 `-02_bootstrap_revision.md`, `-03_governance_refinement.md`,
-`-04_secrets_policy.md` (kept milestones); and
-`20260601-05_environment_policy.md` (current).
+`-04_secrets_policy.md`, `-05_environment_policy.md` (kept milestones); and
+`20260601-06_risk_ratification.md` (current).

@@ -1,6 +1,8 @@
 # 20260601-05 — Environment Management Policy
 
-> **STATUS: CURRENT.** Supersedes `20260601-04_secrets_policy.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-06_risk_ratification.md`.**
+> Remains the record of the environment policy; current policy of record is
+> 20260601-06 (risk-tier ratification + presentation-automation deferral).
 
 **Prompt ID:** 20260601-05
 **Date:** 2026-06-01
