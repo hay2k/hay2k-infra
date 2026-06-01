@@ -62,13 +62,17 @@ not flow between them without explicit user approval (GOVERNANCE.md).
 └── infra/                  # the only domain instantiated at bootstrap — a git repo
     ├── SYSTEM_OVERVIEW.md
     ├── GOVERNANCE.md
+    ├── PROJECT_LIFECYCLE.md
     ├── DIRECTORY_STANDARD.md
     ├── AGENT_ARCHITECTURE.md
     ├── RESOURCE_POLICY.md
     ├── BACKUP_AND_RECOVERY.md
+    ├── SECRETS_POLICY.md
+    ├── INFRA_CHANGELOG.md
     ├── .gitignore
-    └── prompts/
-        └── 20260601-01_bootstrap.md
+    ├── hooks/              # tracked git hooks (install into .git/hooks)
+    │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
+    └── prompts/            # 20260601-0{1..4}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -93,6 +97,7 @@ citekey or it does not exist.
 | SYSTEM_OVERVIEW.md | What is this and what hardware backs it? |
 | GOVERNANCE.md | What are the rules and who approves what? |
 | PROJECT_LIFECYCLE.md | How do projects get created, migrated, and retired (the remaining User gates)? |
+| SECRETS_POLICY.md | How are credentials stored, accessed, rotated, and kept out of git? |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | RESOURCE_POLICY.md | How are GPU, CPU, RAM, and disk shared across domains? |
@@ -120,5 +125,5 @@ directories, and *speculative* structures are prohibited — but necessary
 infrastructure work proceeds without unnecessary approval overhead.
 
 Prompts of record: `20260601-01_bootstrap.md` (archived),
-`20260601-02_bootstrap_revision.md` (kept milestone), and
-`20260601-03_governance_refinement.md` (current).
+`20260601-02_bootstrap_revision.md` and `20260601-03_governance_refinement.md`
+(kept milestones), and `20260601-04_secrets_policy.md` (current).

@@ -5,6 +5,29 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-04 — Secrets management policy (Phase 2)
+
+**Rationale (overall):** Close the secrets-management gap that was open since
+bootstrap, before any credential (the imminent GitHub push, later Zotero) lands
+on the host. Decisions taken with the operator: file-based + permission-enforced
+storage now, encryption required before anything goes off-host; add a tracked,
+format-based pre-commit secret-scan hook.
+
+| # | Document | Change | Rationale |
+|---|----------|--------|-----------|
+| 1 | **SECRETS_POLICY.md** | **Created.** Principles, what counts as a secret, file storage model (`~/.secrets/`, 700/600, env-var access), non-secret manifest pattern, encryption upgrade-trigger (age/sops before off-host), backup rules, rotation/incident response, prevention (hook), and GitHub-auth guidance. | New governance document for credentials. |
+| 2 | **hooks/pre-commit** | **Created** (tracked) + installed to `.git/hooks/`. Blocks staged content matching credential *formats* (private-key blocks, AKIA/ASIA, ghp_/github_pat_/gho_, xox…, AIza…, sk-…, JWT, assigned long secret values). Matches shapes not vocabulary, so governance prose is not flagged. Tested: passes policy docs, blocks planted `AKIA…`/`ghp_…`. | Defense-in-depth against accidental secret commits (SECRETS_POLICY §8). |
+| 3 | GOVERNANCE.md | Added **§6a Secrets (never committed)** and marked secrets management **RESOLVED** in the §11 deferred list; annotated remote/secrets-backup as still open. | Bind the never-commit rule and point to the policy. |
+| 4 | SYSTEM_OVERVIEW.md | Added SECRETS_POLICY.md to the §6 document map. | Keep the map complete. |
+| 5 | BACKUP_AND_RECOVERY.md | Added a **Secrets** tier (precious, never to the git remote, encrypted off-host only) and recovery steps to reinstall the hook and restore secrets from the encrypted channel. | Secrets are precious but must not enter git history. |
+| 6 | prompts/20260601-04_secrets_policy.md | **Created** as current prompt of record; 20260601-03 marked kept/superseded. | Prompt versioning (GOVERNANCE.md §8). |
+
+**Note:** `.gitignore` already covered secret file categories at bootstrap; no
+change was required. No secret values exist on the host; this policy is
+preventive.
+
+---
+
 ## 2026-06-01 — 20260601-03 — Governance refinement, terminology standardization, git bootstrap
 
 **Rationale (overall):** Refine the corrected model into its final, maintainable

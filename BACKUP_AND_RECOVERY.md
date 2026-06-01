@@ -22,11 +22,14 @@ Back up what cannot be regenerated; do not back up what can.
 | Tier | Examples | Backed up? |
 |------|----------|-----------|
 | **Precious** | Governance docs (`infra/`), prompt archive, source code, configs, citation library (Zotero DB / `.bib`), unique experimental raw data, results that are expensive to recompute | **Yes** |
+| **Secrets** | API keys, tokens, PATs, private keys, `.env`, cloud/Zotero credentials | **Yes, but NEVER to the git remote** — encrypted off-host channel only (SECRETS_POLICY.md §5–§6) |
 | **Regenerable** | Model weights re-downloadable from a hub, public datasets, build caches, intermediate artifacts, anything with a recorded SHA256 + source URL | **No** (recorded source is the "backup") |
 
 The distinction is enforced by storage layout: regenerable bulk lives in
 `resources/` with recorded provenance (GOVERNANCE.md §6); precious data is
-small and version-controlled or explicitly flagged for backup.
+small and version-controlled or explicitly flagged for backup; **secrets live
+outside the repo entirely** (`~/.secrets/`, SECRETS_POLICY.md §3) and are
+backed up only encrypted and off-host — they are never in any git history.
 
 ## 3. Backup policy (3-2-1, scaled to one host)
 
@@ -46,6 +49,11 @@ small and version-controlled or explicitly flagged for backup.
 1. Provision a clean host; record its OS/driver/CUDA versions.
 2. Restore the infrastructure repo `/home/hha/infra/` from the git remote, then
    restore any bulk precious data from its off-host copy.
+   - Reinstall git hooks (not version-controlled by git):
+     `cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
+     (SECRETS_POLICY.md §8).
+   - Restore secrets from the encrypted off-host channel into `~/.secrets/`
+     (perms 700/600) — never from git (SECRETS_POLICY.md §6).
 3. Verify against SHA256 manifests; any mismatch is a hard stop.
 4. Re-acquire regenerable assets from recorded sources into `resources/`,
    verifying each hash.

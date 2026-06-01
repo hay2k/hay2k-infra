@@ -1,7 +1,9 @@
 # 20260601-03 — Governance Refinement, Synchronization & Git Bootstrap
 
-> **STATUS: CURRENT.** Supersedes `20260601-02_bootstrap_revision.md` (kept) and
-> `20260601-01_bootstrap.md` (archived).
+> **STATUS: KEPT — superseded by `20260601-04_secrets_policy.md`.**
+> Remains the record of the governance refinement + git bootstrap; current
+> policy of record is 20260601-04. Supersedes 20260601-02 (kept) and
+> 20260601-01 (archived).
 
 **Prompt ID:** 20260601-03
 **Date:** 2026-06-01
