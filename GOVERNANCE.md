@@ -174,6 +174,15 @@ Every file downloaded onto this host must be SHA256-verified:
   reproducibility checks are possible.
 - Unverifiable downloads are quarantined, not used, until a decision is made.
 
+## 6a. Secrets (never committed)
+
+Secrets — API keys, tokens, PATs, passwords, private/TLS keys, `.env` files,
+connection strings, cloud and Zotero credentials — are **never** committed,
+logged, or placed in prompts or figures. Storage, access, rotation, and backup
+follow **SECRETS_POLICY.md**. Reproducibility (§4) is met by *referencing*
+secrets (env vars / a non-secret manifest), never by storing their values. A
+secret that touches the repo is treated as compromised and rotated immediately.
+
 ## 7. Citations
 
 - **Zotero + Better BibTeX is the single source of truth** for references.
@@ -222,6 +231,10 @@ decisions" section; pointers here so the rules above are honest about their
 preconditions:
 
 - Environment/dependency manager (affects §4).
-- Version-control host and remote (affects §4, BACKUP_AND_RECOVERY.md).
+- Version-control host and remote (affects §4, BACKUP_AND_RECOVERY.md). *Local
+  git initialized 20260601-03; remote still open.*
 - Zotero install + storage location on a headless host (affects §7).
-- Backup target / off-host destination (affects BACKUP_AND_RECOVERY.md).
+- Backup target / off-host destination (affects BACKUP_AND_RECOVERY.md);
+  encrypted secrets-backup channel still open (SECRETS_POLICY.md §6).
+- ~~Secrets management~~ — **RESOLVED 20260601-04** (§6a, SECRETS_POLICY.md):
+  file-based + permission-enforced now, encryption required before off-host.
