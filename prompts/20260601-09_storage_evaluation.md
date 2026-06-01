@@ -1,6 +1,8 @@
 # 20260601-09 — Shared Storage Evaluation
 
-> **STATUS: CURRENT.** Supersedes `20260601-08_node_role_design.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-10_agent_runtime.md`.**
+> The NFS recommendation here was **ratified** in 20260601-10. Current prompt of
+> record is 20260601-10.
 
 **Prompt ID:** 20260601-09 (no explicit ID in the prompt; assigned per the
 prompt-versioning policy, GOVERNANCE.md §8)

@@ -96,9 +96,10 @@ cost.
 
 ## 7. Deferred decisions
 
-- **Shared storage (NFS / cluster FS)** — the enabler for node-agnostic Workers
-  and a cluster-wide `resources/` (NODE_ARCHITECTURE.md §3, §5). **Evaluated in
-  STORAGE_ARCHITECTURE.md (NFS recommended); pending User ratification.**
+- **Shared storage** — **RATIFIED: NFS** is the canonical primary shared
+  filesystem (STORAGE_ARCHITECTURE.md), the enabler for node-agnostic Workers
+  and a cluster-wide `resources/` (NODE_ARCHITECTURE.md §3, §5). Deployment
+  deferred to a later implementation phase.
 - **Cluster networking / interconnect** (1 GbE vs 10/25 GbE+) — decisive for
   shared-FS bandwidth (STORAGE_ARCHITECTURE.md §6).
 - Cluster GPU/job scheduler choice (Slurm; only when contention is real).

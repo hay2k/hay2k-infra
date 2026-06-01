@@ -284,10 +284,11 @@ preconditions:
 - ~~Node-role strategy~~ — **DESIGNED 20260601-08** (NODE_ARCHITECTURE.md):
   hybrid control-plane (`gpu-01` primary + `gpu-02` backup) with symmetric
   compute across all 3 nodes. Design only; no node dirs/services.
-- **Shared storage (NFS / cluster FS)** — **EVALUATED 20260601-09**
-  (STORAGE_ARCHITECTURE.md): **NFS recommended** as the primary shared FS
-  (MinIO object store as a later second tier; Syncthing/local cache only if
-  measured; avoid Ceph/Gluster at 3 nodes). **Recommendation pending User
-  ratification; nothing installed.** An NFS server / MinIO are high-risk (§2.3).
+- ~~Shared storage (NFS / cluster FS)~~ — **RATIFIED 20260601-10**
+  (STORAGE_ARCHITECTURE.md): **NFS = canonical primary shared filesystem.** MinIO
+  object store = deferred second tier; Syncthing/local cache = measured
+  optimization only; Ceph/Gluster not justified at 3 nodes. **Deployment
+  deferred (no NFS service installed, no shared-storage dirs);** an NFS
+  server / MinIO are high-risk (§2.3) to deploy.
 - **Node hostname/role realization & cluster networking** — **OPEN**
   (20260601-08): realize roles only when services are deployed (with approval).
