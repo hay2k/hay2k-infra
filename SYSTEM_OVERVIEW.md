@@ -84,13 +84,14 @@ domain data (see "Future migration" in BACKUP_AND_RECOVERY.md).
 
 The User sets policy and approves high-impact, irreversible, or cross-domain
 decisions. **Domain Orchestrator** agents coordinate a domain; **Supervisor**
-agents own its strategy, governance, and ambiguity resolution; **Senior
-Engineer** agents review architecture, code quality, and reproducibility; and
-**Worker** agents (a.k.a. Subagents) implement scoped tasks. They escalate
-upward — Worker → Senior Engineer → Supervisor → Domain Orchestrator → User,
-never directly to the User (AGENT_ARCHITECTURE.md). Every infrastructure change
-is documented; every prompt is versioned; every download is hash-verified;
-every citation has a
+agents own its strategy, governance, and ambiguity resolution; and **Worker**
+agents (a.k.a. Subagents) implement scoped tasks. The primary escalation chain
+is **Worker → Supervisor → Domain Orchestrator → User**, never directly to the
+User. **Senior Engineer** agents sit *beside* this chain as a side review role —
+architecture guidance, reproducibility review, and quality assurance — not in
+the escalation path (AGENT_ARCHITECTURE.md). Every infrastructure change is
+documented; every prompt is versioned; every download is hash-verified; every
+citation has a
 citekey or it does not exist.
 
 ## 6. Document map

@@ -13,7 +13,7 @@ must be reviewed before implementation.
 | **Agent** | Umbrella term for any autonomous actor below the User (Domain Orchestrator, Supervisor, Senior Engineer, or Worker). |
 | **Domain Orchestrator** | **Domain-level coordination.** Top agent within a domain: sequences work across the domain's projects, coordinates resources, materializes approved projects, escalates high-impact decisions to the User. |
 | **Supervisor Agent** | **Strategy, governance, ambiguity resolution.** Owns policy interpretation for the domain; resolves ambiguity; approves medium-risk decisions. |
-| **Senior Engineer Agent** | **Review.** Architecture review, code-quality review, reproducibility review. First-line technical escalation for Workers; the quality gate before implementation. |
+| **Senior Engineer Agent** | **Side review (not in the escalation chain).** Provides review, architecture guidance, reproducibility review, and quality assurance. Engaged as the quality gate before implementation for §3.2 changes; does not relay escalations. |
 | **Worker Agent** | **Implementation and execution.** Performs one scoped, reversible task. |
 | **Subagent** | Synonym of **Worker Agent**. |
 
@@ -22,7 +22,8 @@ Do not mix these terms (e.g. do not call a Worker a "Supervisor", or use
 
 ## 2. Canonical hierarchy
 
-Authority / reporting order, highest to lowest:
+Primary authority / escalation order, highest to lowest. The **Senior Engineer
+is a side review role**, attached to the chain rather than part of it:
 
 ```
 User                  → final authority (high-impact approvals)
@@ -30,19 +31,19 @@ User                  → final authority (high-impact approvals)
 Domain Orchestrator   → domain-level coordination
   ▲
 Supervisor Agent      → strategy, governance, ambiguity resolution
-  ▲
-Senior Engineer Agent → architecture / code-quality / reproducibility review
-  ▲
-Worker Agent          → implementation and execution   (Subagent = Worker)
+  ▲                        ◀───  Senior Engineer Agent  (SIDE: review, architecture
+Worker Agent                          guidance, reproducibility review, QA —
+  (Subagent = Worker)                 NOT in the escalation chain)
+  → implementation and execution
 ```
 
 | Role | Who | Decides / does | Never does |
 |------|-----|----------------|------------|
 | **User** | `hha` (infra_admin) | High-impact, irreversible, cross-domain, spending decisions (GOVERNANCE.md §2) | Micromanage routine work |
 | **Domain Orchestrator** | One per active domain | Coordinates work across the domain; materializes approved projects; escalates high-impact to User | Approve high-impact items itself; set cross-domain policy |
-| **Supervisor Agent** | One per active domain | Strategy, governance, ambiguity resolution; approves **medium-risk** decisions (GOVERNANCE.md §2.2) | Approve project lifecycle / cross-domain / high-risk (those are the User's) |
-| **Senior Engineer Agent** | As needed per domain/project | Architecture, code-quality, and reproducibility **review**; first-line technical escalation | Set governance/strategy; grant approvals reserved for Supervisor/User |
-| **Worker Agent / Subagent** | Many, ephemeral, task-scoped | Implements one scoped, reversible task | **Contact the User directly**; act outside its task scope |
+| **Supervisor Agent** | One per active domain | Strategy, governance, ambiguity resolution; approves **medium-risk** decisions (GOVERNANCE.md §2.2); **receives Worker escalations directly** | Approve project lifecycle / cross-domain / high-risk (those are the User's) |
+| **Senior Engineer Agent** | As needed per domain/project | **Side review:** architecture guidance, code-quality and reproducibility review, QA; the quality gate for §3.2 changes | Sit in the escalation chain; set governance/strategy; grant approvals reserved for Supervisor/User |
+| **Worker Agent / Subagent** | Many, ephemeral, task-scoped | Implements one scoped, reversible task; **escalates to its Supervisor** | **Contact the User directly**; act outside its task scope |
 
 These tiers exist only where there is active work. At bootstrap there are **no
 agents** — only the User and these documents.
@@ -52,13 +53,11 @@ agents** — only the User and these documents.
 ### 3.1 Escalation chain (blocked / ambiguous / needs approval)
 
 ```
-Worker → Senior Engineer → Supervisor → Domain Orchestrator → User
+Worker → Supervisor → Domain Orchestrator → User
 ```
 
-- **Workers never contact the User.** A blocked or uncertain Worker escalates to
-  its **Senior Engineer** (technical questions, "how should this be built?").
-- **Senior Engineer** resolves technical/engineering questions; governance,
-  policy, or strategy ambiguity it routes to the **Supervisor**.
+- **Workers never contact the User.** A blocked or uncertain Worker **escalates
+  directly to its Supervisor**. (The Senior Engineer is not in this chain.)
 - **Supervisor resolves ambiguity whenever possible** using policy
   (GOVERNANCE.md), precedent, and standards, and approves medium-risk decisions.
   Most ambiguity dies here.
@@ -68,10 +67,12 @@ Worker → Senior Engineer → Supervisor → Domain Orchestrator → User
   GOVERNANCE.md §2, plus anything irreversible, cross-domain, externally
   visible, or costing money.
 
-### 3.2 Review gate (before implementation)
+### 3.2 Review gate (side review — Senior Engineer)
 
-A **Senior Engineer review is required before implementation** for any change
-affecting (GOVERNANCE.md §3a):
+The Senior Engineer is a **side review role, not part of the escalation chain
+(§3.1).** It provides review, **architecture guidance**, **reproducibility
+review**, and **quality assurance**. A **Senior Engineer review is required
+before implementation** for any change affecting (GOVERNANCE.md §3a):
 
 - architecture,
 - reproducibility,
@@ -82,7 +83,8 @@ affecting (GOVERNANCE.md §3a):
 This review is **in addition to** any approval: a medium-risk decision the
 Supervisor approves still gets Senior Engineer review if it touches the list
 above. Routine, local, reversible work that touches none of these needs no
-Senior Engineer review.
+Senior Engineer review. Escalations still flow Worker → Supervisor regardless;
+the Senior Engineer advises and reviews but does not relay decisions.
 
 ## 4. How a Supervisor resolves ambiguity (decision procedure)
 

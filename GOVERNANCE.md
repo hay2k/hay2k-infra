@@ -136,13 +136,10 @@ medium-risk per §2.2; only its shared backend is high-risk.)
 
 ## 3. Escalation (summary; full model in AGENT_ARCHITECTURE.md)
 
-Escalation path: **Worker → Senior Engineer → Supervisor → Domain Orchestrator
-→ User.**
+Escalation path: **Worker → Supervisor → Domain Orchestrator → User.**
 
-- **Workers (Subagents) must not ask the user directly.** They escalate upward,
-  first to their **Senior Engineer** (technical questions).
-- **Senior Engineers** resolve technical/engineering questions and route
-  governance/policy ambiguity to the Supervisor.
+- **Workers (Subagents) must not ask the user directly.** They escalate
+  **directly to their Supervisor**.
 - **Supervisors resolve ambiguity whenever possible** using policy and context
   (strategy, governance); they approve medium-risk decisions.
 - **Domain Orchestrators** coordinate the domain and are the last stop before
@@ -150,14 +147,19 @@ Escalation path: **Worker → Senior Engineer → Supervisor → Domain Orchestr
 - **Only high-impact decisions reach the user** — specifically the rows marked
   "User" in §2, and anything matching the default-to-user clause.
 
-## 3a. Review requirements (Senior Engineer)
+The **Senior Engineer is a side review role, not part of this escalation
+chain** (§3a, AGENT_ARCHITECTURE.md §3.2).
 
-Medium-risk decisions may be approved by a **Supervisor** (§2.2). In **addition**,
-any change affecting **architecture, reproducibility, shared libraries, reusable
-workflows, or infrastructure standards** must receive **Senior Engineer review
-before implementation** (architecture / code-quality / reproducibility review).
-Routine, local, reversible work touching none of these needs no such review.
-See AGENT_ARCHITECTURE.md §3.2.
+## 3a. Review requirements (Senior Engineer — side review)
+
+The Senior Engineer is **not in the escalation chain (§3)**; it provides review,
+architecture guidance, reproducibility review, and quality assurance.
+Medium-risk decisions may be approved by a **Supervisor** (§2.2). In
+**addition**, any change affecting **architecture, reproducibility, shared
+libraries, reusable workflows, or infrastructure standards** must receive
+**Senior Engineer review before implementation**. Routine, local, reversible
+work touching none of these needs no such review. See AGENT_ARCHITECTURE.md
+§3.2.
 
 ## 4. Reproducibility (mandatory)
 
