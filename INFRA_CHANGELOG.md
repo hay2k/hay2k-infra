@@ -5,6 +5,25 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-11 — Monitoring & observability strategy
+
+**Rationale:** Design how the cluster, GPUs, jobs, and agent runtime are
+observed. Document only — no monitoring service, exporter, or install.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | **OBSERVABILITY.md** | **Created.** What to observe (system/GPU/storage/jobs/agent/logs) with thresholds tied to existing policy; tool evaluation (Prometheus stack, DCGM-exporter, Loki, netdata, Zabbix/Nagios, VictoriaMetrics, SaaS, zero-install baseline); recommended stack; topology (singleton-on-control + exporters-on-all-nodes); alerting (Alertmanager → Slack-deferred); agent/runtime observability; config-as-code/security/retention; **phased rollout** (Phase 0 zero-install now → Phase 1+ high-risk approval). |
+| 2 | GOVERNANCE.md | §11: **monitoring DESIGNED**; full stack high-risk §2.3, nothing installed. |
+| 3 | NODE_ARCHITECTURE.md | §6 monitoring row references OBSERVABILITY.md. |
+| 4 | SYSTEM_OVERVIEW.md | Doc map + tree + prompts updated. |
+| 5 | prompts/20260601-11_observability.md | **Created** current prompt of record; 10 marked kept. |
+
+**Recommended:** Prometheus + node-exporter + DCGM-exporter + Grafana +
+Alertmanager (Loki optional). Phase 0 baseline uses pre-approved §2.1 tools (no
+approval); the full stack is high-risk §2.3. **Nothing deployed.**
+
+---
+
 ## 2026-06-01 — 20260601-10 — NFS ratified + Agent Runtime design
 
 **Rationale:** Ratify the shared-storage recommendation (NFS) and design how

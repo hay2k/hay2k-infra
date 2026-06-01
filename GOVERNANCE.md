@@ -292,3 +292,8 @@ preconditions:
   server / MinIO are high-risk (§2.3) to deploy.
 - **Node hostname/role realization & cluster networking** — **OPEN**
   (20260601-08): realize roles only when services are deployed (with approval).
+- ~~Monitoring / observability strategy~~ — **DESIGNED 20260601-11**
+  (OBSERVABILITY.md): Prometheus + node-exporter + DCGM-exporter + Grafana +
+  Alertmanager (Loki optional), singleton-on-control + exporters-on-all-nodes;
+  Phase 0 zero-install baseline now; full stack is **high-risk §2.3** to deploy.
+  Nothing installed.
