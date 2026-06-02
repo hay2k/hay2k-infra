@@ -143,6 +143,10 @@ auto-reset (changing a human's own login password autonomously is over-reach).
 ### Pre-flight (gates BOTH phases)
 - [ ] Confirm `hha` **key login works** on gpu-01, gpu-02, gpu-03 **from the
       operator's real client** (`ssh hha@<ip>` succeeds with key, no password).
+      **⚠ CLUSTER_SSH_AUDIT (2026-06-02) found this currently FAILS:** `gpu-01`
+      has **no `authorized_keys`** and password auth is the de-facto path.
+      **Remediation in CLUSTER_SSH_AUDIT §6 (deploy operator key to all nodes +
+      verify) is a HARD PREREQUISITE — H1 stays blocked until it is green.**
 - [ ] Confirm an **out-of-band/console (IPMI/provider) path** to each node exists
       (break-glass if SSH breaks). Root break-glass pw is set (H0) ✅.
 - [ ] Capture current state for rollback: `sshd -T`, `firewall-cmd --list-all`,
