@@ -39,7 +39,7 @@ work; it is **not** a *scheduled, multi-tenant, queued* cluster yet.
 
 | # | Risk | Severity |
 |---|------|----------|
-| R1 | **NFS data on gpu-01's single non-redundant disk with NO backup** — disk loss = total loss of shared data. | **Critical** |
+| R1 | ~~NFS data on a single disk with NO backup~~ — **MITIGATED 2026-06-02:** daily on-cluster 3-copy backup (gpu-02/gpu-03) + encrypted secrets + tested restore (BACKUP_AND_RECOVERY.md §6). Residual: **not off-SITE** (whole-IDC loss). | Critical → **Low–Med (off-site only)** |
 | R2 | **gpu-01 is a SPOF** — NFS server + Prometheus + Grafana + control all on one node; its loss removes shared storage + monitoring. | High |
 | R3 | **No backups** for precious bulk data / secrets (single-copy). | High |
 | R4 | **GPU contention** without a scheduler — multi-user collisions, no fairness. | Medium |
