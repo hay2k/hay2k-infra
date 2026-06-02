@@ -5,6 +5,28 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — Hardening impact review (review only, no changes)
+
+**Rationale:** Assess every mandatory hardening control's impact before applying
+any. Document only.
+
+- **Created HARDENING_IMPACT_REVIEW.md** — §1 already-satisfied (SAFE, verify);
+  §2 per-control impact matrix across the 10 dimensions with classification
+  (SAFE / SAFE_WITH_MODIFICATION / HIGH_RISK / NOT_RECOMMENDED); §3 cross-cutting
+  findings; §4 phased plan (H0 safe-now → H1 SSH gated on access pre-check → H2
+  firewall → H3 needs-decision).
+- **Key findings:** (F1) SSH `PasswordAuthentication no` + SSH-source-restrict are
+  the dominant **lockout risk** (public-IP hosts, no mgmt network) → gated on a
+  confirmed key-login pre-check; (F2) **`no-broad-NOPASSWD` sudo conflicts with
+  the agent runtime's required passwordless sudo** → needs policy amendment +
+  User decision; (F3) blind `dnf update` risks the **NVIDIA driver/DCGM** → patch
+  deliberately; (F4) `cluster-backup.sh` briefly writes **plaintext secrets to
+  `/tmp`** → fix; (F5) SECURITY §5 text still says secrets backup is a "gap" —
+  stale vs the ratified on-cluster strategy.
+- No system or config change. Doc map/tree updated.
+
+---
+
 ## 2026-06-02 — Backup strategy ratified: 3-node replication; off-site out of scope
 
 **Decision (operator):** no off-site backup will be implemented. The **3-node
