@@ -5,6 +5,35 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — 20260601-15 (cont.2) — gpu-01 privileged install: Phases B, D, F
+
+**Rationale:** Passwordless sudo granted **on `gpu-01`** (peers still NO).
+Provisioned the control node. Each component validated; localhost-bound where
+applicable; rollback notes in IMPLEMENTATION_LOG.md.
+
+- **Phase B ✅ (gpu-01):** Apptainer 1.5.0 (EPEL); container exec validated;
+  `--nv` mechanism present (full GPU test needs a glibc/CUDA image).
+- **Phase D ◑ (gpu-01):** node_exporter 1.11.1 (SHA256-verified) + Prometheus
+  3.11.2 + Grafana 10.2.6 + DCGM 4.5.3, **all bound `127.0.0.1`** (UIs via SSH
+  tunnel; no firewall change, no public exposure). Prometheus targets `up=1`;
+  Grafana datasource provisioned; admin pw stored as a **secret**
+  (`~/.secrets/infra/grafana_admin.txt`); DCGM telemetry validated.
+  **Deferred:** `dcgm-exporter` (`:9400` bridge) — not packaged.
+- **Phase F ◑ (gpu-01):** NFS server; export `/srv/nfs/resources` to peer IPs
+  only, `root_squash`, firewalld rich-rules per peer IP (**not public**).
+  Validated: IP-restriction enforced (localhost denied), normal-user write/read
+  over NFS works, root_squash works. **Peer mounts pending** (peer sudo).
+- **Phase G ⛔:** Slurm **not packaged for el10** (no OpenHPC-el10; only munge)
+  **and** needs peer sudo → not attempted.
+
+**Remaining blockers:** (1) **passwordless sudo is gpu-01 only** → peer
+Apptainer/exporters, NFS mounts, and Slurm `slurmd`/munge blocked; (2) **Slurm
+el10 packaging**. No destructive action / data loss / config replacement /
+architectural conflict. **Docs:** IMPLEMENTATION_LOG.md, OBSERVABILITY.md,
+STORAGE_ARCHITECTURE.md statuses updated.
+
+---
+
 ## 2026-06-02 — 20260601-15 (cont.) — Peer trust authorized; Phases C & E completed
 
 **Rationale:** Operator authorized `cluster_ed25519` on the peers. Resumed from

@@ -1,7 +1,10 @@
 # OBSERVABILITY
 
-**Status:** Design (2026-06-01, 20260601-11). **Document only — no monitoring
-service, exporter, or install exists. This is the intended strategy.**
+**Status:** Design (2026-06-01) + **partial implementation (2026-06-02,
+20260601-15):** on `gpu-01` — Prometheus 3.11.2, Grafana 10.2.6, node_exporter
+1.11.1, DCGM 4.5.3 are deployed, **all bound to `127.0.0.1`** (UIs via SSH
+tunnel). `dcgm-exporter` (Prom `:9400`) and **peer exporters** are pending
+(IMPLEMENTATION_LOG.md). This document remains the intended full strategy.
 **Scope:** How the 3-node cluster, its GPU/AI workloads, and the agent runtime
 are observed — metrics, logs, alerts — and what gets deployed when.
 

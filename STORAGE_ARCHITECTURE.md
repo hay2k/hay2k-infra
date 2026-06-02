@@ -1,8 +1,10 @@
 # STORAGE ARCHITECTURE
 
-**Status:** Ratified design (2026-06-01; recommendation ratified 20260601-10).
-**NFS is the canonical primary shared filesystem.** No storage service is
-installed or deployed — deployment is a later implementation phase.
+**Status:** Ratified design (2026-06-01) + **partial implementation (2026-06-02,
+20260601-15):** the **NFS server** is deployed on `gpu-01`, exporting
+`/srv/nfs/resources` to the peer IPs only (`root_squash`, peer-IP firewall),
+validated server-side. **Peer client mounts pending** (peer sudo). NFS remains
+the canonical primary shared filesystem; MinIO/Syncthing tiers still deferred.
 **Scope:** Shared-storage strategy for the 3-node cluster — the enabler for
 node-agnostic Workers and a cluster-wide `resources/` (NODE_ARCHITECTURE.md §3,
 RESOURCE_POLICY.md §7).

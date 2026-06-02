@@ -1,10 +1,10 @@
 # IMPLEMENTATION LOG
 
 **Started:** 2026-06-02 (20260601-15, implementation mode)
-**Operator context:** `hha` on `gpu-01`. **No passwordless sudo on any node**
-(root ops blocked). **Peer SSH: resolved 2026-06-02** — passwordless `gpu-01` →
-`gpu-02`/`gpu-03` via `cluster_ed25519`. Outbound HTTPS works. All work below is
-**user-space, reversible**; nothing required root.
+**Operator context (updated 2026-06-02):** `hha` on `gpu-01`. **Passwordless
+sudo on `gpu-01` only** (peers `gpu-02`/`gpu-03` still NO). Passwordless SSH mesh
+established. Outbound HTTPS works. gpu-01 system services now deployed (root);
+peer/all-node steps remain blocked on peer sudo.
 
 This log records, per phase: summary · validation · issues · rollback notes.
 Blockers are consolidated in §"Blocker report".
@@ -35,11 +35,15 @@ baseline (user-space).
 
 ## Phase B — Apptainer ⛔ BLOCKED
 
-**Summary:** Apptainer install requires root (system package) and is a
-**high-risk §2.3** component. No passwordless sudo → stop condition #5
-(credentials unavailable). Not attempted.
+**Summary (updated 2026-06-02, sudo on gpu-01):** **Apptainer 1.5.0** (EPEL)
+installed on `gpu-01`. **Peers blocked** (no peer sudo).
 
-**Rollback:** n/a (nothing done).
+**Validation:** `apptainer --version` → 1.5.0 ✅; `apptainer exec docker://alpine`
+→ ran, read `/etc/os-release` ✅. `--nv` GPU passthrough: mechanism present, but
+the test failed against Alpine (musl can't run the glibc `nvidia-smi`) — full
+GPU validation needs a glibc/CUDA image (deferred to avoid a large pull).
+
+**Rollback:** `sudo dnf remove -y apptainer`.
 
 ## Phase C — Snakemake + Nextflow (workflow validation) ✅ COMPLETE (2026-06-02)
 
@@ -66,16 +70,38 @@ syntax. **Nextflow requires `JAVA_HOME=~/.local/jdk-21`** in the environment.
 **Rollback:** `uv tool uninstall snakemake`; `rm ~/.local/bin/nextflow`;
 `rm -rf ~/.local/jdk-21 ~/.local/share/nextflow`.
 
-## Phase D — Node Exporter / DCGM Exporter / Prometheus / Grafana ⛔ BLOCKED
+## Phase D — Node Exporter / DCGM / Prometheus / Grafana ◑ COMPLETE on gpu-01 (2026-06-02)
 
-**Summary:** The monitoring stack is **high-risk §2.3** and deploying it as
-persistent services requires root (systemd, DCGM library, privileged ports).
-No passwordless sudo → #5. Cross-node scraping also needs peer access (blocked).
-GPU context confirmed for future DCGM (`nvidia-smi` OK, driver 610.43.02).
-Not attempted. (Phase 0 zero-install baseline per OBSERVABILITY.md remains the
-fallback.)
+**Summary:** Deployed on `gpu-01`, **all bound to `127.0.0.1`** (no public
+exposure, no firewall change needed; UIs reachable via SSH tunnel). Secure by
+construction.
+- **node_exporter 1.11.1** — official binary, **SHA256-verified**
+  (`sha256sums.txt -c`), systemd, `127.0.0.1:9100`. 2158 `node_` metrics.
+- **Prometheus 3.11.2** (EPEL), systemd, `127.0.0.1:9090`, scraping self +
+  node_exporter.
+- **Grafana 10.2.6** (AppStream), systemd, `127.0.0.1:3000`, Prometheus
+  datasource provisioned; admin password stored as a **secret**
+  (`~/.secrets/infra/grafana_admin.txt`, `600`) — never in the repo.
+- **DCGM 4.5.3** (`datacenter-gpu-manager-4-cuda12`, NVIDIA repo) — `nvidia-dcgm`
+  service, hostengine `127.0.0.1:5555`; `dcgmi discovery` sees both GPUs;
+  telemetry sampled (GPUTL/FBUSD/TENSO).
 
-**Rollback:** n/a.
+**Validation:** node target `up=1`, prometheus target `up=1`; Grafana
+`/api/health` → `database: ok`; all listeners confirmed `127.0.0.1` only;
+`dcgmi dmon` returned live per-GPU metrics.
+
+**Deferred (one sub-item):** **dcgm-exporter** (Prometheus `:9400` bridge) is not
+packaged; it needs the NVIDIA container (via Apptainer `--nv`) or a source build.
+DCGM telemetry is available now via DCGM core; the Prometheus GPU-metrics scrape
+job is left commented in `prometheus.yml` pending the exporter. **Peer
+exporters blocked** (peer sudo).
+
+**Rollback:** `sudo systemctl disable --now grafana-server prometheus
+node_exporter nvidia-dcgm`; `sudo dnf remove -y grafana prometheus
+datacenter-gpu-manager-4-cuda12`; `sudo rm /etc/systemd/system/node_exporter.service
+/usr/local/bin/node_exporter`; `sudo userdel node_exporter`; restore
+`/etc/default/prometheus.orig`, `/etc/prometheus/prometheus.yml.orig`,
+`/etc/grafana/grafana.ini.orig`; `sudo systemctl daemon-reload`.
 
 ## Phase E — SSH trust + cluster inventory refresh ✅ COMPLETE (2026-06-02)
 
@@ -99,63 +125,94 @@ IdentitiesOnly). Completed the **full peer inventory** (NETWORK_DISCOVERY_gpu02/
 **Rollback:** `rm ~/.ssh/cluster_ed25519*`; remove the `gpu-02`/`gpu-03` blocks
 from `~/.ssh/config`; (peer `authorized_keys` entries are operator-managed).
 
-## Phase F — NFS deployment ⛔ BLOCKED
+## Phase F — NFS deployment ◑ SERVER COMPLETE on gpu-01 (2026-06-02)
 
-**Summary:** Requires root (install `nfs-utils`, configure exports, mount) and
-peer access; **high-risk §2.3**; and over the public `/24` it is security-gated
-(host-firewall to peer IPs + confirmation the subnet isn't shared). Multiple
-blockers (#5). Not attempted.
+**Summary:** **NFS server** stood up on `gpu-01` (`nfs-utils`, `nfs-server`
+enabled). Export **`/srv/nfs/resources`** (owned `hha`, the shared `resources/`
+realization) to **peer IPs only** (`222.231.57.31`, `222.231.57.32`) with
+**`root_squash`**. firewalld **rich rules** allow NFS **only from the two peer
+IPs** — *not* added to the public zone, so it is **not internet-exposed**
+(verified). SSH rules untouched.
 
-**Rollback:** n/a.
+**Validation:**
+- Export active to both peers (`exportfs -v`).
+- IP restriction enforced: a `127.0.0.1` mount was **denied** (not in allow-list) ✅.
+- Data path: a temporary localhost export → mount → **write as `hha`** → read-back
+  matched, file landed in the backing store owned `hha` ✅; **root write squashed**
+  (root_squash working) ✅; temporary export removed, restored to peers-only.
+
+**Blocked:** **peer mounts** (`gpu-02`/`gpu-03` need peer sudo to mount). **Open
+input:** confirm `222.231.57.0/24` is dedicated vs shared; consider `sec=krb5`
+and a private VLAN as hardening (SECURITY_AND_HARDENING_POLICY.md). Residual risk
+is bounded by the per-IP firewall + export ACL + root_squash.
+
+**Rollback:** `sudo systemctl disable --now nfs-server`; restore
+`/etc/exports.orig` (or empty) + `sudo exportfs -ra`; remove the two NFS
+firewall rich-rules + `--reload`; `sudo dnf remove -y nfs-utils`;
+`sudo rm -rf /srv/nfs`.
 
 ## Phase G — Slurm deployment ⛔ BLOCKED
 
-**Summary:** Requires root, peer access, a munge shared key, consistent name
-resolution, and ideally shared storage (NFS, itself blocked); **high-risk §2.3**.
-Not attempted.
+**Summary:** Doubly blocked. (1) **Not packaged for el10** — no `slurm*` in
+baseos/appstream/crb/EPEL/cuda, and no OpenHPC-el10 repo; only `munge` is
+available. Deploying would require OpenHPC-el10 (uncertain availability) or a
+source/rpmbuild. (2) **Peer sudo required** — `slurmd` + munge must run on
+`gpu-02`/`gpu-03`, which lack passwordless sudo, plus a cluster `/etc/hosts`/DNS
+(root). A controller-only build on `gpu-01` would give no real scheduling. Not
+attempted (avoids a source-build that cannot complete without the peers).
 
-**Rollback:** n/a.
+**Rollback:** n/a (nothing installed).
 
 ---
 
-## Blocker report (consolidated, updated 2026-06-02)
+## Blocker report (consolidated, updated 2026-06-02 — sudo on gpu-01)
 
-**Resolved since the first run:** Phase E (peer SSH trust + inventory) ✅;
-Phase C Nextflow ✅ (user-space JDK). Peer NIC speeds confirmed (all 1 GbE).
+**Done on gpu-01:** Apptainer (B), monitoring core (D: node_exporter +
+Prometheus + Grafana + DCGM), NFS server (F). **Resolved earlier:** SSH trust +
+inventory (E), Snakemake + Nextflow (C).
 
-| Phase / item | Blocker | Stop condition | What unblocks it |
-|--------------|---------|----------------|------------------|
-| B Apptainer | needs root; high-risk §2.3 | #5 | privileged install (sudo/operator) + approval |
-| D Monitoring stack | needs root (services); DCGM needs root; public-IP exposure w/o firewall control; high-risk | #5 | root + approval + firewall/internal-net |
-| F NFS | root on all nodes + security gate; high-risk | #5 | root + private-net/firewall decision + approval |
-| G Slurm | root on all nodes + munge + name resolution + shared storage; high-risk | #5 | NFS first + root + approval |
+| Item | Status | Blocker | Unblock with |
+|------|--------|---------|--------------|
+| B Apptainer (peers) | gpu-01 ✅ / peers ⛔ | **no peer sudo** | passwordless sudo on `gpu-02`/`gpu-03` |
+| D node/Prometheus/Grafana/DCGM (peers) | gpu-01 ✅ / peers ⛔ | no peer sudo | peer sudo |
+| D dcgm-exporter (Prom `:9400`) | ◑ deferred | not packaged | NVIDIA container via Apptainer, or source build |
+| F NFS peer mounts | server ✅ / mounts ⛔ | no peer sudo | peer sudo (+ subnet dedicated/shared answer) |
+| G Slurm | ⛔ | **not packaged for el10** + no peer sudo | OpenHPC-el10 / source build **and** peer sudo |
 
-**Single remaining root cause:** **no passwordless sudo on any node** — every
-system-level install/service (B, D, F, G) is blocked (stop condition #5). The
-peer-SSH gap is now resolved. No destructive action, data loss, config
-replacement, or architectural conflict was encountered at any point.
+**Two remaining root causes:** (1) **passwordless sudo is gpu-01 only** — every
+*peer* and *all-node* step (peer Apptainer/exporters/NFS-mounts, all of Slurm) is
+blocked; (2) **Slurm has no el10 package** (independent of sudo). No destructive
+action, data loss, config replacement, or architectural conflict occurred. All
+changes are on `gpu-01`, reversible (rollback per phase above).
 
-> **Note on Phase D:** the stack could *technically* run as user-space processes,
-> but (a) DCGM-exporter needs a root-installed library, and (b) Prometheus/
-> Grafana on a public-IP host with no internal interface and no firewall control
-> would be publicly exposed — a SECURITY_AND_HARDENING_POLICY.md §11 violation.
-> A user-space hack is therefore **not "consistent with approved architecture"**,
-> so Phase D is held for a proper root-privileged, firewalled deployment.
+## Security observations (for the hardening phase)
 
-## Maximum operational state reached (without further interaction)
+- **Monitoring UIs are localhost-only** (verified: 127.0.0.1 for 3000/9090/9100/
+  5555) — reach via SSH tunnel, never public. ✅
+- **NFS** daemons bind `0.0.0.0` (rpcbind/nfsd/mountd) **but firewalld restricts
+  them to the two peer IPs** (NFS not in the public zone) → not internet-exposed.
+- **Pre-existing default:** firewalld public zone allows `cockpit` and
+  `dhcpv6-client` (Rocky defaults). `cockpit` is **not currently listening**
+  (no socket active), so no live exposure — but the rule is latent and should be
+  reviewed/removed in the security-hardening phase
+  (SECURITY_AND_HARDENING_POLICY.md §3). Not changed here (out of this phase's
+  scope).
 
-- **uv** (verified) + **managed CPython 3.12.13** + validated venv/lock path.
-- **Snakemake 9.22.0** and **Nextflow 26.04.3** (+ verified **JDK 21.0.11**),
-  both validated.
-- **Cluster SSH trust established** (passwordless `gpu-01` → `gpu-02`/`gpu-03`,
-  aliases configured); **full cluster inventory complete** (3 homogeneous nodes).
-- Remaining phases (B, D, F, G) await **privileged (root) access** on the nodes.
+## Maximum operational state reached
 
-## To proceed further, the operator must provide
+- **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
+  Grafana 10.2.6 + node_exporter 1.11.1 + DCGM 4.5.3 (all localhost-bound);
+  NFS server exporting `resources` to peers (root_squash, peer-IP firewall).
+- **Toolchain (all nodes via $HOME, user-space):** uv + CPython 3.12.13 +
+  Snakemake 9.22.0 + Nextflow 26.04.3 (JDK 21) — on gpu-01; replicable to peers.
+- **Cluster fabric:** passwordless SSH mesh, full inventory (3 homogeneous nodes).
 
-1. **A privileged-install path** — passwordless sudo for scoped commands, or run
-   the documented installs directly. This is now the **sole** blocker for
-   Apptainer, the monitoring stack, NFS, and Slurm.
-2. Plus the open inputs: is `222.231.57.0/24` **dedicated or shared**? Is a
-   **private switch/VLAN** available (to move cluster traffic off the public
-   1 GbE subnet)?
+## To reach full multi-node state, the operator must provide
+
+1. **Passwordless sudo on `gpu-02` and `gpu-03`** (currently gpu-01 only) — the
+   sole blocker for peer Apptainer/exporters, NFS client mounts, and Slurm
+   `slurmd`/munge.
+2. **A Slurm package source for el10** (OpenHPC-el10 repo or approval to
+   source-build) — independent of sudo.
+3. **Open inputs:** is `222.231.57.0/24` dedicated or shared? private VLAN
+   available? (gates NFS/Slurm security hardening, not function).
