@@ -90,6 +90,7 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── CLUSTER_STATUS.md
     ├── CLUSTER_READINESS_REVIEW.md
     ├── HARDENING_IMPACT_REVIEW.md
+    ├── CLUSTER_SSH_AUDIT.md
     ├── INFRA_CHANGELOG.md
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
@@ -135,6 +136,7 @@ citekey or it does not exist.
 | CLUSTER_STATUS.md | Current operational state of the 3-node cluster (components, versions, monitoring, NFS, blockers) |
 | CLUSTER_READINESS_REVIEW.md | Readiness assessment: capabilities, gaps, risks, workload/domain readiness, backup + first-project recommendations |
 | HARDENING_IMPACT_REVIEW.md | Per-control impact analysis + classification + phased plan, before applying any hardening |
+| CLUSTER_SSH_AUDIT.md | SSH topology audit (resolution, keys, authorized_keys, path matrix) + remediation plan; H1 prerequisite |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | AGENT_RUNTIME.md | How do agents actually run (Claude Code + tmux→Slurm), and what are their lifecycles? |

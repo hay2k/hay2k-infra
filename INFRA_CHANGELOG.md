@@ -5,6 +5,29 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — Cluster SSH consistency audit (read-only) — H1 BLOCKED
+
+**Rationale:** Verify SSH topology before H1/H2. Read-only; no config changed.
+
+- **Created CLUSTER_SSH_AUDIT.md** — per-node facts, directed path matrix,
+  root-cause analysis, remediation plan.
+- **Working:** `gpu-01 → gpu-02` / `gpu-01 → gpu-03` via SSH aliases
+  (`cluster_ed25519`). Sufficient for current automation.
+- **Failing/missing:** **`gpu-01` has NO `authorized_keys`** → no key login into
+  the control node; `PasswordAuthentication=yes` on all nodes = access is
+  **password-based** today. Peers can't initiate SSH (private key only on
+  gpu-01). No cluster name resolution (no `/etc/hosts`/DNS; gpu-01 masks via
+  aliases). `gpu-01→peer` works **only via the alias** (key not offered to
+  raw-IP).
+- **Decisive finding:** the ratified "key-auth standard" is **not yet realized**
+  — applying **H1 now would lock the operator out of `gpu-01`**. **H1/H2 are
+  BLOCKED** pending CLUSTER_SSH_AUDIT §6 remediation (deploy operator pubkey to
+  all nodes + verify key login + add `/etc/hosts`).
+- **Operator input required:** provide the workstation public key to install.
+- HARDENING_IMPACT_REVIEW §7 pre-flight annotated with this blocker. No changes.
+
+---
+
 ## 2026-06-02 — Hardening H0 applied + F4 fix + F5/sudo-exception doc sync
 
 **Decisions:** (1) `hha` SSH **key auth** is the ratified standard; (2)
