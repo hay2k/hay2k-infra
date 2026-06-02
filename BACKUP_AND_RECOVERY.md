@@ -84,20 +84,37 @@ The design supports migration to a future/bigger server by construction:
 Migration is a **cross-host move of the whole workspace** and is a User-level
 event (it is structural and high-impact).
 
-## 6. Current gaps (must be closed in the next implementation phase)
+## 6. Backup status (implemented 2026-06-02)
 
-- **Off-host destination — DECIDED 2026-06-01:** a **GitHub remote** under
-  account `https://github.com/hay2k` is the off-host home for the
-  precious-but-small tier. The version-controlled root is the git repo at
-  `/home/hha/infra`. Bulk precious-data backup remains TBD.
-  **Tooling:** `git` is a **pre-approved prerequisite** (GOVERNANCE.md §2.1) —
-  no special approval. `gh` is **not** installed (operator deferred it).
-  **Status:** repo initialized locally with a first commit; the **private
-  remote is not yet created and no push has occurred** — pending a repo URL
-  from the operator. Until the first push, this host still has *zero* off-host
-  recovery.
-- **No snapshot mechanism** for bulk precious data.
-- **No restore test** has been performed (none can be, yet).
+- **Governance/code tier — off-host ✅:** GitHub private repo
+  `hay2k/hay2k-infra`, pushed continuously since 2026-06-01.
+- **Bulk precious data (NFS `resources`) — on-cluster 3-copy ✅:** a daily
+  `systemd` timer (`cluster-backup.timer`) runs `infra/scripts/cluster-backup.sh`
+  on `gpu-01`, mirroring `/srv/nfs/resources` to **independent disks on `gpu-02`
+  and `gpu-03`** (`/srv/backup/resources`) with a **SHA256 manifest** (kept as a
+  sibling, never inside the mirror). **Restore tested** (`cluster-restore.sh
+  data`) — manifest-verified, no pollution.
+- **Secrets — encrypted off-node ✅:** `~/.secrets` + the SSH private keys are
+  tar'd (excluding the age identity) and **age-encrypted** to the cluster
+  recipient, copied to `gpu-02`/`gpu-03` `/srv/backup/secrets` (rotation: 7).
+  **Restore tested** (`cluster-restore.sh secrets`) — decrypts and matches.
+- **Regenerable data** (re-downloadable models, caches) — not backed up; recorded
+  by source + SHA256 (GOVERNANCE.md §6).
 
-Until §6 is closed, treat all data on this host as **at risk**, and weight the
-GOVERNANCE.md §2 deletion-approval gate accordingly.
+### Remaining gaps (honest)
+
+- **NOT off-SITE.** The three nodes are one IDC/segment, so this protects against
+  **single-disk and single-node loss (R1/R2)** but **not whole-site loss.** A
+  true off-site/off-IDC target (cloud object store, remote host) still needs an
+  external destination + credentials — an open operator decision.
+- **age identity is the root of trust:** `~/.secrets/age/identity.txt` decrypts
+  the secrets backups. The operator **must keep a copy OFF-SITE** — if the whole
+  cluster is lost, the on-cluster identity is lost with it. (Mitigated by most
+  secrets being regenerable.)
+- **Push model:** backups push from `gpu-01`; a compromised `gpu-01` could affect
+  them. A pull model (peers pull) is a future hardening.
+- **No RAID** on the per-node disks (redundancy is via cross-node copies).
+
+With on-cluster backup + tested restore in place, **regenerable and
+reproducible data may be stored on NFS now**; sole-copy irreplaceable data
+should still wait for the **off-site** tier.

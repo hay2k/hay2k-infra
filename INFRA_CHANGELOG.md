@@ -5,6 +5,30 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — Backup gap closed (R1 mitigated)
+
+**Rationale:** Close the top readiness risk (R1: NFS data single-copy on a
+non-redundant disk) before onboarding data.
+
+- **Installed:** `rsync` 3.4.1 (all nodes), `age` 1.3.1 (gpu-01, user-space,
+  SHA256 recorded). Generated cluster **age identity** (`~/.secrets/age/`).
+- **Data backup:** daily `systemd` timer `cluster-backup.timer` →
+  `infra/scripts/cluster-backup.sh` mirrors `/srv/nfs/resources` to **gpu-02 +
+  gpu-03 independent disks** with a sibling SHA256 manifest. **3 copies.**
+- **Secrets backup:** `~/.secrets` + SSH keys **age-encrypted** (identity
+  excluded) → peers, rotation 7.
+- **Restore tested** (`infra/scripts/cluster-restore.sh`): data restored +
+  manifest-verified + no pollution (fixed a manifest-in-mirror bug → sibling);
+  secrets decrypted and matched.
+- **Docs:** BACKUP_AND_RECOVERY.md §6 + SECRETS_POLICY.md §6 → implemented;
+  CLUSTER_STATUS.md + CLUSTER_READINESS_REVIEW.md R1 downgraded. Scripts tracked
+  in `infra/scripts/`.
+- **Residual (honest):** **not off-SITE** (3 nodes = one IDC) — whole-site loss
+  still needs an external target/credentials (open). The **age identity must be
+  kept off-site by the operator**. Push model (gpu-01→peers); no RAID.
+
+---
+
 ## 2026-06-02 — Cluster readiness review (review only)
 
 **Rationale:** Assess production readiness before dcgm-exporter/Slurm. No installs.

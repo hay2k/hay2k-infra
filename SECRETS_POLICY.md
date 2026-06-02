@@ -60,10 +60,14 @@ and is not justified at the current single-host scale.
 ## 6. Backup of secrets
 
 Secrets are precious but **must never go to the git remote**
-(BACKUP_AND_RECOVERY.md). They are backed up only through a **separate,
-encrypted, off-host** channel (§5) — a deferred decision tied to the bulk
-off-host backup target. Until that exists, the few secrets on this host are
-single-copy; keep that surface small.
+(BACKUP_AND_RECOVERY.md). **Implemented 2026-06-02:** `~/.secrets` + SSH private
+keys are **age-encrypted** (recipient = cluster age key) and copied to
+independent peer disks (`gpu-02`/`gpu-03` `/srv/backup/secrets`) by the daily
+backup timer; restore is tested (`infra/scripts/cluster-restore.sh secrets`).
+The **age identity** (`~/.secrets/age/identity.txt`) is excluded from the
+archive and is the root of trust — **the operator must keep a copy off-site**
+(cluster loss otherwise loses decryptability; mitigated since most secrets are
+regenerable). A true **off-site** encrypted copy remains the open tier (§5).
 
 ## 7. Rotation & incident response
 

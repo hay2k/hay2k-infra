@@ -36,6 +36,7 @@ mounted cluster-wide.
 | Prometheus | 3.11.2 | gpu-01 | `127.0.0.1:9090`; scrapes all 3 node_exporters |
 | Grafana | 10.2.6 | gpu-01 | `127.0.0.1:3000`; Prometheus datasource; admin pw = secret |
 | NFS server | nfs-utils (el10) | gpu-01 | exports `/srv/nfs/resources` |
+| Backup | rsync 3.4.1 + age 1.3.1 | gpu-01→peers | daily timer; 3-copy data + encrypted secrets; restore-tested (BACKUP_AND_RECOVERY.md §6) |
 
 Environment policy compliance: downloads SHA256-verified (uv, JDK, node_exporter);
 container/Apptainer ready; secrets (Grafana admin) stored in `~/.secrets`, never
