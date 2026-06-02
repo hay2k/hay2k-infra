@@ -5,6 +5,25 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — Cluster readiness review (review only)
+
+**Rationale:** Assess production readiness before dcgm-exporter/Slurm. No installs.
+
+- **Created CLUSTER_READINESS_REVIEW.md** — capabilities, gaps, risks, recommended
+  architecture updates, workload/domain readiness, resource-allocation + directory
+  + backup strategies, recommended first project, and production-ready / defer /
+  never-deploy verdicts.
+- **Validated** via live health check + a **multi-node execution smoke test**
+  (SSH dispatch → compute → shared NFS, 6 GPUs/3 nodes) — passed.
+- **Headline verdicts:** ready for **research** + **surplus** compute **iff
+  precious data is backed up first** (top risk R1: NFS on gpu-01's single
+  non-redundant disk, no backup); **business = internal/dev only**; **investment
+  = not ready**; **never (as-is):** sole-copy data without backup, multi-node
+  distributed training over 1 GbE, public-facing prod services, regulated data.
+- Doc map/tree updated. No new governance documents; no system changes.
+
+---
+
 ## 2026-06-02 — 20260601-15 (cont.3) — All-node sudo → 3-node cluster operational
 
 **Rationale:** Passwordless sudo on all nodes. Verified actual state, then
