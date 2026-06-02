@@ -5,6 +5,28 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — SSH key migration plan (password → ED25519) — plan only
+
+**Rationale:** Operator confirmed access is password-based (MobaXterm not using a
+key), validating the audit. Produced a detailed, safety-gated migration runbook
+before any change.
+
+- **Created SSH_KEY_MIGRATION_PLAN.md** — 6 phases: generate a **new dedicated
+  operator ED25519 key on the workstation** (MobaKeyGen/ssh-keygen, passphrase) →
+  install pubkey on all 3 nodes (additive, password still on) → point MobaXterm
+  at the key → **verify key login on all nodes (hard gate)** → only then disable
+  password auth (=H1, peers first/gpu-01 last, reversible drop-in) → post (/etc/
+  hosts, docs, smoke test).
+- **Cardinal rule:** password stays enabled until key login is verified on all
+  three nodes; console break-glass confirmed first; per-node reconnect-tested
+  rollback.
+- New operator key is **distinct** from `cluster_ed25519` (gpu-01 automation) and
+  the GitHub deploy key; its private half stays on the workstation only.
+- Doc map/tree updated. **No system change.** Awaiting operator pubkey + console
+  break-glass confirmation to begin Phases 2–4.
+
+---
+
 ## 2026-06-02 — Cluster SSH consistency audit (read-only) — H1 BLOCKED
 
 **Rationale:** Verify SSH topology before H1/H2. Read-only; no config changed.
