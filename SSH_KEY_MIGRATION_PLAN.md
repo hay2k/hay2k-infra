@@ -50,7 +50,7 @@ Choose one:
 - [ ] **Provide the PUBLIC key** (the `ssh-ed25519 …` line) for installation, or
       install it yourself in Phase 2. **Never share the private key.**
 
-## Phase 2 — Install the public key on all nodes (ADDITIVE; password still on)
+## Phase 2 — Install the public key on all nodes (ADDITIVE; password still on)  ✅ DONE 2026-06-02
 Password auth remains on, so there is **no lockout risk** here. Two options:
 
 - **Option A — operator self-service:** from MobaXterm, for each node:

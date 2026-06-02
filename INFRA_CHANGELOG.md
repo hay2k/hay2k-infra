@@ -5,6 +5,24 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — SSH key migration Phase 2 done: operator key installed (no hardening)
+
+**Action:** Installed the operator ED25519 public key (fingerprint
+`SHA256:1AO7W0h5/Bjn51KomshF3S99L55SBeBpKM9eJFoScgs`, comment
+`eddsa-key-20260602`) into `hha`'s `authorized_keys` on **all 3 nodes** (Phase 2
+of SSH_KEY_MIGRATION_PLAN.md). Key format validated before install.
+
+- `gpu-01`: `authorized_keys` **created** (had none) — operator key.
+- `gpu-02`/`gpu-03`: **appended** — `cluster_ed25519` preserved + operator key.
+- Perms `~/.ssh` 700, `authorized_keys` 600, owner `hha:hha`, SELinux `ssh_home_t`.
+- **sshd UNCHANGED:** `PasswordAuthentication yes` on all nodes; no hardening
+  drop-in. **H1 NOT performed.** Password remains the working fallback.
+- **Remaining:** operator verifies **key login** from MobaXterm on all 3 nodes
+  (Phase 4) before H1 (Phase 5). Installation cannot be login-tested here (no
+  access to the operator private key).
+
+---
+
 ## 2026-06-02 — SSH key migration plan (password → ED25519) — plan only
 
 **Rationale:** Operator confirmed access is password-based (MobaXterm not using a
