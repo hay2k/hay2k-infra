@@ -5,6 +5,37 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — 20260601-15 — Implementation mode (Phases A–G)
+
+**Rationale:** Transition from design to implementation; reach maximum
+operational state without further interaction. Full per-phase record (summary/
+validation/issues/rollback) in **IMPLEMENTATION_LOG.md**.
+
+**Installed (user-space, reversible):**
+- **uv 0.11.18** → `~/.local/bin` (low-risk §2.1; download **SHA256-verified**,
+  `588f3e36…55add`).
+- uv-managed **CPython 3.12.13** baseline.
+- **Snakemake 9.22.0** via `uv tool` (medium-risk; user-space).
+- Dedicated **cluster SSH key** `~/.ssh/cluster_ed25519` (`600`, off-repo).
+
+**Validated:** uv venv + `uv pip install` + `uv lock` (reproducibility path);
+Snakemake dry-run + real run (2/2 steps, output produced).
+
+**Blocked (stop condition #5 — credentials unavailable; nothing attempted):**
+Apptainer (B), Nextflow (no Java), monitoring stack (D), NFS (F), Slurm (G) —
+all need **root** (no passwordless sudo); peer inventory + SSH trust (E) need
+**peer SSH auth**. All are high-risk §2.3. No destructive action, data loss,
+config replacement, or architectural conflict encountered.
+
+**Docs:** IMPLEMENTATION_LOG.md created; ENVIRONMENT_POLICY.md status updated
+(uv/Snakemake installed); SYSTEM_OVERVIEW.md map/tree/prompts; prompt
+20260601-15 created (14 kept).
+
+**To proceed:** (1) privileged-install path (passwordless sudo or operator-run
+installs); (2) authorize `~/.ssh/cluster_ed25519.pub` on `gpu-02`/`gpu-03`.
+
+---
+
 ## 2026-06-02 — Amendment to 20260601-14 — Peers reachable; inventory pending SSH auth
 
 **Rationale:** Operator provided peer addresses (`gpu-02` = 222.231.57.31,

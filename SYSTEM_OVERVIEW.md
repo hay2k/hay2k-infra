@@ -86,11 +86,12 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── NETWORK_DISCOVERY_gpu02.md   # blocked (unreachable)
     ├── NETWORK_DISCOVERY_gpu03.md   # blocked (unreachable)
     ├── CLUSTER_NETWORK_SUMMARY.md
+    ├── IMPLEMENTATION_LOG.md
     ├── INFRA_CHANGELOG.md
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-{01..14}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-{01..15}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -127,6 +128,7 @@ citekey or it does not exist.
 | NETWORK_DISCOVERY.md | Observed networking state of `gpu-01` (point-in-time): interfaces, IPs, exposure, unknowns |
 | NETWORK_DISCOVERY_gpu02/03.md | Per-node discovery (currently **blocked** — `gpu-02`/`gpu-03` unreachable from `gpu-01`) |
 | CLUSTER_NETWORK_SUMMARY.md | Cross-node comparison + NFS/Slurm feasibility (partial; inter-node path unverified) |
+| IMPLEMENTATION_LOG.md | Implementation phases: what's installed/validated, issues, rollback notes, blockers |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | AGENT_RUNTIME.md | How do agents actually run (Claude Code + tmux→Slurm), and what are their lifecycles? |
@@ -160,5 +162,6 @@ Prompts of record: `20260601-01_bootstrap.md` (archived);
 `-06_risk_ratification.md`, `-07_presentation_and_agent_tiers.md`,
 `-08_node_role_design.md`, `-09_storage_evaluation.md`,
 `-10_agent_runtime.md`, `-11_observability.md`,
-`-12_security_hardening.md`, `-13_network_discovery.md` (kept milestones); and
-`20260601-14_network_discovery_peers.md` (current).
+`-12_security_hardening.md`, `-13_network_discovery.md`,
+`-14_network_discovery_peers.md` (kept milestones); and
+`20260601-15_implementation.md` (current).

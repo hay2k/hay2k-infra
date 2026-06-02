@@ -1,6 +1,7 @@
 # 20260601-14 — Network Discovery: gpu-02 / gpu-03 + Cluster Summary
 
-> **STATUS: CURRENT.** Supersedes `20260601-13_network_discovery.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-15_implementation.md`.**
+> Current prompt of record is 20260601-15 (implementation mode).
 
 **Prompt ID:** 20260601-14 (assigned per the prompt-versioning policy,
 GOVERNANCE.md §8)
