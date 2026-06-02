@@ -272,8 +272,11 @@ preconditions:
 - ~~Version-control host and remote~~ — **RESOLVED**: GitHub private repo
   `hay2k/hay2k-infra`, off-host push live since 2026-06-01.
 - Zotero install + storage location on a headless host (affects §7).
-- Backup target / off-host destination (affects BACKUP_AND_RECOVERY.md);
-  encrypted secrets-backup channel still open (SECRETS_POLICY.md §6).
+- ~~Backup target / off-host destination~~ — **RESOLVED 2026-06-02**: approved
+  strategy is **3-node on-cluster replication** (data mirrored to peer disks +
+  age-encrypted secrets + daily timer + tested restore). **Off-site is out of
+  scope by operator decision — whole-site-loss risk accepted**
+  (BACKUP_AND_RECOVERY.md §3, §6; SECRETS_POLICY.md §6).
 - ~~Secrets management~~ — **RESOLVED 20260601-04** (§6a, SECRETS_POLICY.md):
   file-based + permission-enforced now, encryption required before off-host.
 - ~~Presentation automation~~ — **RESOLVED 20260601-07** (ENVIRONMENT_POLICY.md

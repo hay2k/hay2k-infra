@@ -5,6 +5,27 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — Backup strategy ratified: 3-node replication; off-site out of scope
+
+**Decision (operator):** no off-site backup will be implemented. The **3-node
+on-cluster replicated backup is the approved backup strategy**; whole-site/IDC
+loss is an **accepted risk**.
+
+- **GOVERNANCE.md §11:** backup/off-host decision → **RESOLVED** (on-cluster
+  replication approved; off-site out of scope, accepted).
+- **BACKUP_AND_RECOVERY.md:** §3 reframed as the approved 3-node strategy; §4
+  recovery rewritten for single-node loss (peer restore) vs whole-site loss
+  (not recoverable — accepted); §6 "gaps" → "accepted risks & scope".
+- **SECRETS_POLICY.md §6:** off-site identity requirement removed; secrets backup
+  covers accidental-deletion; total-`gpu-01`-loss → regenerate (secrets are
+  regenerable).
+- **CLUSTER_READINESS_REVIEW.md:** R1 closed; §8 marked approved/implemented;
+  **addendum reassessing priorities** → next recommended task = **security
+  hardening**.
+- No system changes; documentation reconciliation + decision record only.
+
+---
+
 ## 2026-06-02 — Backup gap closed (R1 mitigated)
 
 **Rationale:** Close the top readiness risk (R1: NFS data single-copy on a

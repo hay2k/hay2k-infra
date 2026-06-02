@@ -65,9 +65,12 @@ keys are **age-encrypted** (recipient = cluster age key) and copied to
 independent peer disks (`gpu-02`/`gpu-03` `/srv/backup/secrets`) by the daily
 backup timer; restore is tested (`infra/scripts/cluster-restore.sh secrets`).
 The **age identity** (`~/.secrets/age/identity.txt`) is excluded from the
-archive and is the root of trust — **the operator must keep a copy off-site**
-(cluster loss otherwise loses decryptability; mitigated since most secrets are
-regenerable). A true **off-site** encrypted copy remains the open tier (§5).
+archive and is the root of trust; it lives on `gpu-01`. **Off-site backup is out
+of scope (accepted, 2026-06-02).** The secrets backup therefore covers
+**accidental deletion while `gpu-01` is alive**; on total `gpu-01` loss, old
+encrypted backups are not decryptable — accepted, because **all current secrets
+are regenerable** (Grafana pw resettable; SSH keys regenerable/re-authorizable),
+so the recovery path is **regenerate, not restore** (BACKUP_AND_RECOVERY.md §6).
 
 ## 7. Rotation & incident response
 

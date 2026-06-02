@@ -25,43 +25,53 @@ Back up what cannot be regenerated; do not back up what can.
 | Tier | Examples | Backed up? |
 |------|----------|-----------|
 | **Precious** | Governance docs (`infra/`), prompt archive, source code, configs, citation library (Zotero DB / `.bib`), unique experimental raw data, results that are expensive to recompute | **Yes** |
-| **Secrets** | API keys, tokens, PATs, private keys, `.env`, cloud/Zotero credentials | **Yes, but NEVER to the git remote** — encrypted off-host channel only (SECRETS_POLICY.md §5–§6) |
+| **Secrets** | API keys, tokens, PATs, private keys, `.env`, cloud/Zotero credentials | **Yes, but NEVER to the git remote** — age-encrypted to peer disks (SECRETS_POLICY.md §6) |
 | **Regenerable** | Model weights re-downloadable from a hub, public datasets, build caches, intermediate artifacts, anything with a recorded SHA256 + source URL | **No** (recorded source is the "backup") |
 
 The distinction is enforced by storage layout: regenerable bulk lives in
 `resources/` with recorded provenance (GOVERNANCE.md §6); precious data is
 small and version-controlled or explicitly flagged for backup; **secrets live
 outside the repo entirely** (`~/.secrets/`, SECRETS_POLICY.md §3) and are
-backed up only encrypted and off-host — they are never in any git history.
+backed up only encrypted (age) to peer disks — never in any git history.
 
-## 3. Backup policy (3-2-1, scaled to one host)
+## 3. Backup policy — APPROVED: 3-node on-cluster replication (2026-06-02)
 
-- **3** copies of precious data, **2** media/locations, **1** off-host.
-- Precious code/docs/prompts: primary copy is a **version-control remote**
-  (off-host) — this satisfies the off-host requirement for the most critical,
-  smallest data.
-- Bulk precious data (raw experimental data, expensive results): periodic
-  snapshot to an **off-host destination** (TBD — §6).
-- Every backup set carries a **SHA256 manifest** so restores are verifiable
-  (GOVERNANCE.md §6).
-- Backups are **tested by restore**, not assumed. An untested backup is not a
-  backup.
+The approved strategy is **3-copy replication across the cluster's independent
+node disks**. Off-site/off-IDC backup is **explicitly out of scope** — a
+deliberate operator decision (the whole-site-loss risk is **accepted**, see §6).
 
-## 4. Recovery procedure (target shape, once mechanism exists)
+- **3 copies of precious data on independent disks:** primary on `gpu-01`
+  (`/srv/nfs/resources`) + mirrors on `gpu-02` and `gpu-03` (`/srv/backup/
+  resources`), via the daily `cluster-backup.timer`.
+- **Precious code/docs/prompts:** also on the **GitHub remote** (this happens to
+  be off-host, the one off-host copy that exists — for the small governance tier
+  only).
+- **Secrets:** age-encrypted, replicated to peer disks (SECRETS_POLICY.md §6).
+- Every data backup carries a **SHA256 manifest** (sibling of the mirror) so
+  restores are verifiable (GOVERNANCE.md §6).
+- Backups are **tested by restore** (`infra/scripts/cluster-restore.sh`) — an
+  untested backup is not a backup.
 
-1. Provision a clean host; record its OS/driver/CUDA versions.
-2. Restore the infrastructure repo `/home/hha/infra/` from the git remote, then
-   restore any bulk precious data from its off-host copy.
+## 4. Recovery procedure
+
+**Single-node loss (e.g. `gpu-01` disk fails) — the case the approved strategy
+covers:**
+1. Provision/replace the node; record OS/driver/CUDA versions.
+2. Restore the infrastructure repo `/home/hha/infra/` from the **GitHub remote**.
    - Reinstall git hooks (not version-controlled by git):
-     `cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
-     (SECRETS_POLICY.md §8).
-   - Restore secrets from the encrypted off-host channel into `~/.secrets/`
-     (perms 700/600) — never from git (SECRETS_POLICY.md §6).
-3. Verify against SHA256 manifests; any mismatch is a hard stop.
-4. Re-acquire regenerable assets from recorded sources into `resources/`,
-   verifying each hash.
-5. Recreate environments from committed lockfiles (GOVERNANCE.md §4).
-6. Reproduce a known result end-to-end as the acceptance test for recovery.
+     `cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`.
+3. Restore bulk precious data from a **peer mirror**:
+   `infra/scripts/cluster-restore.sh data gpu-02` (manifest-verified).
+4. Secrets: if `gpu-01` survived, `cluster-restore.sh secrets gpu-02`; if
+   `gpu-01` was lost (age identity gone), **regenerate** secrets — all are
+   regenerable (SECRETS_POLICY.md §6).
+5. Verify against SHA256 manifests; any mismatch is a hard stop.
+6. Re-acquire regenerable assets from recorded sources into `resources/`,
+   verifying each hash; recreate environments from committed lockfiles
+   (GOVERNANCE.md §4); reproduce a known result as the acceptance test.
+
+**Whole-site/IDC loss (all three nodes): NOT recoverable beyond the GitHub
+governance repo — accepted risk (§3, §6).**
 
 ## 5. Future server migration (required capability)
 
@@ -101,20 +111,22 @@ event (it is structural and high-impact).
 - **Regenerable data** (re-downloadable models, caches) — not backed up; recorded
   by source + SHA256 (GOVERNANCE.md §6).
 
-### Remaining gaps (honest)
+### Accepted risks & scope (operator decision 2026-06-02)
 
-- **NOT off-SITE.** The three nodes are one IDC/segment, so this protects against
-  **single-disk and single-node loss (R1/R2)** but **not whole-site loss.** A
-  true off-site/off-IDC target (cloud object store, remote host) still needs an
-  external destination + credentials — an open operator decision.
-- **age identity is the root of trust:** `~/.secrets/age/identity.txt` decrypts
-  the secrets backups. The operator **must keep a copy OFF-SITE** — if the whole
-  cluster is lost, the on-cluster identity is lost with it. (Mitigated by most
-  secrets being regenerable.)
-- **Push model:** backups push from `gpu-01`; a compromised `gpu-01` could affect
-  them. A pull model (peers pull) is a future hardening.
-- **No RAID** on the per-node disks (redundancy is via cross-node copies).
+- **Off-site/off-IDC backup is OUT OF SCOPE — accepted risk.** The three nodes
+  share one IDC/segment, so the approved strategy protects against **single-disk
+  and single-node loss** but **not whole-site/IDC loss** (fire, theft, site
+  outage, simultaneous multi-node loss). This is a deliberate, accepted decision;
+  it is **not** a pending gap.
+- **Secrets recoverability scope:** the age identity
+  (`~/.secrets/age/identity.txt`) lives on `gpu-01` only. The secrets backup
+  therefore covers **accidental deletion while `gpu-01` is alive** (restore +
+  decrypt works). On **total `gpu-01` loss**, old secrets backups are not
+  decryptable — accepted, because **all current secrets are regenerable**
+  (Grafana admin pw resettable; SSH keys regenerable + re-authorizable). Recovery
+  path on `gpu-01` loss = **regenerate**, not restore.
+- **Push model** (`gpu-01` → peers) and **no RAID** — accepted at this scale;
+  redundancy is via cross-node copies. A pull model is a possible future hardening.
 
-With on-cluster backup + tested restore in place, **regenerable and
-reproducible data may be stored on NFS now**; sole-copy irreplaceable data
-should still wait for the **off-site** tier.
+With this approved on-cluster backup + tested restore, **precious data may be
+stored on NFS** within the accepted whole-site-loss risk above.
