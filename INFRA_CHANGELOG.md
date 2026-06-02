@@ -5,6 +5,26 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-01 — 20260601-13 — Network discovery (read-only)
+
+**Rationale:** Verify the actual networking environment before any
+networking/NFS/Slurm/monitoring/security implementation plan. Read-only — no
+config/firewall/routing/DNS/service change, no install.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | **NETWORK_DISCOVERY.md** | **Created** from live inspection of `gpu-01`: host identity, interfaces (Intel I350 quad-GbE, one 1 GbE link up), IP config (**public** `222.231.57.30/24`), inter-node connectivity (**none verified**), topology, NFS/monitoring/security constraints; observations, assumptions, unknowns, risks, next actions. |
+| 2 | GOVERNANCE.md | §11 networking entry → **partially discovered** (gpu-01 only; inter-node unknown). |
+| 3 | SYSTEM_OVERVIEW.md | §2 networking caveat added; doc map + tree + prompts updated. |
+| 4 | prompts/20260601-13_network_discovery.md | **Created** current prompt of record; 12 marked kept. |
+
+**Headline findings:** `gpu-01` is a **public-IP, single-1 GbE** host with
+**SSH the only listener** and **no verified inter-node network**; `gpu-02`/
+`gpu-03` are unknown from here. NFS/Slurm/cross-node monitoring plans are
+**blocked** pending inter-node discovery. **Nothing changed on the system.**
+
+---
+
 ## 2026-06-01 — 20260601-12 — Security & hardening policy
 
 **Rationale:** Give the cluster a proportionate, documented security posture —

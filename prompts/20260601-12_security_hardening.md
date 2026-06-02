@@ -1,6 +1,7 @@
 # 20260601-12 — Security and Hardening Policy
 
-> **STATUS: CURRENT.** Supersedes `20260601-11_observability.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-13_network_discovery.md`.**
+> Current prompt of record is 20260601-13.
 
 **Prompt ID:** 20260601-12 (assigned per the prompt-versioning policy,
 GOVERNANCE.md §8)
