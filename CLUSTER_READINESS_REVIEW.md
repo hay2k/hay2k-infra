@@ -48,9 +48,10 @@ work; it is **not** a *scheduled, multi-tenant, queued* cluster yet.
 
 ## 4. Recommended architecture updates
 
-1. **Backups first (gate for any precious data):** implement an off-host backup
-   for NFS precious data + an encrypted secrets backup (BACKUP_AND_RECOVERY.md,
-   SECRETS_POLICY.md). Add disk redundancy (RAID) on the NFS server if possible.
+1. ~~Backups first~~ — **DONE 2026-06-02:** 3-node on-cluster replication +
+   age-encrypted secrets + daily timer + tested restore is the **approved backup
+   strategy**; off-site is **out of scope (accepted risk)**
+   (BACKUP_AND_RECOVERY.md §3, §6).
 2. **Reduce gpu-01 SPOF:** plan NFS/monitoring failover to gpu-02 (NODE_ARCHITECTURE
    warm-backup) once backups exist.
 3. **Complete monitoring:** dcgm-exporter (GPU metrics) + Alertmanager (at least
@@ -96,20 +97,18 @@ work; it is **not** a *scheduled, multi-tenant, queued* cluster yet.
     (a small, deliberate addition) + backups before precious data lands.
 - No speculative empty domain dirs (GOVERNANCE.md §0).
 
-## 8. Recommended backup strategy
+## 8. Backup strategy — APPROVED & IMPLEMENTED (2026-06-02)
 
-Priority order (R1/R3 are the gating risks):
-1. **Governance/code:** ✅ already on GitHub (off-host).
-2. **Secrets:** encrypt (age/sops) → off-host; currently single-copy — **close
-   this** (SECRETS_POLICY.md §5–§6).
-3. **NFS precious data:** a scheduled, **off-host** backup (e.g. MinIO/object
-   store on separate hardware, another host, or cloud) **before** any
-   irreplaceable data is stored. Until then, **store only regenerable/
-   reproducible data on NFS.**
-4. **Redundancy:** RAID on the NFS disk; **test restores** (BACKUP_AND_RECOVERY.md
-   — an untested backup is not a backup).
-5. Regenerable assets (re-downloadable models, caches) → not backed up; recorded
-   by source + SHA256.
+**3-node on-cluster replication is the approved strategy** (BACKUP_AND_RECOVERY.md
+§3). Off-site is **out of scope (accepted risk)**.
+1. **Governance/code:** ✅ GitHub remote (the one off-host copy, governance tier).
+2. **Secrets:** ✅ age-encrypted → peer disks; restore tested. (Identity on
+   gpu-01; secrets regenerable on total-loss.)
+3. **NFS precious data:** ✅ daily 3-copy mirror to gpu-02/gpu-03 + SHA256
+   manifest; restore tested. Precious data may now be stored on NFS within the
+   accepted whole-site-loss risk.
+4. **Regenerable assets** → not backed up; recorded by source + SHA256.
+5. **Accepted:** no off-site, no RAID, push model (BACKUP_AND_RECOVERY.md §6).
 
 ## 9. Recommended first production project
 
@@ -157,8 +156,27 @@ limits:
 - **Untrusted multi-tenant workloads** — no strong tenant isolation today.
 
 **Bottom line:** the cluster is **production-ready for reproducible research and
-best-effort/surplus compute today**, provided **precious data is backed up first**
-(R1 is the one must-fix before storing anything irreplaceable). Business is
-internal/dev-only for now; investment and any durability/compliance/public-facing
-or multi-node-training workloads should wait for backups, hardening, and (for
-training) a faster interconnect.
+best-effort/surplus compute today** — backups (3-node replication) are now in
+place (R1 closed within the accepted whole-site-loss risk). The next-largest
+unmitigated risk is **security (public-IP hosts, hardening designed-not-applied)**
+→ the recommended next task (§9 / addendum). Business is internal/dev-only;
+investment and any compliance/public-facing or multi-node-training workloads
+still wait on hardening and (for training) a faster interconnect.
+
+---
+
+## Addendum (2026-06-02): reassessed priorities after backup closure
+
+With durability handled, the ranked next tasks are:
+
+1. **Security hardening (RECOMMENDED NEXT)** — apply SECURITY_AND_HARDENING_POLICY
+   .md mandatory controls (SSH hardening, review firewalld public zone incl. the
+   `cockpit` default, fail2ban, account/password posture). **Why #1:** the hosts
+   are on **public IPs** and hardening is the **largest remaining unmitigated
+   risk**; it gates onboarding any real/business data; it's low-risk + reversible.
+2. **Monitoring completion** — dcgm-exporter (GPU metrics in Grafana) +
+   Alertmanager (disk/node-down/GPU-temp/NFS) — operational safety once workloads
+   run.
+3. **First research project** — delivers actual value; needs a User-approved
+   project definition (PROJECT_LIFECYCLE.md).
+4. **Lightweight GPU coordination** ("who-holds-which-card", RESOURCE_POLICY.md).
