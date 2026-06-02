@@ -165,7 +165,32 @@ attempted (avoids a source-build that cannot complete without the peers).
 
 ---
 
-## Blocker report (consolidated, updated 2026-06-02 — sudo on gpu-01)
+## Update 2026-06-02 (cont.3) — peer sudo on ALL nodes → cluster-wide completion
+
+Passwordless sudo confirmed on **all three nodes**. Verified actual state (no
+assumptions), then completed multi-node implementation. Authoritative current
+state: **CLUSTER_STATUS.md**.
+
+- **Replicated to gpu-02/gpu-03 (Priority 1):** `~/.local` stack (uv 0.11.18,
+  CPython 3.12.13, Snakemake 9.22.0, JDK 21.0.11, Nextflow 26.04.3) via tar/SSH;
+  Apptainer 1.5.0 via EPEL. All validated on peers.
+- **Monitoring mesh (Priority 2):** node_exporter 1.11.1 on peers (firewalled to
+  gpu-01); Prometheus now scrapes **all 3** (`up=1` ×3); DCGM 4.5.3 active on all
+  nodes (2 GPUs each). `dcgm-exporter` bridge still deferred (not packaged).
+- **NFS (Priority 3):** mounted + persistent (`/etc/fstab`) on both peers;
+  **cross-node validated** (gpu-02 write → gpu-03 read). Server unchanged.
+- **Slurm (Priority 4):** **no el10 path** — not in EPEL; **OpenHPC EL_10 = 404**
+  (EL_9 only); SchedMD source-only. `munge` + gcc/make available; source build
+  feasible but not low-risk → recommendation in CLUSTER_STATUS.md §7 (interim:
+  Nextflow/Snakemake over SSH+NFS; Slurm via deliberate source build when
+  queueing is needed).
+- **Obsolete blockers:** peer sudo, peer SSH, peer installs, NFS mounts — all
+  resolved.
+
+Rollback (peers): mirror the gpu-01 per-phase rollbacks via SSH; unmount NFS +
+remove fstab line; `rm -rf ~/.local` to remove the user-space stack.
+
+## Blocker report (historical — see CLUSTER_STATUS.md for current)
 
 **Done on gpu-01:** Apptainer (B), monitoring core (D: node_exporter +
 Prometheus + Grafana + DCGM), NFS server (F). **Resolved earlier:** SSH trust +

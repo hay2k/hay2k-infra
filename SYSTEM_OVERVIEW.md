@@ -87,6 +87,7 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── NETWORK_DISCOVERY_gpu03.md   # blocked (unreachable)
     ├── CLUSTER_NETWORK_SUMMARY.md
     ├── IMPLEMENTATION_LOG.md
+    ├── CLUSTER_STATUS.md
     ├── INFRA_CHANGELOG.md
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
@@ -129,6 +130,7 @@ citekey or it does not exist.
 | NETWORK_DISCOVERY_gpu02/03.md | Per-node discovery (currently **blocked** — `gpu-02`/`gpu-03` unreachable from `gpu-01`) |
 | CLUSTER_NETWORK_SUMMARY.md | Cross-node comparison + NFS/Slurm feasibility (partial; inter-node path unverified) |
 | IMPLEMENTATION_LOG.md | Implementation phases: what's installed/validated, issues, rollback notes, blockers |
+| CLUSTER_STATUS.md | Current operational state of the 3-node cluster (components, versions, monitoring, NFS, blockers) |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | AGENT_RUNTIME.md | How do agents actually run (Claude Code + tmux→Slurm), and what are their lifecycles? |
