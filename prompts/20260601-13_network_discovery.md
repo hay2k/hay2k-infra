@@ -1,6 +1,7 @@
 # 20260601-13 — Network Discovery & Verification
 
-> **STATUS: CURRENT.** Supersedes `20260601-12_security_hardening.md` (kept).
+> **STATUS: KEPT — superseded by `20260601-14_network_discovery_peers.md`.**
+> Current prompt of record is 20260601-14.
 
 **Prompt ID:** 20260601-13 (assigned per the prompt-versioning policy,
 GOVERNANCE.md §8)
