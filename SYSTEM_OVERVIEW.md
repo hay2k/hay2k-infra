@@ -35,6 +35,10 @@ with symmetric compute) are designed in **NODE_ARCHITECTURE.md**. There is **no
 shared storage and no scheduler yet** — both are open decisions
 (RESOURCE_POLICY.md, GOVERNANCE.md §11). The earlier "single host" assumption is
 superseded; capacity, backup, and migration planning now span three nodes.
+**Networking caveat (NETWORK_DISCOVERY.md):** as of 2026-06-01, `gpu-01` has a
+single 1 GbE link on a public IP and **no verified inter-node network** to
+`gpu-02`/`gpu-03`; cluster connectivity must be established before NFS/Slurm/
+cross-node monitoring can be deployed.
 
 ## 3. Domains
 
@@ -78,11 +82,12 @@ not flow between them without explicit user approval (GOVERNANCE.md).
     ├── STORAGE_ARCHITECTURE.md
     ├── OBSERVABILITY.md
     ├── SECURITY_AND_HARDENING_POLICY.md
+    ├── NETWORK_DISCOVERY.md
     ├── INFRA_CHANGELOG.md
     ├── .gitignore
     ├── hooks/              # tracked git hooks (install into .git/hooks)
     │   └── pre-commit      # secret-scan (SECRETS_POLICY.md §8)
-    └── prompts/            # 20260601-{01..12}; secrets live OUTSIDE the repo (~/.secrets/)
+    └── prompts/            # 20260601-{01..13}; secrets live OUTSIDE the repo (~/.secrets/)
 ```
 
 `infra/` being its own git repo means the most critical, smallest tier
@@ -116,6 +121,7 @@ citekey or it does not exist.
 | STORAGE_ARCHITECTURE.md | Which shared-storage approach (NFS/Gluster/Ceph/Syncthing/object), and why? |
 | OBSERVABILITY.md | How are the cluster, GPUs, jobs, and agents monitored (metrics/logs/alerts)? |
 | SECURITY_AND_HARDENING_POLICY.md | How is the cluster secured/hardened (host/network/fs/secrets/supply-chain/agents/incident)? |
+| NETWORK_DISCOVERY.md | Observed networking state (point-in-time): interfaces, IPs, exposure, what's unknown |
 | DIRECTORY_STANDARD.md | Where does anything go, and when is a directory allowed to exist? |
 | AGENT_ARCHITECTURE.md | Who (worker/supervisor/human) decides what, and how do escalations flow? |
 | AGENT_RUNTIME.md | How do agents actually run (Claude Code + tmux→Slurm), and what are their lifecycles? |
@@ -148,5 +154,6 @@ Prompts of record: `20260601-01_bootstrap.md` (archived);
 `-04_secrets_policy.md`, `-05_environment_policy.md`,
 `-06_risk_ratification.md`, `-07_presentation_and_agent_tiers.md`,
 `-08_node_role_design.md`, `-09_storage_evaluation.md`,
-`-10_agent_runtime.md`, `-11_observability.md` (kept milestones); and
-`20260601-12_security_hardening.md` (current).
+`-10_agent_runtime.md`, `-11_observability.md`,
+`-12_security_hardening.md` (kept milestones); and
+`20260601-13_network_discovery.md` (current).

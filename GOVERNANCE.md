@@ -290,8 +290,13 @@ preconditions:
   optimization only; Ceph/Gluster not justified at 3 nodes. **Deployment
   deferred (no NFS service installed, no shared-storage dirs);** an NFS
   server / MinIO are high-risk (§2.3) to deploy.
-- **Node hostname/role realization & cluster networking** — **OPEN**
-  (20260601-08): realize roles only when services are deployed (with approval).
+- **Node hostname/role realization & cluster networking** — **OPEN; partially
+  discovered 20260601-13** (NETWORK_DISCOVERY.md): `gpu-01` = single 1 GbE link
+  on a **public IP**, SELinux enforcing, only SSH listening, **no inter-node
+  network and no knowledge of `gpu-02`/`gpu-03`**. Inter-node connectivity,
+  topology, and the other nodes' inventory remain **unknown** — must be obtained
+  before any networking/NFS/Slurm/cluster-monitoring plan. Realize roles only
+  when services are deployed (with approval).
 - ~~Monitoring / observability strategy~~ — **DESIGNED 20260601-11**
   (OBSERVABILITY.md): Prometheus + node-exporter + DCGM-exporter + Grafana +
   Alertmanager (Loki optional), singleton-on-control + exporters-on-all-nodes;
