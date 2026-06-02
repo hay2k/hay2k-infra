@@ -295,8 +295,10 @@ preconditions:
   on a **public IP**, SELinux enforcing, only SSH listening, **no inter-node
   network and no knowledge of `gpu-02`/`gpu-03`**. Inter-node connectivity,
   topology, and the other nodes' inventory remain **unknown** — must be obtained
-  before any networking/NFS/Slurm/cluster-monitoring plan. Realize roles only
-  when services are deployed (with approval).
+  before any networking/NFS/Slurm/cluster-monitoring plan. Inspection of
+  `gpu-02`/`gpu-03` was **attempted 20260601-14 and BLOCKED** (unreachable from
+  `gpu-01`; see CLUSTER_NETWORK_SUMMARY.md). Realize roles only when services are
+  deployed (with approval).
 - ~~Monitoring / observability strategy~~ — **DESIGNED 20260601-11**
   (OBSERVABILITY.md): Prometheus + node-exporter + DCGM-exporter + Grafana +
   Alertmanager (Loki optional), singleton-on-control + exporters-on-all-nodes;

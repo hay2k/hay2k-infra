@@ -5,6 +5,24 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — 20260601-14 — Peer network discovery (gpu-02/gpu-03) — BLOCKED
+
+**Rationale:** Extend network discovery to `gpu-02`/`gpu-03`. Read-only; no
+installs or changes.
+
+| # | Document | Change |
+|---|----------|--------|
+| 1 | **NETWORK_DISCOVERY_gpu02.md** / **_gpu03.md** | **Created as BLOCKED records.** Both peers are unreachable/unknown from `gpu-01` (no DNS, no SSH resolution, no inventory, no private network). All fields UNKNOWN — **no data fabricated**; each includes the exact read-only command block to run on the node. |
+| 2 | **CLUSTER_NETWORK_SUMMARY.md** | **Created (partial).** Per-node comparison (only `gpu-01` measured); common topology = cannot be established; available paths = none verified; **NFS feasibility = indeterminate/not-advisable**, **Slurm feasibility = blocked**; lists what must be obtained. |
+| 3 | GOVERNANCE.md / SYSTEM_OVERVIEW.md | §11 + doc map/tree/prompts note the blocked peer inspection. |
+| 4 | prompts/20260601-14_network_discovery_peers.md | **Created** current prompt of record; 13 marked kept. |
+
+**Result:** the multi-node roadmap (NFS/Slurm/cross-node monitoring) is **blocked
+on peer inventory + a verified inter-node network**, neither of which exists from
+`gpu-01`. **Nothing changed on the system; no values invented.**
+
+---
+
 ## 2026-06-01 — 20260601-13 — Network discovery (read-only)
 
 **Rationale:** Verify the actual networking environment before any
