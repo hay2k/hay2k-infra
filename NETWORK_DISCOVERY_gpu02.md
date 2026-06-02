@@ -1,36 +1,25 @@
 # NETWORK DISCOVERY — gpu-02
 
-**Status:** **PARTIAL (2026-06-02).** Address provided by operator; network
-reachability **confirmed** from `gpu-01`. Per-node inventory (OS/NIC/listeners/
-firewall) is **still pending — SSH authentication is not available** from this
-session. No data is invented; unmeasured fields are marked UNKNOWN. Read-only —
-nothing changed on `gpu-02`.
+**Status:** **COMPLETE (2026-06-02).** Inventoried via passwordless SSH
+(`cluster_ed25519`). Read-only — nothing changed on `gpu-02`.
 
 ---
 
-## Confirmed from `gpu-01` (measured)
-
 | Field | Value |
 |-------|-------|
-| IPv4 | **`222.231.57.31`** (same subnet `222.231.57.0/24` as gpu-01) |
-| Reachability (ICMP) | **UP** — 3/3 replies, 0% loss |
-| Latency (RTT) | **avg 0.067 ms** (min 0.033 / max 0.119) → same L2 segment |
-| TCP/22 (SSH) | **OPEN** |
-| SSH host key | ed25519 present (recorded to `known_hosts` on first contact) |
-| SSH auth result | `Permission denied (publickey,…,password)` — no authorized key for this session |
+| Hostname | `gpu-02` |
+| OS / kernel | Rocky Linux 10.1 / `6.12.0-124.56.1.el10_1.x86_64` |
+| CPU / RAM / disk | 48 cores / 188 GiB / ~1.8 TB (1% used) |
+| GPU | 2× RTX 6000 Ada, 49140 MiB each, driver 610.43.02 |
+| NIC | Intel I350 quad-GbE (`igb`); `ens100f0` **UP @ 1000 Mb/s**, MTU 1500; f1–f3 DOWN |
+| IPv4 | `222.231.57.31/24` (public) |
+| Gateway | `222.231.57.1` |
+| DNS | `8.8.8.8`, `164.124.101.2` |
+| Listening | `sshd` :22 only (`0.0.0.0` + `[::]`) |
+| firewalld | active, zone `public` |
+| SELinux | Enforcing |
+| Passwordless sudo | **NO** (peer installs still require credentials) |
+| SSH from gpu-01 | **OK** (passwordless via `cluster_ed25519`; alias `gpu-02`) |
 
-## Pending — requires SSH access (UNKNOWN until then)
-
-hostname · OS/kernel · NIC model/speed/duplex/MTU · interfaces/MAC · full IP
-config · routes/gateway · DNS · listening services · firewalld state · SELinux.
-
-## How to complete this record
-
-The host is reachable; only **authentication** is missing. Provide **one** of:
-1. Authorize key-based SSH for `hha` from `gpu-01` to `gpu-02` (operator action
-   on `gpu-02` — a config change I will not make unprompted), then I run the
-   read-only inventory; **or**
-2. Run the read-only command block (in NETWORK_DISCOVERY.md / the gpu-03 file)
-   **on `gpu-02`** and provide the output.
-
-This file changes nothing on `gpu-02`.
+**Identical hardware/OS to `gpu-01`.** DNS list differs (adds `8.8.8.8`). See
+CLUSTER_NETWORK_SUMMARY.md.

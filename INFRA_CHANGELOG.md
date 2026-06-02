@@ -5,6 +5,27 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — 20260601-15 (cont.) — Peer trust authorized; Phases C & E completed
+
+**Rationale:** Operator authorized `cluster_ed25519` on the peers. Resumed from
+the blocked state; completed peer inventory and the user-space workflow stack.
+
+- **Phase E ✅ COMPLETE:** passwordless SSH `gpu-01` → `gpu-02`/`gpu-03` verified;
+  `~/.ssh/config` aliases added; **full inventory** done — peers are **identical**
+  to `gpu-01` (Rocky 10.1, 48c/188 GiB/1.8 TB, 2× RTX 6000 Ada, 1 GbE I350, SSH-
+  only, firewalld active, SELinux enforcing). Full SSH mesh confirmed
+  (gpu-02→gpu-03). **Peers also have no passwordless sudo.**
+- **Phase C ✅ COMPLETE:** **Nextflow 26.04.3** installed user-space on a
+  **verified Temurin JDK 21.0.11** (`sha256 4b2220e2…`); validated (minimal
+  workflow `[SUCCESS]`). Snakemake already done.
+- **Docs:** NETWORK_DISCOVERY_gpu02/03.md → COMPLETE; CLUSTER_NETWORK_SUMMARY.md
+  → complete (1 GbE confirmed on all nodes); IMPLEMENTATION_LOG.md (Phases C/E
+  complete, blocker report revised); ENVIRONMENT_POLICY.md status.
+- **Still blocked (B, D, F, G):** single root cause — **no passwordless sudo on
+  any node** (#5). Nothing destructive; no conflicts.
+
+---
+
 ## 2026-06-02 — 20260601-15 — Implementation mode (Phases A–G)
 
 **Rationale:** Transition from design to implementation; reach maximum
