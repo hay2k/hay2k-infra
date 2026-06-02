@@ -5,6 +5,28 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — Amendment to 20260601-14 — Peers reachable; inventory pending SSH auth
+
+**Rationale:** Operator provided peer addresses (`gpu-02` = 222.231.57.31,
+`gpu-03` = 222.231.57.32, user `hha`). Re-ran read-only probes. Connectivity
+**confirmed**; per-node inventory still blocked on SSH auth. No changes made.
+
+- **Confirmed (measured from gpu-01):** both peers reachable on the shared
+  public `222.231.57.0/24`, 0% packet loss, **sub-ms RTT** (0.067 ms / 0.123 ms
+  → same L2 segment), **TCP/22 open**; ed25519 host keys recorded.
+- **Blocked:** SSH auth → `Permission denied (publickey,…,password)` (no
+  authorized key; password is non-interactive). OS/NIC-speed/services/firewall
+  for the peers remain UNKNOWN.
+- **Docs updated:** NETWORK_DISCOVERY_gpu02.md / _gpu03.md → **PARTIAL** (IP +
+  reachability + latency recorded); CLUSTER_NETWORK_SUMMARY.md → topology
+  confirmed (shared public /24, no private net), **NFS feasibility = technically
+  feasible but bandwidth-bound + security-gated**, **Slurm = plausible, still
+  preconditioned**; GOVERNANCE.md §11 updated.
+- **Still needed:** SSH access to peers (or pasted inventory output); peer link
+  speeds; whether the `/24` is dedicated or shared with other tenants.
+
+---
+
 ## 2026-06-02 — 20260601-14 — Peer network discovery (gpu-02/gpu-03) — BLOCKED
 
 **Rationale:** Extend network discovery to `gpu-02`/`gpu-03`. Read-only; no

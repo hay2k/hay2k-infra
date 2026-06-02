@@ -294,11 +294,14 @@ preconditions:
   discovered 20260601-13** (NETWORK_DISCOVERY.md): `gpu-01` = single 1 GbE link
   on a **public IP**, SELinux enforcing, only SSH listening, **no inter-node
   network and no knowledge of `gpu-02`/`gpu-03`**. Inter-node connectivity,
-  topology, and the other nodes' inventory remain **unknown** — must be obtained
-  before any networking/NFS/Slurm/cluster-monitoring plan. Inspection of
-  `gpu-02`/`gpu-03` was **attempted 20260601-14 and BLOCKED** (unreachable from
-  `gpu-01`; see CLUSTER_NETWORK_SUMMARY.md). Realize roles only when services are
-  deployed (with approval).
+  topology, and the other nodes' inventory remain **partially unknown**.
+  **Update 20260601-14:** `gpu-02` (`.31`) and `gpu-03` (`.32`) are **reachable**
+  on the shared public `222.231.57.0/24` with **sub-ms latency** (same L2
+  segment); inter-node connectivity is **confirmed**. Still **pending**: peer
+  inventory + link speeds (**SSH auth not yet available**) and whether the `/24`
+  is dedicated or shared. No private network exists. See
+  CLUSTER_NETWORK_SUMMARY.md. Realize roles only when services are deployed
+  (with approval).
 - ~~Monitoring / observability strategy~~ — **DESIGNED 20260601-11**
   (OBSERVABILITY.md): Prometheus + node-exporter + DCGM-exporter + Grafana +
   Alertmanager (Loki optional), singleton-on-control + exporters-on-all-nodes;
