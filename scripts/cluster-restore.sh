@@ -18,10 +18,11 @@ case "$MODE" in
     rm -f /tmp/.m.$$ ;;
   secrets)
     ARCH=${3:-$(ssh "$SRCH" 'ls -1t /srv/backup/secrets/secrets-*.tar.gz.age 2>/dev/null | head -1')}
-    echo "Decrypting $SRCH:$ARCH to /tmp/secrets-restore.$$ ..."
-    mkdir -p /tmp/secrets-restore.$$ && chmod 700 /tmp/secrets-restore.$$
-    ssh "$SRCH" "cat $ARCH" | age -d -i "$HOME/.secrets/age/identity.txt" | tar xzf - -C /tmp/secrets-restore.$$
-    echo "restored secrets tree to /tmp/secrets-restore.$$ (review, then place manually):"
-    find /tmp/secrets-restore.$$ -type f ;;
+    umask 077; mkdir -p "$HOME/.cache"
+    OUT=$(mktemp -d "$HOME/.cache/secrest.XXXXXX"); chmod 700 "$OUT"   # private, NOT /tmp
+    echo "Decrypting $SRCH:$ARCH to $OUT ..."
+    ssh "$SRCH" "cat $ARCH" | age -d -i "$HOME/.secrets/age/identity.txt" | tar xzf - -C "$OUT"
+    echo "restored secrets tree to $OUT (review, place manually, then 'rm -rf $OUT'):"
+    find "$OUT" -type f ;;
   *) echo "unknown mode"; exit 1 ;;
 esac

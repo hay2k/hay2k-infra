@@ -53,7 +53,8 @@ future, not required now).
   "make something work"; fix the policy instead.
 - **[M] Service minimization:** run only required services; no desktop/GUI; no
   public-facing daemons. Every listening service is justified and internal.
-- **SSH policy:** **[M]** key-only auth (`PasswordAuthentication no`), **[M]**
+- **SSH policy** (key-based login is the **ratified long-term standard**,
+  2026-06-02): **[M]** key-only auth (`PasswordAuthentication no`), **[M]**
   `PermitRootLogin no`, **[M]** ed25519 keys, **[R]** `AllowUsers hha` (+ future
   operators explicitly), **[R]** restrict SSH to the management network,
   **[R]** rate-limit/lockout (e.g. `fail2ban`), **[M]** verified `known_hosts`
@@ -61,9 +62,17 @@ future, not required now).
 - **Root access policy:** **[M]** root is **emergency/bootstrap only** — no
   routine root login, no root over SSH; **[M]** strong root password held as a
   **break-glass** secret (SECRETS_POLICY.md); all admin via `sudo` as `hha`.
-- **sudo policy:** **[M]** `hha` uses password-protected sudo (no broad
-  `NOPASSWD`); **[R]** sudo events logged (journald/auditd); **[O]** command-
-  scoped sudoers if more operators are added.
+- **sudo policy — ARCHITECTURAL EXCEPTION (ratified 2026-06-02):** `hha` uses
+  **passwordless sudo on all nodes.** The autonomous agent runtime, backup
+  automation, monitoring administration, NFS administration, and future
+  orchestration depend on it; this deliberately overrides the generic
+  "password-protected sudo / no broad `NOPASSWD`" guidance for this
+  single-operator model. **Mitigations:** SSH is key-only (the effective sudo
+  gate is SSH-key + host access), agents run as `hha` (AGENT_RUNTIME.md), and all
+  privileged actions are logged (§8) and documented (§10). A command-scoped
+  `NOPASSWD` allowlist was considered and **declined at this time**; revisit if
+  multi-operator or untrusted-agent scenarios arise. **[R]** sudo events logged
+  (journald/auditd).
 - **Password policy:** **[M]** strong passwords for `hha` and root; **[R]**
   `pwquality` minimums; **[M]** no shared accounts. (Passwords mainly guard
   sudo/console since SSH is key-only.)
@@ -119,14 +128,16 @@ future, not required now).
 ## 5. Secrets management (security view; full policy = SECRETS_POLICY.md)
 
 - **[M] Location:** `~/.secrets`, `700`/`600`, off-repo, per-domain.
-- **[M] Backup:** secrets backed up **only encrypted, off-host, never to git**
-  (SECRETS_POLICY.md §6). *Currently single-copy on-host — a known gap.*
+- **[M] Backup:** secrets backed up **only encrypted (age), never to git**,
+  replicated to peer disks (SECRETS_POLICY.md §6). **Implemented 2026-06-02**
+  (on-cluster 3-node replication; off-site out of scope — accepted,
+  BACKUP_AND_RECOVERY.md §3/§6).
 - **Rotation:** **[M]** rotate **immediately on exposure**; **[R]** periodic
   rotation for long-lived tokens.
-- **Emergency recovery:** **[R]** a **break-glass** encrypted copy of critical
-  secrets (root password, GitHub deploy key) stored off-host, so node loss does
-  not lock the operator out of the remote; **[M]** the recovery path is
-  documented.
+- **Emergency recovery:** the **break-glass root password** (set 2026-06-02) and
+  keys live in `~/.secrets`, age-encrypted into the on-cluster backup (peers);
+  off-site is out of scope (accepted). **[M]** the recovery path is documented
+  (BACKUP_AND_RECOVERY.md §4); secrets are regenerable on total-cluster loss.
 - **API keys / SSH keys / GitHub creds:** **[M]** dedicated, least-scope keys
   (per-repo deploy key, no PAT — already decided), ed25519, key-only; **[R]**
   GitHub MFA; **[M]** never in a repo (pre-commit hook enforces, SECRETS_POLICY
@@ -179,9 +190,9 @@ future, not required now).
 
 ## 9. Backup security
 
-- **[M] Encryption:** secrets backups encrypted (age/sops) **before** leaving
-  the host (SECRETS_POLICY.md §5); **[R]** encrypt bulk backups at rest off-host;
-  **[M]** the GitHub repo is **private**.
+- **[M] Encryption:** secrets backups are **age-encrypted before leaving the
+  host** (SECRETS_POLICY.md §6) and replicated to peer disks (on-cluster;
+  off-site out of scope — accepted); **[M]** the GitHub repo is **private**.
 - **[M] Restore validation:** test restores — *an untested backup is not a
   backup* (BACKUP_AND_RECOVERY.md §3); **[R]** periodic restore drills.
 - **[M] Access controls:** backup targets use least-privilege credentials
