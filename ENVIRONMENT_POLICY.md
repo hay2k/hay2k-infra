@@ -3,10 +3,11 @@
 **Status:** Active from 2026-06-01 (created by 20260601-05)
 **Scope:** How software environments are built, pinned, stored, and chosen,
 so every result is reproducible (GOVERNANCE.md §4) on a clean host.
-**Implementation status (20260601-15):** **uv** (low-risk, SHA256-verified) +
-managed **CPython 3.12.13** + **Snakemake** (user-space via uv) are now
-**installed on `gpu-01`** (IMPLEMENTATION_LOG.md). Apptainer, Nextflow (needs
-Java), and execution backends remain **not installed** (root/approval required).
+**Implementation status (20260601-15):** **uv** (SHA256-verified) + managed
+**CPython 3.12.13** + **Snakemake 9.22.0** + **Nextflow 26.04.3** (on a verified
+**Temurin JDK 21**) are now **installed on `gpu-01`** (user-space; see
+IMPLEMENTATION_LOG.md). Apptainer and execution backends (Slurm) remain **not
+installed** (root/approval required). Nextflow needs `JAVA_HOME=~/.local/jdk-21`.
 
 ---
 

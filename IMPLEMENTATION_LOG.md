@@ -1,9 +1,10 @@
 # IMPLEMENTATION LOG
 
 **Started:** 2026-06-02 (20260601-15, implementation mode)
-**Operator context:** `hha` on `gpu-01`. **No passwordless sudo** (root ops
-blocked), **no SSH auth to `gpu-02`/`gpu-03`** (peer ops blocked). Outbound HTTPS
-works. All work below is **user-space, reversible**; nothing required root.
+**Operator context:** `hha` on `gpu-01`. **No passwordless sudo on any node**
+(root ops blocked). **Peer SSH: resolved 2026-06-02** — passwordless `gpu-01` →
+`gpu-02`/`gpu-03` via `cluster_ed25519`. Outbound HTTPS works. All work below is
+**user-space, reversible**; nothing required root.
 
 This log records, per phase: summary · validation · issues · rollback notes.
 Blockers are consolidated in §"Blocker report".
@@ -40,21 +41,30 @@ baseline (user-space).
 
 **Rollback:** n/a (nothing done).
 
-## Phase C — Snakemake + Nextflow (workflow validation) ◑ PARTIAL
+## Phase C — Snakemake + Nextflow (workflow validation) ✅ COMPLETE (2026-06-02)
 
-**Summary:** **Snakemake 9.22.0** installed via `uv tool install snakemake`
-(user-space; medium-risk, executed under the autonomous mandate). **Nextflow not
-installed** — it requires a Java runtime, which is **absent**; a JDK install
-needs root (#5).
+**Summary:** **Snakemake 9.22.0** via `uv tool` (user-space). **Nextflow 26.04.3**
+installed user-space after installing a **verified Temurin JDK 21.0.11** to
+`~/.local/jdk-21` (Java needs no root — like uv). Both medium-risk, executed
+under the autonomous mandate; both reversible.
+- `sha256(JDK 21.0.11 tar.gz)` = `4b2220e2…a4ca4de` (verified, match).
+- `sha256(nextflow launcher)` = `a56de126…9e3c51e0` (recorded; Nextflow
+  self-verifies its runtime jars on bootstrap).
 
-**Validation (Snakemake):**
-- `snakemake --version` → `9.22.0` ✅
-- Trivial workflow in `/tmp`: dry-run (`-n`) planned 2 jobs ✅; real run
-  (`--cores 1`) → "2 of 2 steps done", output file produced ✅. Throwaway removed.
+**Validation:**
+- Snakemake: dry-run planned 2 jobs ✅; real run "2 of 2 steps done", output
+  produced ✅.
+- JDK: `java -version` → OpenJDK 21.0.11 LTS ✅.
+- Nextflow: `nextflow -version` → 26.04.3 ✅; minimal workflow
+  (`channel.of(...).view()`) → `[SUCCESS]`, output emitted ✅.
 
-**Issues:** Nextflow blocked on missing Java (see Blocker report).
+**Issues:** Nextflow **26.x has a stricter DSL2 parser** — a naive process-block
+test failed to compile (usage nuance, not an install defect; the engine executes
+workflows correctly). Note for future workflow authors: target current DSL2
+syntax. **Nextflow requires `JAVA_HOME=~/.local/jdk-21`** in the environment.
 
-**Rollback:** `uv tool uninstall snakemake`.
+**Rollback:** `uv tool uninstall snakemake`; `rm ~/.local/bin/nextflow`;
+`rm -rf ~/.local/jdk-21 ~/.local/share/nextflow`.
 
 ## Phase D — Node Exporter / DCGM Exporter / Prometheus / Grafana ⛔ BLOCKED
 
@@ -67,24 +77,27 @@ fallback.)
 
 **Rollback:** n/a.
 
-## Phase E — SSH trust + cluster inventory refresh ◑ PARTIAL
+## Phase E — SSH trust + cluster inventory refresh ✅ COMPLETE (2026-06-02)
 
-**Summary:** Generated a **dedicated cluster SSH key** for `hha`
-(`~/.ssh/cluster_ed25519`, no passphrase, `600`, off-repo per SECRETS_POLICY.md),
-fingerprint `SHA256:bgQBkEtoXymFIKZ8R3HMHsVbc/j6kFtjlnuCqac2o0M`. **Trust
-distribution and inventory refresh are blocked:** authorizing the key on
-`gpu-02`/`gpu-03` requires peer access (current SSH auth = `Permission denied`),
-which needs an operator action or password (#5).
+**Summary:** Operator authorized `cluster_ed25519` on `gpu-02`/`gpu-03`.
+**Passwordless SSH from `gpu-01` to both peers now works.** Added
+`~/.ssh/config` aliases (`gpu-02`/`gpu-03` → IPs, `cluster_ed25519`,
+IdentitiesOnly). Completed the **full peer inventory** (NETWORK_DISCOVERY_gpu02/
+03.md, CLUSTER_NETWORK_SUMMARY.md).
 
-**Validation:** key present (`600`), pubkey emitted; peers re-probed → still
-`Permission denied` (expected; key not yet authorized there). Connectivity to
-peers remains confirmed (CLUSTER_NETWORK_SUMMARY.md).
+**Validation:**
+- `ssh gpu-02 hostname` / `ssh gpu-03 hostname` → OK, passwordless ✅
+- Full mesh: `gpu-02 → gpu-03` reachable ✅
+- Inventory: peers **identical** to gpu-01 (Rocky 10.1, 48c/188 GiB/1.8 TB,
+  2× RTX 6000 Ada, 1 GbE I350); only SSH listening; firewalld active; SELinux
+  enforcing; **passwordless sudo NO on peers too**.
 
-**Prepared next step (operator action):** append the public key to each peer's
-`~/.ssh/authorized_keys` (e.g. `ssh-copy-id -i ~/.ssh/cluster_ed25519.pub
-hha@222.231.57.31` and `…57.32`), then I can complete the peer inventory.
+**Issues:** no cluster-internal name resolution (hostnames not in DNS/`/etc/hosts`)
+— gpu-01 uses SSH aliases; a cluster `/etc/hosts`/DNS is needed for Slurm/NFS
+(root). Minor DNS inconsistency across nodes (gpu-02 adds `8.8.8.8`).
 
-**Rollback:** `rm ~/.ssh/cluster_ed25519 ~/.ssh/cluster_ed25519.pub`.
+**Rollback:** `rm ~/.ssh/cluster_ed25519*`; remove the `gpu-02`/`gpu-03` blocks
+from `~/.ssh/config`; (peer `authorized_keys` entries are operator-managed).
 
 ## Phase F — NFS deployment ⛔ BLOCKED
 
@@ -105,37 +118,44 @@ Not attempted.
 
 ---
 
-## Blocker report (consolidated)
+## Blocker report (consolidated, updated 2026-06-02)
+
+**Resolved since the first run:** Phase E (peer SSH trust + inventory) ✅;
+Phase C Nextflow ✅ (user-space JDK). Peer NIC speeds confirmed (all 1 GbE).
 
 | Phase / item | Blocker | Stop condition | What unblocks it |
 |--------------|---------|----------------|------------------|
-| B Apptainer | needs root; high-risk §2.3 | #5 | passwordless sudo or operator-run install + approval |
-| C Nextflow | Java absent; JDK needs root | #5 | install a JDK (root) — then Nextflow installs user-space |
-| D Monitoring stack | needs root (services) + peer access; high-risk | #5 | root + approval; peer SSH |
-| E trust distribution / inventory | peer SSH auth denied | #5 | authorize `cluster_ed25519.pub` on peers (operator) |
-| F NFS | root + peer + security gate; high-risk | #5 | root + approval + private-net/firewall decision |
-| G Slurm | root + peer + munge + shared storage; high-risk | #5 | NFS first + root + approval |
+| B Apptainer | needs root; high-risk §2.3 | #5 | privileged install (sudo/operator) + approval |
+| D Monitoring stack | needs root (services); DCGM needs root; public-IP exposure w/o firewall control; high-risk | #5 | root + approval + firewall/internal-net |
+| F NFS | root on all nodes + security gate; high-risk | #5 | root + private-net/firewall decision + approval |
+| G Slurm | root on all nodes + munge + name resolution + shared storage; high-risk | #5 | NFS first + root + approval |
 
-**Root causes (two):** (1) **no passwordless sudo** — every system-level install/
-service is blocked; (2) **no SSH auth to peers** — every multi-node step is
-blocked. Both are credential gaps (stop condition #5), not architectural
-conflicts. No destructive action, data loss, config replacement, or
-architectural conflict was encountered.
+**Single remaining root cause:** **no passwordless sudo on any node** — every
+system-level install/service (B, D, F, G) is blocked (stop condition #5). The
+peer-SSH gap is now resolved. No destructive action, data loss, config
+replacement, or architectural conflict was encountered at any point.
+
+> **Note on Phase D:** the stack could *technically* run as user-space processes,
+> but (a) DCGM-exporter needs a root-installed library, and (b) Prometheus/
+> Grafana on a public-IP host with no internal interface and no firewall control
+> would be publicly exposed — a SECURITY_AND_HARDENING_POLICY.md §11 violation.
+> A user-space hack is therefore **not "consistent with approved architecture"**,
+> so Phase D is held for a proper root-privileged, firewalled deployment.
 
 ## Maximum operational state reached (without further interaction)
 
 - **uv** (verified) + **managed CPython 3.12.13** + validated venv/lock path.
-- **Snakemake 9.22.0** installed and validated.
-- **Cluster SSH key** generated and ready to authorize.
-- Everything else awaits **root access** and/or **peer SSH authorization**.
+- **Snakemake 9.22.0** and **Nextflow 26.04.3** (+ verified **JDK 21.0.11**),
+  both validated.
+- **Cluster SSH trust established** (passwordless `gpu-01` → `gpu-02`/`gpu-03`,
+  aliases configured); **full cluster inventory complete** (3 homogeneous nodes).
+- Remaining phases (B, D, F, G) await **privileged (root) access** on the nodes.
 
-## To proceed further, the operator must provide one/both
+## To proceed further, the operator must provide
 
-1. **A way to run privileged installs** — either passwordless sudo for scoped
-   commands, or run the (documented) install commands directly. Enables
-   Apptainer, JDK→Nextflow, the monitoring stack, NFS, Slurm.
-2. **Authorize the cluster key on `gpu-02`/`gpu-03`** — enables peer inventory,
-   SSH trust, and the multi-node phases.
-
-Plus the still-open inputs: is `222.231.57.0/24` dedicated or shared? peer NIC
-speeds? private VLAN available?
+1. **A privileged-install path** — passwordless sudo for scoped commands, or run
+   the documented installs directly. This is now the **sole** blocker for
+   Apptainer, the monitoring stack, NFS, and Slurm.
+2. Plus the open inputs: is `222.231.57.0/24` **dedicated or shared**? Is a
+   **private switch/VLAN** available (to move cluster traffic off the public
+   1 GbE subnet)?
