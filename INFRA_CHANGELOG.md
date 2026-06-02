@@ -5,6 +5,31 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — 20260601-15 (cont.3) — All-node sudo → 3-node cluster operational
+
+**Rationale:** Passwordless sudo on all nodes. Verified actual state, then
+completed multi-node implementation. Authoritative state: **CLUSTER_STATUS.md**
+(created).
+
+- **Verified** (no assumptions): sudo ✅ all 3; gpu-01→peers SSH ✅; gpu-01 fully
+  provisioned; peers bare → then provisioned.
+- **Replicated to peers:** uv 0.11.18 + CPython 3.12.13 + Snakemake 9.22.0 +
+  JDK 21.0.11 + Nextflow 26.04.3 (tar/SSH) + Apptainer 1.5.0 (EPEL). Validated.
+- **Monitoring mesh:** node_exporter on all 3, Prometheus scrapes all 3 (`up=1`),
+  DCGM 4.5.3 on all 3 (2 GPUs each). `dcgm-exporter` deferred (no el10 pkg).
+- **NFS:** mounted+persistent on both peers; **cross-node read/write validated**.
+- **Slurm:** investigated — **no el10 package** (EPEL none; OpenHPC EL_10=404;
+  SchedMD source-only). Not deployed; recommendation in CLUSTER_STATUS.md §7.
+- **Docs:** CLUSTER_STATUS.md created; IMPLEMENTATION_LOG.md updated; SYSTEM_OVERVIEW
+  map/tree updated. No new governance documents.
+- No destructive action / data loss / config replacement / architectural conflict.
+
+**Result:** functional 3-node research cluster — toolchain + containers +
+cluster-wide monitoring (node + GPU telemetry) + shared NFS. Remaining: Slurm
+(no el10 pkg) and the dcgm-exporter Prometheus bridge — neither blocks research.
+
+---
+
 ## 2026-06-02 — 20260601-15 (cont.2) — gpu-01 privileged install: Phases B, D, F
 
 **Rationale:** Passwordless sudo granted **on `gpu-01`** (peers still NO).
