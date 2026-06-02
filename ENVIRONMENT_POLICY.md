@@ -2,8 +2,11 @@
 
 **Status:** Active from 2026-06-01 (created by 20260601-05)
 **Scope:** How software environments are built, pinned, stored, and chosen,
-so every result is reproducible (GOVERNANCE.md §4) on a clean host. **Policy
-only — nothing in the evaluated stack is installed yet.**
+so every result is reproducible (GOVERNANCE.md §4) on a clean host.
+**Implementation status (20260601-15):** **uv** (low-risk, SHA256-verified) +
+managed **CPython 3.12.13** + **Snakemake** (user-space via uv) are now
+**installed on `gpu-01`** (IMPLEMENTATION_LOG.md). Apptainer, Nextflow (needs
+Java), and execution backends remain **not installed** (root/approval required).
 
 ---
 
