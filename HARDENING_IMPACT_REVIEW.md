@@ -121,3 +121,70 @@ IMPLEMENTATION_LOG.md.
 **No control here is free to apply blindly that touches SSH, sudo, or the
 kernel.** H0 is genuinely safe; H1/H2 are safe only behind the access pre-checks;
 H3 must wait for explicit decisions. This review changes nothing.
+
+---
+
+## 6. Decisions & H0 status (2026-06-02)
+
+**Operator decisions:** (1) `hha` uses **SSH key authentication** — key-based
+login is the ratified long-term standard. (2) **Passwordless sudo for `hha` is a
+documented architectural exception** (kept; no command allowlist now) — see
+§2 sudo policy (C6/F2 resolved as accepted).
+
+**H0 — COMPLETE:** C8 root break-glass password set on all 3 nodes + stored
+(`~/.secrets/infra/root_breakglass.txt`, in the encrypted backup); **F4** backup/
+restore scripts no longer write plaintext secrets to `/tmp` (now a `0700`
+`~/.cache` workdir, trap-cleaned, `shred`); **F5** policy text synced to the
+ratified on-cluster backup. C9 (`hha` password) **left to the operator** — not
+auto-reset (changing a human's own login password autonomously is over-reach).
+
+## 7. H1 / H2 implementation checklist (DO NOT execute until approved)
+
+### Pre-flight (gates BOTH phases)
+- [ ] Confirm `hha` **key login works** on gpu-01, gpu-02, gpu-03 **from the
+      operator's real client** (`ssh hha@<ip>` succeeds with key, no password).
+- [ ] Confirm an **out-of-band/console (IPMI/provider) path** to each node exists
+      (break-glass if SSH breaks). Root break-glass pw is set (H0) ✅.
+- [ ] Capture current state for rollback: `sshd -T`, `firewall-cmd --list-all`,
+      `--list-rich-rules` on each node.
+- [ ] **Universal guardrails:** change **peers first, `gpu-01` LAST**; keep a
+      **second independent sudo session open** on the node being changed; verify
+      from a **new** connection before moving on; **`reload` not `restart`** sshd.
+
+### H1 — SSH/root hardening (per node, gpu-01 last)
+- [ ] Write a drop-in `/etc/ssh/sshd_config.d/10-hardening.conf` (reversible by
+      deleting the file): `PermitRootLogin no`, `PasswordAuthentication no`,
+      `KbdInteractiveAuthentication no`, `AllowUsers hha`.
+- [ ] `sshd -t` (syntax) — **abort on any error.**
+- [ ] `systemctl reload sshd` (keeps live sessions).
+- [ ] From a **new** connection: key login works ✅; `ssh -o
+      PreferredAuthentications=password -o PubkeyAuthentication=no hha@<node>` is
+      **refused** ✅; root SSH refused ✅.
+- [ ] Verify `gpu-01 → peer` cluster SSH still works (backup/monitoring depend on
+      it) before declaring the node done.
+- [ ] **Rollback (if anything fails):** `rm /etc/ssh/sshd_config.d/10-hardening.conf
+      && systemctl reload sshd` from the held-open session.
+- [ ] **Do NOT** add SSH source-restriction (C4) — operator is external, no mgmt
+      network → would lock out.
+
+### H2 — firewall tightening (per node, gpu-01 last)
+- [ ] Confirm rich-rules to PRESERVE: NFS per-peer (gpu-01), node_exporter
+      `:9100` from gpu-01 (peers). Confirm `ssh` service stays.
+- [ ] `systemctl disable --now cockpit.socket` (service minimization; not in use).
+- [ ] `firewall-cmd --permanent --remove-service=cockpit` then `--reload`
+      (keep `ssh`; keep NFS/exporter rich-rules). `dhcpv6-client` removal is
+      **optional** (verify no IPv6/DHCPv6 reliance first; low value).
+- [ ] For any change with lockout potential, prefer a **runtime change +
+      reconnect test** before `--permanent`, so an un-persisted mistake reverts
+      on `--reload`.
+- [ ] Verify after: SSH reachable from a new connection; Prometheus still shows
+      **4 targets up**; peer **NFS mount intact**; `cockpit` gone from the zone.
+- [ ] **Rollback:** re-add the service/rich-rule + `--reload` from the held session.
+
+### Post-H1/H2
+- [ ] Record actions + validation + rollback in IMPLEMENTATION_LOG.md and
+      INFRA_CHANGELOG.md.
+- [ ] Re-run a backup + a multi-node smoke test to confirm nothing regressed.
+
+**This checklist is not executed here. H1/H2 await explicit go-ahead and the
+pre-flight confirmations above.**

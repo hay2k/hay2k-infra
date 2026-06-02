@@ -5,6 +5,31 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-02 — Hardening H0 applied + F4 fix + F5/sudo-exception doc sync
+
+**Decisions:** (1) `hha` SSH **key auth** is the ratified standard; (2)
+**passwordless sudo for `hha` kept as a documented architectural exception**
+(agent runtime / backup / monitoring / NFS / orchestration depend on it; no
+command allowlist now). H1/H2 deferred.
+
+- **H0 applied (safe):** **C8** strong **root break-glass password** set on all
+  3 nodes via `chpasswd` (stdin), stored `~/.secrets/infra/root_breakglass.txt`
+  (`600`, in the encrypted backup — verified by restore). C9 (`hha` password)
+  **left to operator** (not auto-reset).
+- **F4 fixed:** `cluster-backup.sh` / `cluster-restore.sh` no longer use `/tmp`
+  for plaintext secrets — transient files now in a `0700` `~/.cache` workdir,
+  `trap`-cleaned + `shred`. Verified: 0 `/tmp` artifacts, 0 leftovers, restore OK.
+- **F5 + sudo-exception documented:** SECURITY_AND_HARDENING_POLICY.md §2 sudo
+  policy now records the **passwordless-sudo architectural exception**; §2 SSH
+  notes key-login as the standard; §5/§9 backup text synced to the ratified
+  on-cluster strategy.
+- **HARDENING_IMPACT_REVIEW.md:** added §6 (decisions + H0 status) and §7
+  **H1/H2 implementation checklist** (pre-flight gates, per-node order gpu-01-last,
+  reversible drop-ins, timed/reconnect-tested firewall changes, rollback).
+- **No SSH or firewall change made** (H1/H2 not executed). Backup timer unaffected.
+
+---
+
 ## 2026-06-02 — Hardening impact review (review only, no changes)
 
 **Rationale:** Assess every mandatory hardening control's impact before applying
