@@ -5,6 +5,40 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-04 — H1: SSH key-only authentication APPLIED (all 3 nodes)
+
+**Rationale:** Execute H1 (disable password auth) — the migration's Phase 5 — now
+that the operator key is installed on all nodes (2026-06-02 Phase 2). Operator
+go-ahead given. Peers first, gpu-01 last; reversible drop-in; held-open master +
+dead-man auto-revert; reload (not restart).
+
+- **Change (each node):** reversible drop-in
+  **`/etc/ssh/sshd_config.d/00-hardening.conf`** → `PasswordAuthentication no`,
+  `KbdInteractiveAuthentication no`, `PermitRootLogin no`, `PubkeyAuthentication
+  yes`. `sshd -t`-validated; **reloaded**, not restarted.
+- **Filename correction:** used **`00-`**, not the plan's `10-`. The existing
+  `01-permitrootlogin.conf` sets `PermitRootLogin yes`; sshd uses **first match**,
+  so the hardening file must sort **before** `01-` to win. `10-` would have left
+  root login enabled — verified `00-` yields `permitrootlogin no`.
+- **Order:** gpu-02 → gpu-03 → gpu-01 (control node last).
+- **Verified per node:** `sshd -T` = `passwordauthentication no`,
+  `permitrootlogin no`, `pubkeyauthentication yes`, `kbdinteractiveauthentication
+  no`; **key login works** (fresh connection; gpu-01 via a temporary cluster-key
+  loopback test, then `authorized_keys` restored exactly — operator key
+  `eddsa-key-20260602` intact); **password refused** (offered methods
+  `publickey,gssapi-*`, no `password`).
+- **Req: gpu-01 → gpu-02 / gpu-03 automation** (cluster key) still works. ✅
+- **Safety:** dead-man auto-revert armed per node; **never fired** (drop-ins all
+  present). No restart, no lockout, fully reversible
+  (`rm 00-hardening.conf && systemctl reload sshd`).
+- **Scope:** password-disable H1 only (operator-scoped). **`AllowUsers hha`**
+  (in the migration plan's drop-in) **deferred** as an [R] follow-up — not added.
+- **Docs:** SECURITY_AND_HARDENING_POLICY.md, SSH_KEY_MIGRATION_PLAN.md (Phase 5),
+  HARDENING_IMPACT_REVIEW.md §7, CLUSTER_SSH_AUDIT.md §7 reconciled. **Stopped
+  after H1** — no firewall/H2 or further hardening.
+
+---
+
 ## 2026-06-02 — SSH key migration Phase 2 done: operator key installed (no hardening)
 
 **Action:** Installed the operator ED25519 public key (fingerprint

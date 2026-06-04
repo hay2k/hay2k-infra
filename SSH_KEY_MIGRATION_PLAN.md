@@ -83,8 +83,15 @@ For each saved session (gpu-01/02/03):
 - [ ] **Do not proceed until all three nodes log in by key.** If any fails,
       fix authorized_keys/perms (password still works as fallback).
 
-## Phase 5 — Disable password auth = H1 (ONLY after Phase 4 is green)
-Per node, **peers first, `gpu-01` LAST**, second session held open:
+## Phase 5 — Disable password auth = H1  ✅ DONE 2026-06-04
+**Applied** on all 3 nodes (peers first, gpu-01 last) — see INFRA_CHANGELOG
+2026-06-04. **Deviation:** drop-in named **`00-hardening.conf`** (not `10-`) so
+it sorts **before** `01-permitrootlogin.conf` and wins on `PermitRootLogin`
+(first-match) — `10-` would have left root login enabled. **`AllowUsers hha`
+deferred** (operator scoped H1 to password-disable). Verified: key login OK,
+password + root refused, gpu-01→peer automation intact.
+
+Original plan (per node, **peers first, `gpu-01` LAST**, second session held open):
 - [ ] Write reversible drop-in `/etc/ssh/sshd_config.d/10-hardening.conf`:
       `PasswordAuthentication no`, `KbdInteractiveAuthentication no`,
       `PermitRootLogin no`, `AllowUsers hha`.

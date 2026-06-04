@@ -100,7 +100,8 @@ Ordered steps, each verified before the next; nothing applied until approved:
 
 ## 7. Verdict
 - **Topology is consistent enough for current automation** (gpu-01→peers works).
-- **It is NOT consistent enough for H1.** The missing operator key on `gpu-01`
-  (and the password-only reality) make disabling password auth a **lockout
-  risk**. **H1/H2 are on hold until §6 steps 1–3 are completed and verified.**
+- ~~It is NOT consistent enough for H1.~~ **RESOLVED:** the operator key was
+  installed on all nodes (migration Phase 2, 2026-06-02), removing the lockout
+  risk; **H1 (disable password auth) was applied and verified 2026-06-04**
+  (INFRA_CHANGELOG; SSH_KEY_MIGRATION_PLAN Phase 5). H2 (firewall) still pending.
 This audit changed nothing.
