@@ -175,7 +175,11 @@ Verified per node; gpu-01→peer automation intact. INFRA_CHANGELOG 2026-06-04.)
 - [ ] **Do NOT** add SSH source-restriction (C4) — operator is external, no mgmt
       network → would lock out.
 
-### H2 — firewall tightening (per node, gpu-01 last)
+### H2 — firewall tightening (per node, gpu-01 last)  ✅ DONE 2026-06-04 (Option A)
+*(Applied: removed unused `cockpit` from public zone, runtime-first→verify→persist,
+gpu-02→gpu-03→gpu-01. Preserved ssh + NFS/9100 rich-rules; no SSH source-restrict;
+`dhcpv6-client` left as-is. Verified SSH/NFS/Prometheus(4 up)/node_exporter; backup
++ multi-node smoke test passed. INFRA_CHANGELOG 2026-06-04.)*
 - [ ] Confirm rich-rules to PRESERVE: NFS per-peer (gpu-01), node_exporter
       `:9100` from gpu-01 (peers). Confirm `ssh` service stays.
 - [ ] `systemctl disable --now cockpit.socket` (service minimization; not in use).

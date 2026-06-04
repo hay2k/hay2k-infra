@@ -5,6 +5,33 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-04 — H2: firewall tightening (cockpit removed) — APPLIED (all 3 nodes)
+
+**Rationale:** Service minimization — remove the unused `cockpit` allow from the
+public firewall zone (Option A, preflight-audited). Runtime-first → verify →
+persist; gpu-02 → gpu-03 → gpu-01.
+
+- **Change (each node):** `firewall-cmd --zone=public --remove-service=cockpit`
+  (runtime), verified, then `--permanent --remove-service=cockpit` + `--reload`.
+  Public zone services: `cockpit dhcpv6-client ssh` → **`dhcpv6-client ssh`**.
+- **Preserved (unchanged):** `ssh` service; gpu-01 NFS rich-rules (`.31`/`.32`);
+  peer `:9100` rich-rules (`.30`). **No SSH source-restriction** (excluded —
+  lockout risk). `dhcpv6-client` left as-is (Option A).
+- **Pre-state confirmed:** `cockpit.socket` was `not-found`/inactive on all nodes
+  (nothing listened on 9090); removal closed a *latent* allow, not a live service.
+- **Verified per node** (runtime + post-reload): SSH access OK; NFS mount intact
+  (peers) / nfs-server + 2 peer export-rules (gpu-01); Prometheus **4 targets
+  up**; node_exporter reachable (gpu-01 → `.31`/`.32`:9100, localhost). `:9090`
+  externally **refused** on all three.
+- **Post-completion:** backup re-run OK (data + age-encrypted secrets → peers,
+  rotation 7); **multi-node smoke test passed** (gpu-01/02/03 dispatch → shared
+  NFS, 6 GPUs).
+- **Rollback (per node):** `sudo firewall-cmd --permanent --zone=public
+  --add-service=cockpit && sudo firewall-cmd --reload`.
+- **Stopped after H2** — no further hardening.
+
+---
+
 ## 2026-06-04 — H1: SSH key-only authentication APPLIED (all 3 nodes)
 
 **Rationale:** Execute H1 (disable password auth) — the migration's Phase 5 — now

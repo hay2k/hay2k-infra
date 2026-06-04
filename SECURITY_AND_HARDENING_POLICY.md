@@ -1,9 +1,10 @@
 # SECURITY AND HARDENING POLICY
 
 **Status:** Design (2026-06-01, 20260601-12); **partial implementation:** H0
-(root break-glass, F4) applied 2026-06-02; **H1 (SSH key-only auth) applied
-2026-06-04 on all 3 nodes** (§2 SSH policy; INFRA_CHANGELOG). Remaining controls
-(H2 firewall, AllowUsers, fail2ban, etc.) designed but not yet applied.
+(root break-glass, F4) 2026-06-02; **H1 (SSH key-only auth)** + **H2 (firewall —
+cockpit removed)** applied 2026-06-04 on all 3 nodes (§2/§3; INFRA_CHANGELOG).
+Remaining controls (AllowUsers, fail2ban, dhcpv6-client removal, etc.) designed
+but not yet applied.
 **Scope:** Host, network, filesystem, secrets, supply chain, agents, logging,
 backup, incident response, and future-service security for the 3-node cluster.
 
@@ -98,6 +99,13 @@ future, not required now).
 - **[M] Firewall (firewalld) default-deny inbound:** allow only SSH (from the
   management network) and required intra-cluster ports; **[M] no service exposed
   to the public internet.**
+  - **APPLIED 2026-06-04 (H2), all 3 nodes:** removed the unused `cockpit`
+    service from the public zone (was a latent allow; nothing listened). Public
+    zone now `dhcpv6-client ssh` + peer-scoped rich-rules (gpu-01 NFS from
+    `.31`/`.32`; peers `:9100` from `.30`). SSH source-restriction **not** applied
+    (operator external / no mgmt network → lockout). `dhcpv6-client` removal
+    deferred ([O]). Rollback: `firewall-cmd --permanent --add-service=cockpit
+    --zone=public && firewall-cmd --reload`.
 - **[R] Cluster-internal trust boundary:** the 3 nodes form a trusted internal
   segment, but still least-privilege; inter-node services bind the **internal
   interface only**, never `0.0.0.0` reachable from outside.
