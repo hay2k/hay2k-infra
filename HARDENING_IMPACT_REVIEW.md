@@ -155,7 +155,11 @@ auto-reset (changing a human's own login password autonomously is over-reach).
       **second independent sudo session open** on the node being changed; verify
       from a **new** connection before moving on; **`reload` not `restart`** sshd.
 
-### H1 — SSH/root hardening (per node, gpu-01 last)
+### H1 — SSH/root hardening (per node, gpu-01 last)  ✅ DONE 2026-06-04
+*(Applied via drop-in `00-hardening.conf` — `00-` not `10-`, to win first-match
+over `01-permitrootlogin.conf`; `PasswordAuthentication no` + `KbdInteractive no`
++ `PermitRootLogin no` + `PubkeyAuthentication yes`; `AllowUsers hha` deferred.
+Verified per node; gpu-01→peer automation intact. INFRA_CHANGELOG 2026-06-04.)*
 - [ ] Write a drop-in `/etc/ssh/sshd_config.d/10-hardening.conf` (reversible by
       deleting the file): `PermitRootLogin no`, `PasswordAuthentication no`,
       `KbdInteractiveAuthentication no`, `AllowUsers hha`.
@@ -190,5 +194,6 @@ auto-reset (changing a human's own login password autonomously is over-reach).
       INFRA_CHANGELOG.md.
 - [ ] Re-run a backup + a multi-node smoke test to confirm nothing regressed.
 
-**This checklist is not executed here. H1/H2 await explicit go-ahead and the
-pre-flight confirmations above.**
+**Update 2026-06-04: H1 has been executed** (operator go-ahead; pre-flight met —
+operator key on all nodes since the 2026-06-02 migration). **H2 (firewall) still
+awaits explicit go-ahead** and the pre-flight confirmations above.

@@ -1,8 +1,9 @@
 # SECURITY AND HARDENING POLICY
 
-**Status:** Design (2026-06-01, 20260601-12). **Document only — no hardening,
-config, firewall, account, or service change is applied. This is the intended
-security posture.**
+**Status:** Design (2026-06-01, 20260601-12); **partial implementation:** H0
+(root break-glass, F4) applied 2026-06-02; **H1 (SSH key-only auth) applied
+2026-06-04 on all 3 nodes** (§2 SSH policy; INFRA_CHANGELOG). Remaining controls
+(H2 firewall, AllowUsers, fail2ban, etc.) designed but not yet applied.
 **Scope:** Host, network, filesystem, secrets, supply chain, agents, logging,
 backup, incident response, and future-service security for the 3-node cluster.
 
@@ -59,6 +60,15 @@ future, not required now).
   operators explicitly), **[R]** restrict SSH to the management network,
   **[R]** rate-limit/lockout (e.g. `fail2ban`), **[M]** verified `known_hosts`
   (as done for GitHub).
+  - **APPLIED 2026-06-04 (H1), all 3 nodes:** reversible drop-in
+    **`/etc/ssh/sshd_config.d/00-hardening.conf`** sets `PasswordAuthentication
+    no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`,
+    `PubkeyAuthentication yes`. Named `00-` so it wins over `01-permitrootlogin.
+    conf` (`PermitRootLogin yes`) by first-match ordering. Verified per node (key
+    login OK, password refused, root refused). Rollback: `sudo rm
+    /etc/ssh/sshd_config.d/00-hardening.conf && sudo systemctl reload sshd`.
+    **Still [R]/not-yet:** `AllowUsers hha`, `fail2ban`, `GSSAPIAuthentication no`
+    (gssapi offered but non-functional w/o Kerberos), mgmt-network restriction.
 - **Root access policy:** **[M]** root is **emergency/bootstrap only** — no
   routine root login, no root over SSH; **[M]** strong root password held as a
   **break-glass** secret (SECRETS_POLICY.md); all admin via `sudo` as `hha`.
