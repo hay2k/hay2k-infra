@@ -58,13 +58,20 @@ in the repo.
 
 ## 4. NFS status
 
-- **Server:** `gpu-01:/srv/nfs/resources` (the shared `resources/` realization),
-  `root_squash`, exported to peer IPs only, firewalld rich-rules per peer IP
-  (not in public zone).
-- **Clients:** ✅ mounted on `gpu-02` and `gpu-03` at `/srv/nfs/resources`,
-  **persistent via `/etc/fstab`** (`_netdev`).
-- **Validated:** cross-node — `gpu-02` wrote, `gpu-03` read, server backing store
-  confirmed; `root_squash` enforced; localhost (non-peer) mount denied.
+- **Server:** `gpu-01` exports **two** trees, both `root_squash`, to peer IPs only
+  (firewalld per-peer rich-rules, not in public zone):
+  `/srv/nfs/resources` (the `resources/` realization) and **`/srv/nfs/analysis`**
+  (the research-domain `analysis/` realization — M2-1, 2026-06-05).
+- **Clients:** ✅ `gpu-02`/`gpu-03` mount both, **persistent via `/etc/fstab`**:
+  `resources` at `/srv/nfs/resources` (`_netdev`); **`analysis` at
+  `/home/hha/analysis`** (`_netdev,noatime,nofail`, nfs4.2). On `gpu-01`,
+  `analysis` is **bind-mounted** `/srv/nfs/analysis → /home/hha/analysis` so the
+  path is uniform on every node. `analysis/` holds the four top-level dirs
+  (`pipeline container reference projects`), all empty.
+- **Validated:** both exports cross-node — `gpu-02` wrote, `gpu-03` read, server
+  backing confirmed; `root_squash` enforced (peer-root squashed to `nobody`);
+  resources export had localhost-deny verified (Phase F); `analysis` export ACL is
+  peer-IP-only.
 - Bandwidth: 1 GbE (~110–118 MB/s) — large model/dataset reads are network-bound
   (local NVMe caching remains the optimization per STORAGE_ARCHITECTURE.md).
 

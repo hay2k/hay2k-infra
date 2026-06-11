@@ -38,18 +38,43 @@ risk-tiered installation policy in §2.*
 
 ## 1. Domain independence
 
-The four work domains — **research**, **business**, **investment**,
-**runtime** — are independent. By default:
+The four work domains — **Research**, **Business**, **Investment**, **Surplus** —
+are governed by a **priority hierarchy** on **shared infrastructure**:
 
-- Code, data, models, and secrets belong to exactly one domain.
-- No domain reads or writes another domain's tree.
+> **Research > Business > Investment > Surplus**
+
+Domain ownership means **primary responsibility, preferred placement, and
+accounting/governance grouping — NOT physical isolation or exclusive resource
+ownership** (decided M2-2B/M2-2C, 20260605/20260606-01). Higher-priority work
+outranks lower for contended resources; lower-priority work **yields idle capacity**;
+**Research may consume idle resources on any node** (RESOURCE_POLICY.md §2). The
+former `runtime` work-domain is superseded by this four-domain model; persistent
+services are treated as **cross-cutting infrastructure**, not a work domain.
+
+**Surplus** is formally **"low-priority utilization of otherwise idle compute
+resources."** It is **not** an independent strategic domain; it exists solely to make
+productive use of spare capacity after Research, Business, and Investment needs are
+met. This definition holds wherever the domain list appears.
+
+**Realization on disk** (DIRECTORY_STANDARD.md §2, ANALYSIS_ARCHITECTURE.md):
+Research = **`analysis/`** (`{pipeline,container,reference,projects}`, shared NFS),
+Business = `business/`, Investment = `investment/`, Surplus = `surplus/`; `research/`
+is not used. By default:
+
+- Code, data, models, and secrets **belong to** exactly one domain (logical
+  ownership / accounting), and an agent **writes only its own domain's tree**
+  (write-discipline). Shared mounts (e.g. `analysis/` on all nodes, M2-1) are
+  expected and do **not** imply cross-domain use or break independence.
 - Shared, domain-agnostic assets live in `resources` (DIRECTORY_STANDARD.md §4)
   and are read-only to consumers unless they own them.
 
-The six top-level domains that **may** exist are: `research`, `business`,
-`investment`, `runtime`, `resources`, `infra`. **Project directories inside a
-domain may only be created after the project is approved** (e.g.
-`research/project_x`, `business/product_y`, `investment/strategy_z`). The
+The six top-level domains that **may** exist are: `analysis` (the **Research**
+domain), `business`, `investment`, `surplus`, `resources`, `infra`. One **non-domain** top-level
+directory also exists by explicit User approval: **`ChatGPT_handoff/`**, the
+operational store for handoff-worthy session outputs (§12, DIRECTORY_STANDARD.md
+§7). It holds no project code and is not a work domain. **Project directories
+inside a domain may only be created after the project is approved** (e.g.
+`analysis/projects/project_x`, `business/product_y`, `investment/strategy_z`). The
 approval applies to the **project itself** — not to the directory operation;
 once a project is approved, creating its directories is routine work
 (PROJECT_LIFECYCLE.md).
@@ -317,3 +342,30 @@ preconditions:
   applied. Its **unresolved sub-decisions** (SSH MFA, commit signing, auditd,
   secrets-encryption tool, service-account model, networking) remain OPEN and
   User-gated (SECURITY_AND_HARDENING_POLICY.md §13).
+
+## 12. Handoff artifacts (operating rule)
+
+**Status:** Active from 2026-06-04 (20260604-01), User-approved.
+
+Substantial, self-contained outputs are **persisted automatically as Markdown
+files** so they survive the session and are usable by another operator/tool —
+this does not need to be re-requested per task.
+
+- **Scope (save):** assessments, milestone completions, implementation reviews,
+  architecture reviews, research/planning documents, and handoff notes.
+- **Out of scope (do not save):** routine conversational replies, trivial edits,
+  and in-progress scratch (minimalism, §0).
+- **Location:** `/home/hha/ChatGPT_handoff/` — a User-approved **non-domain**
+  top-level directory (§1; structure, naming exception, and front-matter in
+  DIRECTORY_STANDARD.md §7). Subdirectories are created **as needed**, never
+  pre-created.
+- **Form:** one self-contained Markdown file with YAML front-matter; filename
+  `YYYY-MM-DD_<kebab-title>.md`.
+- **New files only — `README.md` is static.** Each artifact is added as a **new**
+  Markdown file. `ChatGPT_handoff/README.md` is **not** modified and **no index is
+  maintained** in it (operator decision 20260604-02).
+- **Report:** the saved path is reported at the end of the task.
+
+This is an operating convention, not a reproducibility/citation rule; it may be
+refined by a Supervisor and documented (§10). The directory itself (a new
+top-level outside the reserved namespace) was the User-gated part (DIRECTORY_STANDARD.md §6).
