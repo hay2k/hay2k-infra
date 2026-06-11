@@ -5,6 +5,273 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-11 — 20260611-02: M3-3 — Pipeline Layer
+
+**Rationale:** Establish + validate the pipeline (workflow) layer. Mechanism only —
+**no research pipelines, no project/P0001** (neutral validation workflow).
+
+- **New canonical doc:** `PIPELINE_STANDARDS.md` (structure, naming, versioning,
+  registration via `analysis-install`, engine→container(`--nv`)→GPU, engine cache,
+  reproducibility).
+- **Engine cache:** `analysis/container/apptainer/_engine-cache/` created (N1).
+- **First pipeline:** `analysis/pipeline/custom/runtime-smoke/0.1` registered
+  (current; accel=both/preferred=gpu; sha256 14a80804…) — a neutral
+  engine→container→GPU validation harness.
+- **Validated:** Snakemake → `--nv` pytorch container → GPU (cuda True, 2× RTX 6000
+  Ada), from temp **and** canonical store path; Nextflow engine ran; analysis-install
+  list/verify/pin OK; store clean.
+- **Deliberately deferred:** research pipelines (nf-core, …) — operator-directed,
+  project-coupled.
+- **Prompt archived:** `prompts/20260611-02_m3-3_pipeline_layer.md`.
+- **Detail + rollback:** IMPLEMENTATION_LOG.md (M3-3).
+
+---
+
+## 2026-06-11 — 20260611-01: M3-2 — Runtime Foundation (bio env + first container)
+
+**Rationale:** First runtime implementation: the shared host bioinformatics
+environment and the first production container, both managed/validated. No
+pipelines/references/projects.
+
+- **Tier 1:** Miniforge (conda 26.3.2/mamba 2.5.0, user-space `~/miniforge3`, installer
+  SHA256 recorded) + **`bio`** env (samtools/bcftools/htslib/bedtools/seqkit/csvtk/
+  pigz/parallel/jq/yq/ripgrep; 62 pkgs pinned → `infra/bio-environment.yml`);
+  `conda activate bio` enabled. Installed on **gpu-01** (replicate to peers = follow-up).
+- **Tier 2:** first container **pytorch 2.9.1-cuda13.0** built from digest-pinned
+  `docker://pytorch/pytorch@sha256:60f22fb8…`, registered via `analysis-install` to
+  `analysis/container/apptainer/pytorch/2.9.1-cuda13.0/` (current; accel=both,
+  preferred=gpu; regenerable; SIF `sha256=8b068ec4…`); source MANIFEST under
+  `container/docker/`.
+- **`--nv` GPU validation PASSED** (2× RTX 6000 Ada; torch cu130; matmul GPU==CPU;
+  cuDNN; device-selection) — **closes deferred Phase B**.
+- **New canonical docs:** RUNTIME_FOUNDATION.md, CONTAINER_STANDARDS.md,
+  BIO_ENVIRONMENT.md, bio-environment.yml. GPU-first policy (ENVIRONMENT_POLICY §9) in force.
+- **`analysis-install` now manages a real artifact** (first non-test use). Build cache
+  cleaned (disk 16 G/1.6 T free).
+- **Prompt archived:** `prompts/20260611-01_m3-2_runtime_foundation.md`.
+- **Detail + rollback:** IMPLEMENTATION_LOG.md (M3-2).
+
+---
+
+## 2026-06-10 — 20260610-01: M3-1 — version-management tooling
+
+**Rationale:** First post-governance implementation phase: build the framework that
+will manage pipelines/containers/references. Tooling only — **no real
+software/containers/references/projects installed** (tested against throwaway dirs).
+
+- **New:** `infra/scripts/analysis-install` (versioned install · atomic `current` ·
+  manifests · SHA256 + hard-stop · central log · rollback · pin · verify · tracking),
+  `infra/scripts/test-analysis-install.sh`, `infra/VERSION_MANAGEMENT_TOOLING.md`.
+- **New policy:** Accelerated Computing Policy "**GPU-first, CPU-compatible**"
+  (ENVIRONMENT_POLICY.md §9); `analysis-install` records `accel`/`preferred`
+  (`both`⇒`gpu`).
+- **Updated:** VERSION_GOVERNANCE.md §5 (tooling implemented).
+- **Validation:** test suite **23/23 PASS**; real `/home/hha/analysis` untouched.
+- **Prompt archived:** `prompts/20260610-01_m3-1_version_management_tooling.md`.
+- **Detail + rollback:** IMPLEMENTATION_LOG.md (M3-1).
+
+---
+
+## 2026-06-06 — 20260606-01: M3-0 — governance promotion & canonicalization
+
+**Rationale:** Close M2 governance by promoting the M2-2 drafts to canonical `infra/`
+documents with all approved corrections. Documentation only — no
+services/NFS/mounts/projects/containers/workloads changed.
+
+- **Promoted to canonical (`infra/`):** **ANALYSIS_STANDARDS.md**,
+  **PROJECT_ID_POLICY.md**, **DATA_STORAGE_POLICY.md**, **VERSION_GOVERNANCE.md**,
+  **PROJECT_REGISTRY.md** (registry template; no live rows).
+- **Reconciled existing canon:** GOVERNANCE.md §1 (priority model **R>B>I>S**;
+  **Surplus** formally = idle-capacity utilization; domains = priority/accounting,
+  not isolation; primary≠exclusive; `runtime` superseded → cross-cutting infra);
+  RESOURCE_POLICY.md §2 (priority clause, refines §6 fairness); DIRECTORY_STANDARD.md
+  §2 (`runtime`→`surplus`, priority + primary-node note); ANALYSIS_ARCHITECTURE.md
+  (version-governance pointer).
+- **Identifiers:** `P/B/I/S####` mains + **`-S##`** subprojects (kept; not `-NN`).
+- **Historical (retained, marked, not deleted):** M2-2A/M2-2B/M2-2C and the M2-2
+  drafts under `ChatGPT_handoff/`.
+- **Prompt archived:** `prompts/20260606-01_m3-0_governance_promotion.md`.
+- **Status:** **M2 GOVERNANCE CLOSED.** Detail + rollback in IMPLEMENTATION_LOG.md
+  (M3-0).
+- **Rollback:** `rm` the five new `infra/` docs; revert the four reconciliation edits
+  + this entry + the prompt; handoff banners are additive.
+
+---
+
+## 2026-06-05 — 20260605-04: M2-1 — shared `analysis/` NFS export DEPLOYED
+
+**Rationale:** Realize the research-domain shared storage (frozen architecture,
+ANALYSIS_ARCHITECTURE.md §5). First real **deployment** of M2.
+
+- **Export:** `/srv/nfs/analysis` on `gpu-01` (owner `hha`, mode 2775) →
+  `.31`/`.32` (`rw,sync,root_squash,no_subtree_check`); `exportfs -ra`. **No
+  firewall change** (per-IP `nfs` rules already cover it).
+- **Presentation:** uniform `/home/hha/analysis` on all nodes — gpu-01 **bind**,
+  peers **nfs4.2** (`_netdev,noatime,nofail`), all in `/etc/fstab` (persistent).
+- **Dirs:** only the four approved top-level `pipeline container reference
+  projects` (empty). **No** tools/containers/projects/references.
+- **Validated:** exportfs (both peers); mounts on all 3 nodes; cross-node
+  write→read; `root_squash` (peer-root → `nobody`). Full detail +
+  rollback in IMPLEMENTATION_LOG.md (M2-1); running state in CLUSTER_STATUS.md §4.
+- **Architecture:** **FROZEN — unchanged** (this realizes §5, does not alter it).
+- **Deviations:** backup-config update + restore test deferred (empty dirs); fstab
+  persistence not reboot-tested; 4 dirs pre-created empty per explicit instruction.
+- **Prompt archived:** `prompts/20260605-04_m2-1_analysis_nfs_export.md`.
+- **Handoff:** `ChatGPT_handoff/2026-06-05_m2-1-analysis-nfs-deployment-report.md`.
+- **Rollback:** see IMPLEMENTATION_LOG.md M2-1 (unmount, de-export, rm; config
+  backups `.pre-analysis.<ts>` on each node).
+
+---
+
+## 2026-06-05 — 20260605-03: M2-0 — punch-list implementation (no M2-1)
+
+**Rationale:** Implement the approved M2 review punch-list (Pass-1 + Pass-2,
+N1–N5/N7) — operational policies, specs, and config that **do not change the frozen
+architecture**. M2-1 (NFS export) **not** started; no `analysis/` directories
+created; nothing deployed/run.
+
+- **ANALYSIS_ARCHITECTURE.md:** §3 — single `MANIFEST.md` per docker source (C1) +
+  workflow-engine cache `NXF_SINGULARITY_CACHEDIR` (N1); §4.1 — `current` cross-node
+  propagation caveat (N4); **new §7 operational policies** — reclamation runbook +
+  M1 temp-path (P2/I1), backup scope + `.regenerable` marker + per-project VCS
+  (I5/C2/N2), build cache + local-build-then-move + patch-by-new-version (N5/N3/P3),
+  index provenance + raw-data ingest + reference licensing (I4/N7/P5), GPU-registry
+  home (I3), NFS SPOF + monitoring (P1/P4), no-empty-scaffolding affirmed (C3).
+- **DIRECTORY_STANDARD.md:** §5 — `analysis/reference/` added to the version-dir
+  exception (I2); §3 — per-project git+remote rule (N2).
+- **Pointers (sync):** RESOURCE_POLICY.md §2 (registry home + tier field, I3),
+  BACKUP_AND_RECOVERY.md §3 (analysis backup scope, I5/C2/N2), OBSERVABILITY.md §2
+  (analysis export in monitoring scope #3/#4, P4), ENVIRONMENT_POLICY.md §4
+  (research container ops, P3/N1).
+- **New file:** `infra/scripts/analysis-env.sh` — cache env (`APPTAINER_CACHEDIR`,
+  `NXF_SINGULARITY_CACHEDIR`); **not** wired into the live shell (references the
+  M2-1 NFS path); documentation-as-code until M2-1.
+- **Architecture status:** **FROZEN — unchanged.** All edits are an operational
+  layer; the frozen surface (§1–§6) is intact.
+- **Prompt archived:** `prompts/20260605-03_m2-0_punchlist_implementation.md`.
+- **Handoff:** `ChatGPT_handoff/2026-06-05_m2-0-implementation-report.md`.
+- **Rollback:** `git revert` the doc edits; `rm infra/scripts/analysis-env.sh` +
+  this entry + the prompt file. No filesystem/service state to undo (nothing
+  deployed).
+
+---
+
+## 2026-06-04 — 20260604-04: architecture decisions B3/B4/B5 + pytorch-first
+
+**Rationale:** Operator resolved the four open items from the M1-revision handoff.
+
+- **B3 — entry point:** `<name>/current` is canonical; the bare-name convenience
+  symlink (which collides with the version dir) is **not** created.
+  → ANALYSIS_ARCHITECTURE.md §4.1 made final.
+- **B4 — storage:** the **entire** `analysis/` hierarchy (`pipeline/ container/
+  reference/ projects/`) is **shared NFS**, presented at `/home/hha/analysis` on
+  all nodes. Deployment is an M2 task (new `/srv/nfs/analysis` export). Was an open
+  decision → now decided. → ANALYSIS_ARCHITECTURE.md §5, DIRECTORY_STANDARD.md §2.
+- **B5 — docker/:** `container/docker/` = canonical image **sources only**
+  (Dockerfiles, OCI refs, digests, metadata); **no Docker daemon**; Apptainer is
+  the sole runtime. → ANALYSIS_ARCHITECTURE.md §3 made final.
+- **First container family = pytorch** (not a generic cuda base): first validated
+  env is `analysis/container/apptainer/pytorch/<version>/`. → reflected in the
+  revised M1 (handoff doc); raw `deviceQuery`/`vectorAdd` no longer required —
+  framework-level correctness (torch matmul-vs-CPU + cuDNN) is the kernel proof.
+- **No filesystem/service change** — documentation only.
+- **Prompt archived:** `prompts/20260604-04_architecture_decisions_b3_b4_b5_pytorch.md`.
+- **Handoff:** `ChatGPT_handoff/2026-06-04_architecture-decisions-and-m2-storage-implications.md`.
+- **Rollback:** revert the ANALYSIS_ARCHITECTURE.md + DIRECTORY_STANDARD.md edits,
+  remove the prompt file + this entry.
+
+---
+
+## 2026-06-04 — 20260604-03: research architecture finalized (`analysis/` + versioning)
+
+**Rationale:** Operator finalized the research-domain architecture before M1
+implementation: `analysis/{pipeline,container,reference,projects}`; pipelines
+`{nextflow,snakemake,custom}`; containers `{apptainer,docker}` organized by
+functional environment; version-managed (version-named dirs + `current` symlink;
+projects pin exact versions; no silent upgrades; Docker = canonical source, SIF =
+derived).
+
+- **New doc:** **ANALYSIS_ARCHITECTURE.md** — canonical research-namespace
+  architecture (layout, pipeline/container sub-hierarchies, version policy,
+  symlink-collision resolution, storage-placement open decision).
+- **DIRECTORY_STANDARD.md §2:** `analysis/` now four-part (added `container/`);
+  pointer to ANALYSIS_ARCHITECTURE; storage-placement note.
+- **DIRECTORY_STANDARD.md §5:** **conflict reconciled** — added the required
+  version-named-directory **exception** for installed external pipelines/containers
+  (the §5 rule still forbids `v2`/`final` for first-party source).
+- **ENVIRONMENT_POLICY.md §4:** **conflict reconciled** — research-domain `.sif`
+  images live in `analysis/container/`, **not** `resources/`; `resources/` is now
+  explicitly cross-domain-only.
+- **GOVERNANCE.md §1:** analysis layout updated to four parts + ANALYSIS_ARCHITECTURE ref.
+- **Flagged (not resolved):** (a) bare convenience symlink collides with the
+  same-named version dir — adopted `<name>/current` as entry point pending operator
+  confirmation; (b) `analysis/` storage placement (per-node vs NFS) → M2; (c)
+  Docker daemon, if ever run, is high-risk §2.3 (User approval).
+- **No filesystem/service change** — documentation only; `analysis/` materializes
+  with first content (GOVERNANCE.md §0).
+- **Prompt archived:** `prompts/20260604-03_analysis_architecture_finalized.md`.
+- **Handoff:** `ChatGPT_handoff/2026-06-04_m1-revision-and-m2-outline.md`.
+- **Rollback:** revert the four doc edits, delete ANALYSIS_ARCHITECTURE.md, remove
+  the prompt file + this entry.
+
+---
+
+## 2026-06-04 — 20260604-02: research namespace = `analysis/` + handoff README static
+
+**Rationale:** Operator decisions finalizing two open items. (1) The research
+domain is realized as `/home/hha/analysis/` (`pipeline/ projects/ reference/`),
+**not** `research/` — resolves the namespace reconciliation flagged in the M1
+reassessment. (2) `ChatGPT_handoff/README.md` is static: new artifacts are added
+as new files only, no index maintenance.
+
+- **GOVERNANCE.md §1:** research domain now realized as `analysis/`
+  (`analysis/{pipeline,projects,reference}`); top-level enumeration `research →
+  analysis (the research domain)`; project-dir example `research/project_x →
+  analysis/projects/project_x`.
+- **GOVERNANCE.md §12:** added "new files only — README is static, no index."
+- **DIRECTORY_STANDARD.md §2:** reserved namespace `research/ → analysis/`; added
+  the fixed `analysis/{pipeline,projects,reference}` research-domain layout, with
+  the `reference/` (research-shared) vs `resources/` (cross-domain) distinction.
+- **DIRECTORY_STANDARD.md §7:** README marked static / no artifact index.
+- **No directories created** — `analysis/` materializes only with its first
+  approved content (GOVERNANCE.md §0); this is documentation only.
+- **Prompt archived:** `prompts/20260604-02_namespace_and_handoff_refinement.md`.
+- **Handoff:** final M1 implementation proposal saved to
+  `ChatGPT_handoff/2026-06-04_m1-implementation-proposal.md`.
+- **Rollback:** revert the four doc edits + remove the prompt file and this entry.
+  (No filesystem/service change to roll back.)
+
+---
+
+## 2026-06-04 — 20260604-01: handoff-artifact operating rule — APPLIED
+
+**Rationale:** Persist substantial session outputs (assessments, milestone
+completions, implementation/architecture reviews, research/planning docs,
+handoff notes) so they survive the session and need not be re-requested per task.
+Operator-approved.
+
+- **New rule:** GOVERNANCE.md **§12** (operating rule) + §1 amendment (records
+  `ChatGPT_handoff/` as a User-approved **non-domain** top-level directory).
+- **Directory standard:** DIRECTORY_STANDARD.md **§7** — structure, self-contained
+  Markdown + YAML front-matter, `YYYY-MM-DD_<title>.md` filenames, subdirs
+  as-needed, and the documented naming exception (`ChatGPT_handoff` keeps its
+  mixed-case+underscore literal per operator instruction).
+- **Directory:** `/home/hha/ChatGPT_handoff/` (already present, empty) + a
+  `README.md` index. Outside the infra repo (per-node), so not committed here.
+- **Inaugural artifact:** the M1 plan saved as
+  `ChatGPT_handoff/2026-06-04_m1-cluster-golden-path-and-gpu-validation-plan.md`.
+- **Enforcement mechanism:** a `feedback`-type entry in the Claude memory store
+  (auto-recalled each session) is what makes future sessions apply the rule —
+  the governance docs are the durable human-facing record. A harness hook was
+  **not** used (the behavior is judgment-based content authoring, which a hook
+  cannot perform).
+- **Prompt archived:** `prompts/20260604-01_handoff_artifact_rule.md`.
+- **Rollback:** revert the GOVERNANCE.md §1/§12 and DIRECTORY_STANDARD.md §7 edits,
+  remove the prompt file + this entry, and delete the memory file + its
+  MEMORY.md pointer. `ChatGPT_handoff/` contents are operator-owned.
+
+---
+
 ## 2026-06-04 — H2: firewall tightening (cockpit removed) — APPLIED (all 3 nodes)
 
 **Rationale:** Service minimization — remove the unused `cockpit` allow from the

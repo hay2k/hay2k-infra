@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+# analysis-install — version-management tooling for the research domain.
+# M3-1 (20260610-01). Manages versioned installation of pipelines, containers, and
+# references under ANALYSIS_ROOT, per VERSION_GOVERNANCE.md.
+#
+# Structure managed:
+#   $ANALYSIS_ROOT/<kind>/<group>/<name>/<version>/      (the artifact)
+#   $ANALYSIS_ROOT/<kind>/<group>/<name>/current -> <version>   (atomic symlink)
+#   .../<version>/MANIFEST.md          per-version manifest (name,version,sha256,accel,...)
+#   .../<name>/VERSIONS.md             per-tool append-only version log
+#   $ANALYSIS_ROOT/.analysis-install.log   central TSV install/operation log
+#
+# kinds:  pipeline | container | reference
+# groups: pipeline→{nextflow,snakemake,custom}; container→{apptainer,docker}; reference→<category>
+#
+# SAFETY: operates on ANALYSIS_ROOT (default /home/hha/analysis). For testing set
+# ANALYSIS_ROOT to a throwaway directory. Does NOT download or build anything — it
+# records/places artifacts you supply via --from.
+set -euo pipefail
+
+ROOT="${ANALYSIS_ROOT:-/home/hha/analysis}"
+SELF="analysis-install"
+NOW() { date -u +%FT%TZ; }
+WHO="${USER:-$(id -un)}"
+die() { echo "$SELF: error: $*" >&2; exit 1; }
+log_central() { # tsv: ts op kind group name version sha256 user note
+  local f="$ROOT/.analysis-install.log"
+  [ -f "$f" ] || printf 'timestamp\top\tkind\tgroup\tname\tversion\tsha256\tuser\tnote\n' >"$f"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(NOW)" "$1" "$2" "$3" "$4" "$5" "${6:-}" "$WHO" "${7:-}" >>"$f"
+}
+valid_kind() { case "$1" in pipeline|container|reference) ;; *) die "kind must be pipeline|container|reference (got '$1')";; esac; }
+valid_group() {
+  case "$1:$2" in
+    pipeline:nextflow|pipeline:snakemake|pipeline:custom) ;;
+    container:apptainer|container:docker) ;;
+    reference:*) ;;  # reference categories are open (genomes, annotation, ...)
+    *) die "invalid group '$2' for kind '$1'";;
+  esac
+}
+payload_hash() { # sha256 of the artifact payload in a version dir (excl MANIFEST.md/.regenerable)
+  local d="$1" files
+  mapfile -t files < <(cd "$d" && find . -type f ! -name MANIFEST.md ! -name .regenerable | LC_ALL=C sort)
+  if   [ "${#files[@]}" -eq 0 ]; then echo "<none>";
+  elif [ "${#files[@]}" -eq 1 ]; then ( cd "$d" && sha256sum "${files[0]}" | awk '{print $1}' );   # single file → content sha (matches published)
+  else ( cd "$d" && for f in "${files[@]}"; do sha256sum "$f"; done | LC_ALL=C sort | sha256sum | awk '{print $1}' ); fi
+}
+base_dir() { echo "$ROOT/$1/$2/$3"; }   # kind group name
+lock() { local b="$1"; mkdir -p "$b"; exec 9>"$b/.lock"; flock 9; }
+
+atomic_set_current() { # base version  -> base/current -> version (atomic, lock held)
+  local b="$1" v="$2"
+  [ -d "$b/$v" ] || die "version not installed: $b/$v"
+  local prev=""; [ -L "$b/current" ] && prev="$(readlink "$b/current")"
+  ln -s "$v" "$b/.current.tmp.$$"
+  mv -Tf "$b/.current.tmp.$$" "$b/current"
+  echo "$prev"
+}
+
+cmd_install() {
+  local kind="$1" group="$2" name="$3" version="$4"; shift 4
+  local from="" source="" sha="" accel="cpu" preferred="" regen=0 setcur=0 note=""
+  while [ $# -gt 0 ]; do case "$1" in
+    --from) from="$2"; shift 2;;
+    --source) source="$2"; shift 2;;
+    --sha256) sha="$2"; shift 2;;
+    --accel) accel="$2"; shift 2;;
+    --preferred) preferred="$2"; shift 2;;
+    --regenerable) regen=1; shift;;
+    --set-current) setcur=1; shift;;
+    --note) note="$2"; shift 2;;
+    *) die "unknown install option: $1";;
+  esac; done
+  valid_kind "$kind"; valid_group "$kind" "$group"
+  case "$accel" in cpu|gpu|both) ;; *) die "--accel must be cpu|gpu|both";; esac
+  # GPU-first policy: default preferred = gpu whenever gpu support exists.
+  if [ -z "$preferred" ]; then case "$accel" in both|gpu) preferred=gpu;; cpu) preferred=cpu;; esac; fi
+  local b; b="$(base_dir "$kind" "$group" "$name")"
+  lock "$b"
+  [ -e "$b/$version" ] && die "version already exists (never overwrite): $b/$version"
+  [ -n "$from" ] && [ ! -e "$from" ] && die "--from not found: $from"
+  mkdir -p "$b/$version"
+  [ -n "$from" ] && cp -a "$from" "$b/$version/"
+  [ $regen -eq 1 ] && : > "$b/$version/.regenerable"
+  local computed; computed="$(payload_hash "$b/$version")"
+  if [ -n "$sha" ] && [ "$sha" != "$computed" ]; then rm -rf "$b/$version"; die "sha256 mismatch (hard stop): expected $sha got $computed"; fi
+  sha="$computed"
+  cat > "$b/$version/MANIFEST.md" <<EOF
+# MANIFEST — $kind/$group/$name/$version
+kind: $kind
+group: $group
+name: $name
+version: $version
+source: ${source:-<none>}
+sha256: ${sha:-<none>}
+accel: $accel
+preferred: $preferred
+regenerable: $([ $regen -eq 1 ] && echo true || echo false)
+installed: $(NOW)
+installed_by: $WHO
+note: ${note:-<none>}
+EOF
+  local vlog="$b/VERSIONS.md"
+  [ -f "$vlog" ] || printf '# VERSIONS — %s/%s/%s\n\n' "$kind" "$group" "$name" >"$vlog"
+  printf -- '- %s  install %s  sha256=%s  accel=%s  preferred=%s  by=%s  %s\n' "$(NOW)" "$version" "${sha:-<none>}" "$accel" "$preferred" "$WHO" "${note:-}" >>"$vlog"
+  log_central install "$kind" "$group" "$name" "$version" "${sha:-}" "accel=$accel;preferred=$preferred;regen=$regen"
+  echo "installed: $b/$version  (accel=$accel preferred=$preferred sha256=${sha:-none})"
+  if [ $setcur -eq 1 ]; then
+    local prev; prev="$(atomic_set_current "$b" "$version")"
+    printf -- '- %s  set-current %s (prev=%s) by=%s\n' "$(NOW)" "$version" "${prev:-none}" "$WHO" >>"$vlog"
+    log_central set-current "$kind" "$group" "$name" "$version" "" "prev=${prev:-none}"
+    echo "current -> $version (prev=${prev:-none})"
+  fi
+}
+
+cmd_set_current() {
+  local kind="$1" group="$2" name="$3" version="$4"
+  valid_kind "$kind"; valid_group "$kind" "$group"
+  local b; b="$(base_dir "$kind" "$group" "$name")"
+  lock "$b"
+  local prev; prev="$(atomic_set_current "$b" "$version")"
+  printf -- '- %s  set-current %s (prev=%s) by=%s\n' "$(NOW)" "$version" "${prev:-none}" "$WHO" >>"$b/VERSIONS.md"
+  log_central set-current "$kind" "$group" "$name" "$version" "" "prev=${prev:-none}"
+  echo "current -> $version (prev=${prev:-none})"
+}
+
+cmd_rollback_current() { # revert current to the previous target recorded in the log
+  local kind="$1" group="$2" name="$3"
+  local b; b="$(base_dir "$kind" "$group" "$name")"
+  lock "$b"
+  local prev
+  prev="$(awk -F'\t' -v k="$kind" -v g="$group" -v n="$name" '$2=="set-current"&&$3==k&&$4==g&&$5==n{m=$9} END{sub(/^prev=/,"",m); print m}' "$ROOT/.analysis-install.log" 2>/dev/null || true)"
+  [ -n "$prev" ] && [ "$prev" != "none" ] || die "no previous current recorded to roll back to"
+  local cur; cur="$(atomic_set_current "$b" "$prev")"
+  printf -- '- %s  rollback-current -> %s (was=%s) by=%s\n' "$(NOW)" "$prev" "${cur:-none}" "$WHO" >>"$b/VERSIONS.md"
+  log_central rollback-current "$kind" "$group" "$name" "$prev" "" "was=${cur:-none}"
+  echo "current rolled back -> $prev (was ${cur:-none})"
+}
+
+cmd_show_current() {
+  local b; b="$(base_dir "$1" "$2" "$3")"
+  [ -L "$b/current" ] && echo "$1/$2/$3/current -> $(readlink "$b/current")" || die "no current set for $1/$2/$3"
+}
+
+cmd_pin() { # resolve a concrete version (default current) into a project pin line
+  local kind="$1" group="$2" name="$3" version="${4:-}"
+  local b; b="$(base_dir "$kind" "$group" "$name")"
+  if [ -z "$version" ]; then [ -L "$b/current" ] || die "no current to pin"; version="$(readlink "$b/current")"; fi
+  [ -d "$b/$version" ] || die "version not installed: $version"
+  local sha; sha="$(awk -F': ' '/^sha256:/{print $2}' "$b/$version/MANIFEST.md" 2>/dev/null || echo '<none>')"
+  echo "$kind: $group/$name/$version  (sha256: $sha)   # pin for ENVIRONMENT_MANIFEST.md — NEVER pin 'current'"
+}
+
+cmd_verify() {
+  local kind="$1" group="$2" name="$3" version="$4"
+  local b; b="$(base_dir "$kind" "$group" "$name")"
+  [ -f "$b/$version/MANIFEST.md" ] || die "no manifest for $version"
+  local rec; rec="$(awk -F': ' '/^sha256:/{print $2}' "$b/$version/MANIFEST.md")"
+  [ -n "$rec" ] && [ "$rec" != "<none>" ] || { echo "no sha256 recorded for $version (nothing to verify)"; return 0; }
+  local cur; cur="$(payload_hash "$b/$version")"
+  [ "$cur" = "$rec" ] && echo "VERIFY OK ($version): $rec" || die "VERIFY FAILED ($version): recorded $rec, computed $cur"
+}
+
+cmd_remove() {
+  local kind="$1" group="$2" name="$3" version="$4"
+  local b; b="$(base_dir "$kind" "$group" "$name")"
+  lock "$b"
+  [ -d "$b/$version" ] || die "not installed: $version"
+  if [ -L "$b/current" ] && [ "$(readlink "$b/current")" = "$version" ]; then die "refusing to remove the current version; set-current elsewhere first"; fi
+  rm -rf "$b/$version"
+  printf -- '- %s  remove %s by=%s\n' "$(NOW)" "$version" "$WHO" >>"$b/VERSIONS.md"
+  log_central remove "$kind" "$group" "$name" "$version" "" ""
+  echo "removed $kind/$group/$name/$version (record retained in VERSIONS.md)"
+}
+
+cmd_list() {
+  local kind="${1:-}" group="${2:-}" name="${3:-}"
+  find "$ROOT" -name MANIFEST.md -path "$ROOT/${kind:-*}/${group:-*}/${name:-*}/*" 2>/dev/null | sort | while read -r m; do
+    local d; d="$(dirname "$m")"; local b; b="$(dirname "$d")"
+    local cur=""; [ -L "$b/current" ] && cur="$(readlink "$b/current")"
+    local v; v="$(basename "$d")"
+    local rel="${d#$ROOT/}"
+    local star=""; [ "$cur" = "$v" ] && star=" *current*"
+    local acc; acc="$(awk -F': ' '/^accel:/{print $2}' "$m")"; local pref; pref="$(awk -F': ' '/^preferred:/{print $2}' "$m")"
+    printf '%-60s accel=%-4s preferred=%-3s%s\n' "$rel" "$acc" "$pref" "$star"
+  done
+}
+
+usage() {
+  cat <<EOF
+$SELF — version-management tooling (ANALYSIS_ROOT=$ROOT)
+Commands:
+  install  <kind> <group> <name> <version> [--from P] [--source S] [--sha256 H]
+           [--accel cpu|gpu|both] [--preferred cpu|gpu] [--regenerable] [--set-current] [--note T]
+  set-current <kind> <group> <name> <version>
+  rollback-current <kind> <group> <name>
+  show-current <kind> <group> <name>
+  pin <kind> <group> <name> [version]      # default current; emits a reproducibility pin
+  verify <kind> <group> <name> <version>
+  remove <kind> <group> <name> <version>
+  list [kind [group [name]]]
+kinds: pipeline|container|reference   GPU-first: --accel both defaults preferred=gpu
+EOF
+}
+
+main() {
+  [ $# -ge 1 ] || { usage; exit 1; }
+  local cmd="$1"; shift || true
+  case "$cmd" in
+    install)          [ $# -ge 4 ] || die "install needs <kind> <group> <name> <version>"; cmd_install "$@";;
+    set-current)      [ $# -eq 4 ] || die "set-current needs <kind> <group> <name> <version>"; cmd_set_current "$@";;
+    rollback-current) [ $# -eq 3 ] || die "rollback-current needs <kind> <group> <name>"; cmd_rollback_current "$@";;
+    show-current)     [ $# -eq 3 ] || die "show-current needs <kind> <group> <name>"; cmd_show_current "$@";;
+    pin)              [ $# -ge 3 ] || die "pin needs <kind> <group> <name> [version]"; cmd_pin "$@";;
+    verify)           [ $# -eq 4 ] || die "verify needs <kind> <group> <name> <version>"; cmd_verify "$@";;
+    remove)           [ $# -eq 4 ] || die "remove needs <kind> <group> <name> <version>"; cmd_remove "$@";;
+    list)             cmd_list "$@";;
+    -h|--help|help)   usage;;
+    *) die "unknown command: $cmd (try --help)";;
+  esac
+}
+main "$@"

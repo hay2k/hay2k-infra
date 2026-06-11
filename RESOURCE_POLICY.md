@@ -31,9 +31,17 @@ visible cluster-wide, which constrains node-agnostic work (NODE_ARCHITECTURE.md
   (e.g. `gpu-02` GPU 0) via `CUDA_VISIBLE_DEVICES`; a job does not silently
   spread across cards or nodes.
 - With 6 GPUs across 3 nodes and 4 domains, GPUs are **not statically owned** by
-  a domain. They are claimed per-job and released. Long-lived `runtime`
-  workloads needing a permanent GPU are a **User-approved** standing
-  reservation, because they reduce capacity for everyone else.
+  a domain. They are claimed per-job and released. Long-lived workloads needing a
+  permanent GPU are a **User-approved** standing reservation, because they reduce
+  capacity for everyone else.
+- **Priority hierarchy (20260606-01): Research > Business > Investment > Surplus.**
+  On a **shared** cluster (primary node ≠ exclusive, GOVERNANCE.md §1), contended GPUs
+  are allocated by priority; lower-priority work **yields idle capacity**, and
+  **Research may consume idle resources on any node** (never capped to gpu-01). Within
+  Research, **Tier 1 > Tier 2**. This refines the fairness principle (§6) with an
+  explicit ordering; **claim-use-release still applies**. *(Open: whether higher
+  priority may **preempt running** lower-priority jobs, or only claim idle/queued
+  capacity — current wording implies idle-only.)*
 - VRAM oversubscription (multiple jobs on one card) is allowed only when a
   Supervisor has confirmed the combined footprint fits; otherwise one job per
   card.
@@ -44,6 +52,13 @@ visible cluster-wide, which constrains node-agnostic work (NODE_ARCHITECTURE.md
   (prohibited, GOVERNANCE.md §0). Note that a full scheduler (e.g. Slurm) is a
   **high-risk component requiring explicit User approval** (GOVERNANCE.md §2.3);
   the lightweight "who holds which card" record needs none.
+- **Registry home (20260605-03):** the "who holds which card" record lives at
+  **`/srv/nfs/resources/gpu-claims/`** (cluster-wide, `flock`-guarded) — so
+  `resources/` holds cross-domain **coordination state** in addition to shared
+  binary assets. Schema: `node gpu_idx holder job tier started expected_release`;
+  the `tier` field carries the research-program priority (T1 preferential over T2;
+  see ANALYSIS_ARCHITECTURE.md §7.5 and the research-program-tiers handoff).
+  Disk-pressure reclamation order is in ANALYSIS_ARCHITECTURE.md §7.1.
 
 ## 3. CPU and RAM
 

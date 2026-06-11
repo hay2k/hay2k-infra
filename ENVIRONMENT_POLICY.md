@@ -75,8 +75,11 @@ materialized venvs) are NOT committed (§4, §5).
 Large, shared, domain-agnostic **binary** environment artifacts (regenerable
 from their committed definitions, so excluded from git — `.gitignore`):
 
-- Built **container images** (`*.sif`) shared by ≥2 projects/domains, each with
-  a recorded SHA256 sidecar/manifest.
+- Built **container images** (`*.sif`) shared by ≥2 **domains**, each with a
+  recorded SHA256 sidecar/manifest. **Research-domain containers do NOT go here**
+  — they live in `analysis/container/{apptainer,docker}/`, version-managed
+  (ANALYSIS_ARCHITECTURE.md; operator decision 20260604-03). `resources/` holds
+  only genuinely *cross-domain* images.
 - A shared **image/layer cache** and shared base images.
 - Shared base model weights / public datasets (as already governed,
   DIRECTORY_STANDARD.md §4).
@@ -85,6 +88,12 @@ from their committed definitions, so excluded from git — `.gitignore`):
 (likely the first shared `.sif`) — not pre-created (GOVERNANCE.md §0).
 Single-project images stay project-local or, if large, are treated as
 regenerable build output.
+
+**Research-domain container operations (20260605-03):** versioning, the
+docker-source→apptainer-runtime chain, the workflow-engine cache
+(`NXF_SINGULARITY_CACHEDIR`), the local build cache (`APPTAINER_CACHEDIR`), and the
+**security-patch-by-new-version** rule (never patch in place; reproducibility and
+patching coexist via versioning) are specified in **ANALYSIS_ARCHITECTURE.md §3/§7.3**.
 
 ## 5. What belongs in PROJECT DIRECTORIES
 
@@ -177,3 +186,24 @@ follow the PNG **and** vector (PDF/SVG) rule (GOVERNANCE.md §9).
 pipelines** are created yet. This section documents the policy only. When
 implemented, it follows the §7 decision procedure (project-local npm deps;
 containerize only if the deck build must be archived/shared as a unit).
+
+## 9. Accelerated Computing Policy — "GPU-first, CPU-compatible" (20260610-01)
+
+When both CPU and GPU implementations of a tool/pipeline/model exist:
+
+- **Install and maintain both** whenever practical.
+- **CPU** remains the **compatibility and fallback** path (portability, debugging,
+  nodes/cards unavailable).
+- **GPU** is the **preferred execution path** when it is **stable, reproducible, and
+  actively maintained**.
+- **New projects default to GPU execution** when the GPU implementation is mature.
+
+**Principle: GPU-first, CPU-compatible.**
+
+**Operationalization (M3-1):** `analysis-install` records an `accel` field
+(`cpu|gpu|both`) and a `preferred` field per installed version; `--accel both`
+defaults `preferred=gpu`. A project's `ENVIRONMENT_MANIFEST.md` pins the exact
+version it used **and** which path (CPU/GPU) produced a result (reproducibility,
+GOVERNANCE.md §4). This sits under the cluster priority model (RESOURCE_POLICY.md §2)
+— GPU preference applies within whatever capacity a domain's priority grants it.
+See VERSION_MANAGEMENT_TOOLING.md.

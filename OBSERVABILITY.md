@@ -44,6 +44,14 @@ stalled workers, logging), BACKUP_AND_RECOVERY.md (sync/backup/restore — note
 that the GitHub push **is** the off-host backup, so #8 and #9 overlap), and
 GOVERNANCE.md §6/§8 (downloads, prompts).
 
+**`analysis/` export (20260605-03, punch-list P4):** the research-domain NFS export
+(`/srv/nfs/analysis`, presented at `/home/hha/analysis`, deployed M2-1) is covered
+by **#4** — per-peer mount-health (mounted? stale handle?) and **export capacity**
+(it shares the single `gpu-01` `/dev/sda3` volume; the 80%/95% disk thresholds in #3
+apply and gate the reclamation runbook, ANALYSIS_ARCHITECTURE.md §7.1). No new
+collector — extend #3/#4 scope to the new export. The `gpu-01` NFS-server SPOF is an
+accepted risk (ANALYSIS_ARCHITECTURE.md §7.6).
+
 Notes on the harder signals:
 - **Worker stalled (#7)** is distinct from "failed": the process is alive but not
   progressing. Detect via stalled log/metric output *and* anomalous GPU usage

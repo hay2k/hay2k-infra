@@ -51,6 +51,12 @@ deliberate operator decision (the whole-site-loss risk is **accepted**, see §6)
   restores are verifiable (GOVERNANCE.md §6).
 - Backups are **tested by restore** (`infra/scripts/cluster-restore.sh`) — an
   untested backup is not a backup.
+- **`analysis/` scope (20260605-03):** the research domain has specific
+  include/exclude rules — traverse `/srv/nfs/analysis` once (skip the gpu-01 bind
+  view), exclude any dir carrying a `.regenerable` marker (SIFs, installed pipeline
+  payloads, reference data, caches), include project source/results + manifests; each
+  project is its own git repo with a GitHub remote. See **ANALYSIS_ARCHITECTURE.md
+  §7.2**. (Applied to `cluster-backup.sh` when `analysis/` is deployed at M2-1.)
 
 ## 4. Recovery procedure
 
