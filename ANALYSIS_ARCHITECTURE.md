@@ -140,7 +140,8 @@ remains per-node). This makes research fully node-agnostic (NODE_ARCHITECTURE.md
 §3/§5) — any node sees the same workflows, containers, references, and projects.
 
 Realization (deployed in **M2**, STORAGE_ARCHITECTURE.md ratified NFS): a new
-NFS export (e.g. `/srv/nfs/analysis`) on the `gpu-01` server, mounted on all three
+NFS export **`/data/analysis`** (on the `gpu-01` server's 11 TB disk; relocated from
+`/srv/nfs/analysis` in M3-3D, 2026-06-11), mounted on all three
 nodes and presented at `/home/hha/analysis`, with `root_squash` and per-peer-IP
 firewalling like the existing `resources` export. Implications (capacity on the
 single non-redundant `gpu-01` volume, 1 GbE bandwidth for container/reference
@@ -175,7 +176,7 @@ here for the research-domain specifics.
   env is built on shared storage in M2-4.
 
 ### 7.2 Backup scope for `analysis/` (BACKUP_AND_RECOVERY.md §3)
-- **Single traversal (I5):** back up via the backing path **`/srv/nfs/analysis`
+- **Single traversal (I5):** back up via the backing path **`/data/analysis`
   once**; on `gpu-01` skip the `/home/hha/analysis` bind view (avoids double-count).
 - **`.regenerable` marker (C2):** the install tooling drops a `.regenerable` file
   into every regenerable version dir; backup **excludes any dir containing it** —

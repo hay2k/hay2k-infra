@@ -20,7 +20,7 @@ unchanged); `/data` is **per-node local**. Research may burst to any node by pri
 ## 3. Grounded storage facts (verified)
 | Path | Device | Size | Type | Shared? | Redundant? |
 |------|--------|------|------|---------|------------|
-| `/home/hha/analysis` (code) | `/dev/sda3` via `/srv/nfs/analysis` | 1.8 TB (shared w/ OS) | ext4+NFS | **Yes (all nodes)** | No |
+| `/home/hha/analysis` (code) | **`gpu-01:/data/analysis`** (NFS; was `/srv/nfs/analysis`, relocated M3-3D) | 11 TB | ext4+NFS | **Yes (all nodes)** | No |
 | `/data` (large data) | gpu-01 `sdb1` · gpu-02 `sda1` · gpu-03 `sdb1` | **10.9 TB each (~33 TB total)** | ext4 **local** | **No — per-node** | No |
 
 ## 4. Frozen decisions

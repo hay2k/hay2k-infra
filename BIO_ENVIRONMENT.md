@@ -16,7 +16,8 @@ it is containerized (CONTAINER_STANDARDS.md).
 ## 2. Provider, location, activation
 - **Provider:** Miniforge (conda + mamba), conda-forge default + bioconda.
   conda 26.3.2 / mamba 2.5.0; installer SHA256 recorded in IMPLEMENTATION_LOG (M3-2).
-- **Location:** `~/miniforge3` — **user-space, per-node** (no root). This matches the
+- **Location:** `/data/local/runtime/miniforge3` — **per-node local on `/data`** (no
+  root; relocated from `~/miniforge3` in M3-3D, installed on **all 3 nodes**). Matches the
   existing `~/.local` toolchain pattern and the runtime philosophy (host-local for
   speed; conda envs are not NFS-friendly).
 - **Activation:** `conda activate bio` (enabled via `conda init bash`).

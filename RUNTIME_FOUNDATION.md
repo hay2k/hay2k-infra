@@ -18,7 +18,7 @@ VERSION_MANAGEMENT_TOOLING.md.
 ## 2. The three runtime tiers
 | Tier | What | Where | Managed by | Reproduced from |
 |------|------|-------|------------|------------------|
-| **1. Core bioinformatics utilities** | small CLI tools (samtools, bcftools, bedtools, seqkit, …) | host `~/miniforge3` env **`bio`** (per-node) | conda/mamba | `infra/bio-environment.yml` |
+| **1. Core bioinformatics utilities** | small CLI tools (samtools, bcftools, bedtools, seqkit, …) | host **`/data/local/runtime/miniforge3`** env **`bio`** (per-node, all 3 nodes) | conda/mamba | `infra/bio-environment.yml` |
 | **2. Containerized software** | frameworks / complex stacks (e.g. **pytorch**) | `analysis/container/apptainer/<env>/<version>/` (shared NFS) | **`analysis-install`** | pinned OCI digest → SIF + SHA256 |
 | **3. Project-specific software** | per-project deps not broadly shared | the project tree (`uv`/env/container as appropriate) | per-project (pinned) | project `ENVIRONMENT_MANIFEST.md` |
 

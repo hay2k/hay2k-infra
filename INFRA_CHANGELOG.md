@@ -5,6 +5,32 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-11 — 20260611-03: M3-3D — storage refactor EXECUTED
+
+**Rationale:** Separate namespace (`/home/hha`) from physical storage (`/data`);
+relocate the shared `analysis/` backing to the 11 TB disk; consolidate runtime/cache/
+admin onto `/data`; close the analysis-backup gap. `analysis/` stays cluster-shared.
+
+- **Pre:** committed+pushed `infra` (`c12346e`); config snapshots `*.pre-m3-3d.<ts>`
+  (all nodes); confirmed no active jobs.
+- **Analysis backing:** `/srv/nfs/analysis` → **`gpu-01:/data/analysis`** (rsync,
+  checksum-verified); re-exported + remounted; **`/home/hha/analysis` unchanged**.
+- **Miniforge:** reinstalled to **`/data/local/runtime/miniforge3`** per node; `bio`
+  recreated from lockfile on **all 3 nodes**; re-`conda init`.
+- **Engine cache:** per-node **`/data/local/cache/engine`**.
+- **Handoff:** → **`/data/admin/handoff`** (transition symlink kept); memory +
+  GOVERNANCE §1/§12 + DIRECTORY_STANDARD §7 + MEMORY.md repointed. **Log** →
+  `/data/admin/logs/`.
+- **Backup:** `cluster-backup.sh` extended to `/data/analysis` (excl. SIFs/cache/
+  refdata) + `/data/admin`; verified to both peers — **analysis now backed up.**
+- **Validated** on gpu-01/02/03: analysis/runtime/container(`--nv`)/pipeline/GPU.
+- **Rollback retained:** old `/srv/nfs/analysis`, old `~/miniforge3`, snapshots,
+  commit `c12346e` (decommission after confidence).
+- **Prompt archived:** `prompts/20260611-03_m3-3D_storage_refactor_executed.md`.
+- **Detail + rollback:** IMPLEMENTATION_LOG.md (M3-3D).
+
+---
+
 ## 2026-06-11 — 20260611-02: M3-3 — Pipeline Layer
 
 **Rationale:** Establish + validate the pipeline (workflow) layer. Mechanism only —

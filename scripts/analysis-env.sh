@@ -15,7 +15,7 @@ export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$HOME/.cache/apptainer}"
 
 # --- Workflow-engine (Nextflow/nf-core) container cache (N1): inside the governed
 # store so engine-pulled images stay managed. Pinned by pipeline revision.
-export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-/home/hha/analysis/container/apptainer/_engine-cache}"
+export NXF_SINGULARITY_CACHEDIR="${NXF_SINGULARITY_CACHEDIR:-/data/local/cache/engine}"
 
 # Cleanup helper (run after builds; build cache is regenerable):
 #   apptainer cache clean --force   # or: rm -rf "$APPTAINER_CACHEDIR"/*

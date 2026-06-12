@@ -164,22 +164,27 @@ covered by RESOURCE_POLICY.md.
   (GOVERNANCE.md §2). Try to fit the need into the standard shape first; escalate
   only if it genuinely does not fit.
 
-## 7. `ChatGPT_handoff/` — handoff artifacts (User-approved exception)
+## 7. Handoff artifacts — `/data/admin/handoff/` (relocated M3-3D)
 
-A single **non-domain** top-level directory, approved by the User on 2026-06-04
-(20260604-01), for persisting handoff-worthy session outputs (the operating rule
-is GOVERNANCE.md §12).
+Cross-cutting operational storage for handoff-worthy session outputs (operating rule:
+GOVERNANCE.md §12). **Relocated 2026-06-11 (M3-3D)** from the old
+`/home/hha/ChatGPT_handoff` (originally a User-approved non-domain top-level,
+20260604-01) to **`/data/admin/handoff/`** — on gpu-01's `/data` (big disk, backed up),
+**off** the `/home/hha` top-level namespace. A **transition symlink**
+`/home/hha/ChatGPT_handoff -> /data/admin/handoff` remains for compatibility (removable
+later).
 
 ```
-/home/hha/
-└── ChatGPT_handoff/           # operational output store (NOT a work domain)
-    ├── README.md              # static convention doc — NOT modified on save; no artifact index
-    └── YYYY-MM-DD_<title>.md  # one self-contained Markdown file per artifact
+/data/admin/
+├── handoff/                  # operational output store (NOT a work domain)
+│   ├── README.md             # static convention doc — NOT modified on save; no artifact index
+│   └── YYYY-MM-DD_<title>.md  # one self-contained Markdown file per artifact
+└── logs/                     # operational logs (e.g. cluster-backup.log)
 ```
 
 - **Not a domain.** It holds no project code and is exempt from the project
   shape (§3) and domain rules (GOVERNANCE.md §1). It is an operational sink for
-  documents, not a place to develop work.
+  documents, not a place to develop work; backed up via cluster-backup.sh (§admin).
 - **Contents:** assessments, milestone completions, implementation/architecture
   reviews, research/planning docs, handoff notes — each a self-contained Markdown
   file with YAML front-matter (`title`, `type`, `status`, `date`, `author`,

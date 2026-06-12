@@ -69,10 +69,11 @@ is not used. By default:
   and are read-only to consumers unless they own them.
 
 The six top-level domains that **may** exist are: `analysis` (the **Research**
-domain), `business`, `investment`, `surplus`, `resources`, `infra`. One **non-domain** top-level
-directory also exists by explicit User approval: **`ChatGPT_handoff/`**, the
-operational store for handoff-worthy session outputs (§12, DIRECTORY_STANDARD.md
-§7). It holds no project code and is not a work domain. **Project directories
+domain), `business`, `investment`, `surplus`, `resources`, `infra`. Handoff-worthy
+session outputs are stored at **`/data/admin/handoff/`** (physical, backed up;
+`/home/hha/ChatGPT_handoff` is a transition symlink to it — relocated M3-3D,
+20260611). This is operational storage, not a work domain and not a top-level
+namespace entry (§12, DIRECTORY_STANDARD.md §7). **Project directories
 inside a domain may only be created after the project is approved** (e.g.
 `analysis/projects/project_x`, `business/product_y`, `investment/strategy_z`). The
 approval applies to the **project itself** — not to the directory operation;
@@ -355,10 +356,11 @@ this does not need to be re-requested per task.
   architecture reviews, research/planning documents, and handoff notes.
 - **Out of scope (do not save):** routine conversational replies, trivial edits,
   and in-progress scratch (minimalism, §0).
-- **Location:** `/home/hha/ChatGPT_handoff/` — a User-approved **non-domain**
-  top-level directory (§1; structure, naming exception, and front-matter in
-  DIRECTORY_STANDARD.md §7). Subdirectories are created **as needed**, never
-  pre-created.
+- **Location:** **`/data/admin/handoff/`** (physical, on gpu-01's `/data`, backed up;
+  relocated from `/home/hha/ChatGPT_handoff` in M3-3D, 20260611 — a transition symlink
+  remains at the old path). Cross-cutting operational storage, **not** a top-level
+  namespace entry (§1; structure/front-matter in DIRECTORY_STANDARD.md §7).
+  Subdirectories are created **as needed**, never pre-created.
 - **Form:** one self-contained Markdown file with YAML front-matter; filename
   `YYYY-MM-DD_<kebab-title>.md`.
 - **New files only — `README.md` is static.** Each artifact is added as a **new**

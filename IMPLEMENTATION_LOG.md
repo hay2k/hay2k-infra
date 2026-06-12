@@ -390,6 +390,43 @@ dir nests the payload under `<version>/workflow/` (tool copies the dir) — cosm
 analysis/container/apptainer/_engine-cache`; revert PIPELINE_STANDARDS.md + log
 entries. No engine/cluster service changed.
 
+## M3-3D — Storage architecture refactor EXECUTED ✅ COMPLETE (2026-06-11, 20260611-03)
+
+**Summary:** Separated namespace (`/home/hha`) from physical storage (`/data`).
+`analysis/` **stays cluster-shared**; only its backing moved. Executed per the M3-3C
+plan. Infra committed+pushed first (`c12346e`). Config snapshots `*.pre-m3-3d.20260611T153701Z`.
+
+- **Analysis backing moved** `/srv/nfs/analysis` (1.8 TB root) → **`/data/analysis`**
+  (gpu-01, 11 TB). `rsync -aHAX` (31 objs, byte-identical/checksum-verified, symlinks +
+  SIF sha `8b068ec4…` preserved). Re-exported `/data/analysis` to peers (no firewall
+  change); fstab: gpu-01 bind `/data/analysis→/home/hha/analysis`, peers NFS-mount
+  `gpu-01:/data/analysis→/home/hha/analysis`. **Namespace `/home/hha/analysis`
+  unchanged on all nodes.**
+- **Miniforge relocated** (reinstall, not mv) → **`/data/local/runtime/miniforge3`**
+  per node; `bio` recreated from `bio-environment.yml` on **all 3 nodes** (closes the
+  M3-2 gpu-01-only gap); `conda init` re-pointed (old `~/miniforge3` block reversed on
+  gpu-01). Installer sha256 `848194851a…`.
+- **Engine cache** → per-node `/data/local/cache/engine` (`NXF_SINGULARITY_CACHEDIR`
+  in `analysis-env.sh`); empty shared `_engine-cache` removed.
+- **Handoff** moved `/home/hha/ChatGPT_handoff` → **`/data/admin/handoff`** (35/35
+  files); transition symlink left; **memory + GOVERNANCE §1/§12 + DIRECTORY_STANDARD §7
+  + MEMORY.md updated** to the new path. **Log** → `/data/admin/logs/cluster-backup.log`.
+- **Backup extended** (`cluster-backup.sh`): now also mirrors `/data/analysis`
+  (precious; **excludes** SIFs/cache/refdata) + `/data/admin` to both peers; ran OK
+  (analysis 12 files, admin 36 files, 0 SIFs) — **closes the prior analysis-backup gap.**
+- **/data provisioned** on all nodes (root mkdir+chown hha): `analysis` (gpu-01),
+  `local/{runtime,cache,scratch,projects}` (all), `admin/{handoff,logs}` (gpu-01).
+
+**Validation (all 3 nodes):** analysis backed by `/data/analysis`; 4 dirs visible;
+`conda activate bio` → samtools 1.23.1; container `--nv` → torch 2.9.1+cu130, cuda
+True, 2 dev; `analysis-install verify` OK; cross-node R/W + root_squash; runtime-smoke
+pipeline runs from store; backup peer-mirrors verified.
+
+**Rollback RETAINED (not yet decommissioned):** old `/srv/nfs/analysis` (2.9 G), old
+`~/miniforge3` (2.1 G), config snapshots `*.pre-m3-3d.<ts>` (all nodes), pre-migration
+commit `c12346e`. Decommission after a confidence period: `rm -rf /srv/nfs/analysis
+~/miniforge3` + drop the old export/fstab snapshots.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +

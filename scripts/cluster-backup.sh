@@ -9,7 +9,7 @@ export PATH="$HOME/.local/bin:$PATH"
 SRC=/srv/nfs/resources
 PEERS=(gpu-02 gpu-03)
 TS=$(date -u +%Y%m%dT%H%M%SZ)
-LOG="$HOME/cluster-backup.log"
+LOG="/data/admin/logs/cluster-backup.log"
 AGE_RECIP=$(cat "$HOME/.secrets/age/recipient.txt")
 KEEP=7   # encrypted-secrets archives to retain per peer
 
@@ -50,5 +50,31 @@ for h in "${PEERS[@]}"; do
   # rotation: keep newest $KEEP
   ssh "$h" "ls -1t /srv/backup/secrets/secrets-*.tar.gz.age 2>/dev/null | tail -n +$((KEEP+1)) | xargs -r rm -f"
 done
+
+# 3) Research domain (analysis): precious code/spec/manifests/pins. EXCLUDE
+# regenerables — container SIFs (rebuildable from pinned digest), engine cache,
+# and large reference data (re-downloadable; manifests/checksums are kept).
+ASRC=/data/analysis
+if [ -d "$ASRC" ]; then
+  AMAN="$WORK/analysis.manifest.sha256"
+  ( cd "$ASRC" && find . -type f ! -name '*.sif' -exec sha256sum {} \; ) > "$AMAN" 2>/dev/null || true
+  for h in "${PEERS[@]}"; do
+    rsync -a --delete \
+      --exclude='container/apptainer/**/*.sif' \
+      --exclude='**/_engine-cache/**' \
+      --exclude='reference/**/fasta/**' --exclude='reference/**/indices/**' \
+      "$ASRC"/ "$h":/srv/backup/analysis/ \
+      && log "analysis -> $h OK ($(wc -l < "$AMAN") files; SIFs/cache/refdata excluded)" || log "analysis -> $h FAILED"
+    scp -q "$AMAN" "$h":/srv/backup/analysis.manifest.sha256 || true
+  done
+fi
+
+# 4) Admin (handoff archives + logs): precious project record.
+if [ -d /data/admin ]; then
+  for h in "${PEERS[@]}"; do
+    rsync -a --delete /data/admin/ "$h":/srv/backup/admin/ \
+      && log "admin -> $h OK" || log "admin -> $h FAILED"
+  done
+fi
 
 log "=== backup run $TS DONE ==="
