@@ -427,6 +427,29 @@ pipeline runs from store; backup peer-mirrors verified.
 commit `c12346e`. Decommission after a confidence period: `rm -rf /srv/nfs/analysis
 ~/miniforge3` + drop the old export/fstab snapshots.
 
+## M3-3F — Legacy asset cleanup ✅ COMPLETE (2026-06-12, 20260612-01)
+
+**Summary:** Finalized the storage refactor by removing rollback-only assets
+(re-confirmed no active consumers first). ~4 GB reclaimed; `/home/hha` top level now
+clean (`analysis` + `infra` + dotfiles).
+
+- **Removed:** `/home/hha/miniforge3` (2.1 G — no PATH/profile ref on any node),
+  `/srv/nfs/analysis` (2.9 G — not exported/mounted/in-fstab), and the
+  `/home/hha/ChatGPT_handoff` compatibility **symlink** (target `/data/admin/handoff`
+  untouched).
+- **Kept (per instruction):** `*.pre-m3-3d.<ts>` snapshots, peer backup mirrors,
+  historical docs/prompts/changelog.
+- **Docs:** GOVERNANCE §1/§12 + DIRECTORY_STANDARD §7 now note the symlink **removed**.
+- **Validated (all 3 nodes):** namespace clean; `conda activate bio` →
+  `/data/local/runtime/miniforge3`; analysis → `/data/analysis`; container `--nv`
+  cuda True/2-dev; 2 GPUs; handoff writes to `/data/admin/handoff`.
+- **Rollback now via:** off-host git (`c12346e`/`85380a2`/this commit), kept config
+  snapshots, peer backup mirrors, and regeneration recipes (`bio-environment.yml`,
+  pinned pytorch digest). Instant revert to old paths is intentionally retired —
+  `/data/analysis` + `/data/local` are the baseline.
+
+**Storage refactor (M3-3B→C→D→E→F) COMPLETE. Cluster ready for M3-4 (Reference Layer).**
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +

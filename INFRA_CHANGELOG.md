@@ -5,6 +5,22 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-12 — 20260612-01: M3-3F — legacy asset cleanup (refactor finalized)
+
+**Rationale:** Remove rollback-only assets with no active consumers; finalize the
+storage refactor. ~4 GB reclaimed; `/home/hha` top level clean.
+
+- **Removed:** `/home/hha/miniforge3` (2.1 G), `/srv/nfs/analysis` (2.9 G), and the
+  `/home/hha/ChatGPT_handoff` compatibility symlink (target untouched).
+- **Kept:** `*.pre-m3-3d.*` snapshots, peer backup mirrors, historical docs.
+- **Docs:** GOVERNANCE §1/§12 + DIRECTORY_STANDARD §7 (symlink removed; namespace clean).
+- **Validated** gpu-01/02/03: namespace, conda(/data/local), analysis(/data/analysis),
+  container --nv, GPU, handoff write.
+- **Prompt archived:** `prompts/20260612-01_m3-3F_legacy_cleanup.md`.
+- **Storage refactor M3-3B→F COMPLETE; ready for M3-4.** Detail: IMPLEMENTATION_LOG.md (M3-3F).
+
+---
+
 ## 2026-06-11 — 20260611-03: M3-3D — storage refactor EXECUTED
 
 **Rationale:** Separate namespace (`/home/hha`) from physical storage (`/data`);

@@ -71,8 +71,8 @@ is not used. By default:
 The six top-level domains that **may** exist are: `analysis` (the **Research**
 domain), `business`, `investment`, `surplus`, `resources`, `infra`. Handoff-worthy
 session outputs are stored at **`/data/admin/handoff/`** (physical, backed up;
-`/home/hha/ChatGPT_handoff` is a transition symlink to it — relocated M3-3D,
-20260611). This is operational storage, not a work domain and not a top-level
+relocated M3-3D, 20260611; the old `/home/hha/ChatGPT_handoff` transition symlink was
+**removed in M3-3F, 2026-06-12**). This is operational storage, not a work domain and not a top-level
 namespace entry (§12, DIRECTORY_STANDARD.md §7). **Project directories
 inside a domain may only be created after the project is approved** (e.g.
 `analysis/projects/project_x`, `business/product_y`, `investment/strategy_z`). The
@@ -357,8 +357,8 @@ this does not need to be re-requested per task.
 - **Out of scope (do not save):** routine conversational replies, trivial edits,
   and in-progress scratch (minimalism, §0).
 - **Location:** **`/data/admin/handoff/`** (physical, on gpu-01's `/data`, backed up;
-  relocated from `/home/hha/ChatGPT_handoff` in M3-3D, 20260611 — a transition symlink
-  remains at the old path). Cross-cutting operational storage, **not** a top-level
+  relocated from `/home/hha/ChatGPT_handoff` in M3-3D, 20260611; the old-path
+  transition symlink was **removed in M3-3F, 2026-06-12**). Cross-cutting operational storage, **not** a top-level
   namespace entry (§1; structure/front-matter in DIRECTORY_STANDARD.md §7).
   Subdirectories are created **as needed**, never pre-created.
 - **Form:** one self-contained Markdown file with YAML front-matter; filename
