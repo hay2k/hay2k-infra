@@ -170,9 +170,9 @@ Cross-cutting operational storage for handoff-worthy session outputs (operating 
 GOVERNANCE.md §12). **Relocated 2026-06-11 (M3-3D)** from the old
 `/home/hha/ChatGPT_handoff` (originally a User-approved non-domain top-level,
 20260604-01) to **`/data/admin/handoff/`** — on gpu-01's `/data` (big disk, backed up),
-**off** the `/home/hha` top-level namespace. A **transition symlink**
-`/home/hha/ChatGPT_handoff -> /data/admin/handoff` remains for compatibility (removable
-later).
+**off** the `/home/hha` top-level namespace. (The temporary
+`/home/hha/ChatGPT_handoff -> /data/admin/handoff` transition symlink was **removed in
+M3-3F, 2026-06-12** — the `/home/hha` top-level is now clean.)
 
 ```
 /data/admin/
