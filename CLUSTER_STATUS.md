@@ -60,14 +60,17 @@ in the repo.
 
 - **Server:** `gpu-01` exports **two** trees, both `root_squash`, to peer IPs only
   (firewalld per-peer rich-rules, not in public zone):
-  `/srv/nfs/resources` (the `resources/` realization) and **`/srv/nfs/analysis`**
-  (the research-domain `analysis/` realization — M2-1, 2026-06-05).
+  `/srv/nfs/resources` (the `resources/` realization) and **`/data/analysis`**
+  (the research-domain `analysis/` realization — backing **relocated to `/data` in
+  M3-3D, 2026-06-11**; was `/srv/nfs/analysis`).
 - **Clients:** ✅ `gpu-02`/`gpu-03` mount both, **persistent via `/etc/fstab`**:
   `resources` at `/srv/nfs/resources` (`_netdev`); **`analysis` at
   `/home/hha/analysis`** (`_netdev,noatime,nofail`, nfs4.2). On `gpu-01`,
-  `analysis` is **bind-mounted** `/srv/nfs/analysis → /home/hha/analysis` so the
+  `analysis` is **bind-mounted** `/data/analysis → /home/hha/analysis` so the
   path is uniform on every node. `analysis/` holds the four top-level dirs
-  (`pipeline container reference projects`), all empty.
+  (`pipeline container reference projects`) + the first runtime assets (pytorch
+  container, runtime-smoke pipeline). Runtime: Miniforge+`bio` per node at
+  `/data/local/runtime/miniforge3`; handoff/logs at `/data/admin/`.
 - **Validated:** both exports cross-node — `gpu-02` wrote, `gpu-03` read, server
   backing confirmed; `root_squash` enforced (peer-root squashed to `nobody`);
   resources export had localhost-deny verified (Phase F); `analysis` export ACL is
