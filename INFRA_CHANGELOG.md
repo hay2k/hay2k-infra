@@ -5,6 +5,27 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-16 — 20260616-02: Platform Reuse governance (Reuse-First)
+
+**Rationale:** Ensure future projects **consume** existing platform capabilities before
+creating new ones; formalize the capability lifecycle + project capability declaration.
+Documentation only.
+
+- **New doc:** PLATFORM_REUSE_POLICY.md — Reuse-First policy
+  (Project → existing Pipeline?/Container?/Reference?/Model?); Project Capability
+  Resolution workflow (search→reuse→extend→new+justify); Platform Capability Lifecycle
+  (proposed→built→active→deprecated→retired); projects consume, never redefine;
+  required pinned capability declaration.
+- **New template:** `infra/templates/project/ENVIRONMENT_MANIFEST.md` (pinned
+  pipeline/container/reference/model deps + Capability Resolution record + repro tuple).
+- **PROJECT_LIFECYCLE §4:** proposal now requires a completed Capability Resolution;
+  project records ENVIRONMENT_MANIFEST.
+- **DIRECTORY_STANDARD §3:** project shape requires the declaring ENVIRONMENT_MANIFEST.
+- **PLATFORM_ARCHITECTURE:** cross-ref to the reuse policy.
+- **Prompt archived:** `prompts/20260616-02_platform_reuse_governance.md`.
+
+---
+
 ## 2026-06-16 — 20260616-01: PLATFORM_ARCHITECTURE — common-platform vs project-specific
 
 **Rationale:** Formalize that reusable software/workflows/shared-assets are **Common

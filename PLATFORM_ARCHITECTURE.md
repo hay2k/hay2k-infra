@@ -84,5 +84,8 @@ Current: **pytorch** container ✅; STAR/Salmon indexes + human refs ✅. Others
   version-governed container (+ pipeline + reference assets), never tied to a project name.
 - A project (P0001, P0002, …) is approved separately (PROJECT_LIFECYCLE §3) and
   **consumes** platform capabilities by pinning exact versions — it does not define them.
+  **Reuse-First evaluation + Project Capability Resolution + the capability lifecycle are
+  governed by PLATFORM_REUSE_POLICY.md** (a project reuses existing capabilities before
+  proposing new ones).
 - Human references remain the **default priority**; other capabilities follow the
   research-program tiers and actual project need.
