@@ -5,6 +5,30 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-16 — 20260616-03: Automation readiness & agent consumption governance
+
+**Rationale:** Make platform capabilities discoverable/consumable by **future automation
+agents** using EXISTING metadata + workflows — lightweight, no agent infrastructure, no
+AI-Scientist framework. Documentation only.
+
+- **PLATFORM_ARCHITECTURE §8 (new):** Automation Readiness — dual-audience (humans +
+  agents); machine-discoverable via existing metadata (MANIFEST/VERSIONS/central log,
+  lifecycle derived from `current`, ENVIRONMENT_MANIFEST deps, catalog); human Decision
+  Layer mandatory.
+- **PLATFORM_REUSE_POLICY §7 (new):** Agent Capability Resolution — agents follow the
+  identical Reuse-First workflow on the same metadata; new-capability/project gates stay
+  human.
+- **No new doc / tool / infrastructure.** Confirmed existing project documents
+  (PROJECT_MASTER/FIGURE_PLAN/MANUSCRIPT_PLAN/TODO/ENVIRONMENT_MANIFEST) are the
+  automation consumption surface.
+- **Gap flagged (recommend before M3-4D):** promote the M3-1A drafts
+  PROJECT_SPECIFICATION_POLICY.md + AGENT_WORKFLOW_STANDARD.md to `infra/`; optional
+  future `analysis-install --json`/`describe` for machine-readable discovery.
+- **Prompt archived:** `prompts/20260616-03_automation_readiness.md`.
+- **Handoff:** `2026-06-16_automation-readiness-governance.md`.
+
+---
+
 ## 2026-06-16 — 20260616-02: Platform Reuse governance (Reuse-First)
 
 **Rationale:** Ensure future projects **consume** existing platform capabilities before

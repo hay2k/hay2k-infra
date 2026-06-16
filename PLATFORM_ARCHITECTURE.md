@@ -87,5 +87,19 @@ Current: **pytorch** container ✅; STAR/Salmon indexes + human refs ✅. Others
   **Reuse-First evaluation + Project Capability Resolution + the capability lifecycle are
   governed by PLATFORM_REUSE_POLICY.md** (a project reuses existing capabilities before
   proposing new ones).
+
+## 8. Automation readiness (20260616-03)
+Platform capabilities are designed for **both human operators and future automation
+agents** — same reuse rules, same metadata, same consumption path. No agent-specific
+infrastructure and no separate framework: automation rides the existing layers.
+- **Machine-discoverable via existing metadata** (no new schema): capability
+  `name/version/accel/preferred/source/sha256` from `analysis-install` MANIFEST;
+  **lifecycle state derived** from the `current` symlink + `VERSIONS.md`; project
+  dependency graph from `ENVIRONMENT_MANIFEST.md`; reference/pipeline compatibility from
+  the §5 capability catalog; operation history from the central install log.
+- **Human Decision Layer remains mandatory** — agents recommend; humans approve project
+  creation/retirement and new-capability proposals (GOVERNANCE §2, PROJECT_LIFECYCLE §3/§4).
+- Agents resolve capabilities by the **same Reuse-First workflow** as humans
+  (PLATFORM_REUSE_POLICY §7).
 - Human references remain the **default priority**; other capabilities follow the
   research-program tiers and actual project need.
