@@ -13,11 +13,18 @@ analysis/reference/
 ├── annotation/  <db>/<release>/                          + current
 ├── variation/   <db>/<version>/                          + current
 ├── index/       <aligner>-<genome>-<annot>/<tool-ver>/   + current   (derived, regenerable)
-├── nanopore/    (Tier-1 model assets — deferred, need P0001 scoping)
-├── model/       (Dorado/Remora/custom — deferred)
+├── singlecell/  single-cell reference atlases / annotation resources (Azimuth refs, markers)
+├── structure/   protein-structure DBs (AlphaFold genetic DBs ~TB-scale) + reference structures
+├── model/       foundation/ML model WEIGHTS (AlphaFold, ESM, scVI, CellTypist, Dorado/Remora)
+├── nanopore/    Nanopore-specific resources (signal/k-mer models, modification ground-truth)
 └── resource/    (misc shared)
 ```
 Read by containerized tools over the shared mount at `/home/hha/analysis/reference`.
+The reference layer is a **Common Platform Capability** (project-agnostic, reusable);
+see **PLATFORM_ARCHITECTURE.md** for the platform-vs-project model + capability catalog.
+`singlecell/`, `structure/`, `model/`, `nanopore/` are materialized on first use
+(GOVERNANCE §0); `model/` (e.g. Dorado/Remora) is platform-reusable and **not**
+P0001-gated (only study-specific training/ground-truth data is project-bound).
 
 ## 2. Deployed assets (M3-4B, 2026-06-15)
 | Asset | Path | Version | SHA256 (payload) | Source |
