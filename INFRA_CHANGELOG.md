@@ -5,6 +5,31 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-16 — 20260616-01: PLATFORM_ARCHITECTURE — common-platform vs project-specific
+
+**Rationale:** Formalize that reusable software/workflows/shared-assets are **Common
+Platform Capabilities** (project-agnostic, never tied to P0001/P0002), distinct from
+**Project-Specific Assets**; define platform scientific scope, the container-first
+operating model, and a reusable capability catalog. Documentation only — no installs.
+
+- **New doc:** PLATFORM_ARCHITECTURE.md — platform/project split; scope (human genomics,
+  bulk RNA-seq/DEG, single-cell, long-read, protein/structure & foundation models,
+  general AI/ML); operating model **Project → Pipeline → Container → Shared Reference**
+  (containers = software; references/models = mounted shared assets; host minimal);
+  capability catalog (DESeq2/edgeR/limma/fgsea/GSVA/clusterProfiler · Seurat/Scanpy/
+  Harmony/CellTypist/Azimuth/scVI · AlphaFold/ESM/Chai/Boltz · minimap2/sniffles/cuteSV/
+  modkit) — as capabilities, not projects.
+- **REFERENCE_LAYER.md:** added categories `singlecell/`, `structure/`, `model/`,
+  `nanopore/`; reference layer marked a Common Platform Capability.
+- **Refinement:** long-read basecalling/mod models (Dorado/Remora) reclassified as
+  platform capabilities (reusable, NOT P0001-gated); only study-specific raw data /
+  training sets are project-bound. Human references remain default priority.
+- **Storage caution:** `structure/` AlphaFold DBs are multi-TB (~2.5 TB of 11 TB) —
+  escalated install when built. Some assets license-gated.
+- **Prompt archived:** `prompts/20260616-01_platform_architecture.md`.
+
+---
+
 ## 2026-06-15 — 20260615-01: M3-4B — reference layer (human refs + RNA indexes)
 
 **Rationale:** Operator priority — install + version human references before any
