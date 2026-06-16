@@ -95,12 +95,17 @@ so the structure is predictable across all domains:
 ```
 <domain>/
 └── <project>/
-    ├── README.md           # what it is, owner, status, created date
-    ├── src/                # code (version-controlled)
-    ├── data/               # project-local inputs/outputs (see §4 for shared)
-    ├── results/            # generated artifacts; figures as PNG + PDF
-    └── prompts/            # project-significant prompts (same naming as infra)
+    ├── README.md                # what it is, owner, status, created date
+    ├── ENVIRONMENT_MANIFEST.md   # REQUIRED: pinned capability deps + Capability Resolution (PLATFORM_REUSE_POLICY)
+    ├── src/                     # code (version-controlled)
+    ├── data/                    # project-local inputs/outputs (research: symlink → /data/<ID>; §4)
+    ├── results/                 # generated artifacts; figures as PNG + PDF
+    └── prompts/                 # project-significant prompts (same naming as infra)
 ```
+`ENVIRONMENT_MANIFEST.md` **declares the project's pinned platform dependencies**
+(pipeline/container/reference/model) and its Reuse-First Capability Resolution —
+projects **consume** platform capabilities, never redefine them
+(PLATFORM_REUSE_POLICY.md; template `infra/templates/project/ENVIRONMENT_MANIFEST.md`).
 
 Rules:
 

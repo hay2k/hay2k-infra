@@ -57,11 +57,18 @@ place, and routine in-project work.
 ## 4. Creation procedure
 
 1. A Supervisor scopes the project and escalates a **decision request with a
-   recommendation** (AGENT_ARCHITECTURE.md §3) to the User.
+   recommendation** (AGENT_ARCHITECTURE.md §3) to the User. The scope **must include a
+   completed Capability Resolution** (PLATFORM_REUSE_POLICY.md §2): existing platform
+   pipelines/containers/references/models are evaluated **first** (Reuse-First); any
+   **new** platform capability is justified and proposed/built **separately and
+   project-agnostically** before the project consumes it.
 2. On approval, the domain's Domain Orchestrator materializes the domain dir if it is
    the domain's first project, then the project tree (DIRECTORY_STANDARD.md §3).
-3. The project `README.md` records name, owner, status, created date, and the
-   approving prompt ID (GOVERNANCE.md §8).
+3. The project records `README.md` (name, owner, status, created date, approving
+   prompt ID — GOVERNANCE.md §8) **and `ENVIRONMENT_MANIFEST.md`** declaring its
+   **pinned** capability dependencies (pipeline/container/reference/model) + the
+   Capability Resolution record (template:
+   `infra/templates/project/ENVIRONMENT_MANIFEST.md`; PLATFORM_REUSE_POLICY.md §5).
 4. The creation is recorded in INFRA_CHANGELOG.md if it changes infrastructure
    structure (a new domain dir), otherwise in the project's own record.
 
