@@ -57,14 +57,24 @@ done
 ASRC=/data/analysis
 if [ -d "$ASRC" ]; then
   AMAN="$WORK/analysis.manifest.sha256"
-  ( cd "$ASRC" && find . -type f ! -name '*.sif' -exec sha256sum {} \; ) > "$AMAN" 2>/dev/null || true
+  # hash only the precious/backed-up set (skip bulk regenerables: SIFs, indexes,
+  # models, genome/transcript FASTAs, GTFs, VCFs) so we don't checksum tens of GB.
+  ( cd "$ASRC" && find . -type f \
+      ! -name '*.sif' ! -path './reference/index/*' ! -path './reference/model/*' \
+      ! -name '*.fa' ! -name '*.fa.gz' ! -name '*.fasta' ! -name '*.fasta.gz' \
+      ! -name '*.gtf.gz' ! -name '*.gff*.gz' ! -name '*.vcf.gz' ! -name '*.tbi' \
+      -exec sha256sum {} \; ) > "$AMAN" 2>/dev/null || true
   for h in "${PEERS[@]}"; do
     rsync -a --delete \
       --exclude='container/apptainer/**/*.sif' \
       --exclude='**/_engine-cache/**' \
-      --exclude='reference/**/fasta/**' --exclude='reference/**/indices/**' \
+      --exclude='reference/index/**' --exclude='reference/model/**' \
+      --exclude='reference/**/*.fa' --exclude='reference/**/*.fa.gz' \
+      --exclude='reference/**/*.fasta' --exclude='reference/**/*.fasta.gz' \
+      --exclude='reference/**/*.gtf.gz' --exclude='reference/**/*.gff*.gz' \
+      --exclude='reference/**/*.vcf.gz' --exclude='reference/**/*.tbi' \
       "$ASRC"/ "$h":/srv/backup/analysis/ \
-      && log "analysis -> $h OK ($(wc -l < "$AMAN") files; SIFs/cache/refdata excluded)" || log "analysis -> $h FAILED"
+      && log "analysis -> $h OK ($(wc -l < "$AMAN") precious files; SIFs/indexes/models/refdata excluded)" || log "analysis -> $h FAILED"
     scp -q "$AMAN" "$h":/srv/backup/analysis.manifest.sha256 || true
   done
 fi

@@ -5,6 +5,26 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-15 — 20260615-01: M3-4B — reference layer (human refs + RNA indexes)
+
+**Rationale:** Operator priority — install + version human references before any
+Nanopore model assets; STAR/Salmon promoted to near-term. Populated the reference
+layer (GENCODE + GRCh38 primary) via `analysis-install`.
+
+- **Registered (`/data/analysis/reference`, all --regenerable + SHA256 + MANIFEST):**
+  genome `homo_sapiens-GRCh38/gencode-v50`; `annotation/gencode-human/v50` (GTF+tx);
+  `variation/clinvar/2026-06-06`; `variation/dbsnp/b157-GRCh38p14` (28 GB);
+  `index/star-GRCh38-gencode-v50/2.7.11b-sjdb100` (29 GB);
+  `index/salmon-GRCh38-gencode-v50/2.0.0-k31` (11 GB).
+- **New doc:** REFERENCE_LAYER.md (+ chrom-naming caveat). **New:** `rnaseq-buildenv.yml`.
+- **Backup fix:** cluster-backup.sh reference excludes corrected for category-first
+  layout (bulk regenerables excluded; manifests kept).
+- **Deferred:** Nanopore model assets (Dorado/Remora) — need P0001 scoping.
+- **Prompt archived:** `prompts/20260615-01_m3-4B_reference_human_refs.md`.
+- **Detail + rollback:** IMPLEMENTATION_LOG.md (M3-4B). Footprint ~68 GB / 11 TB.
+
+---
+
 ## 2026-06-12 — 20260612-01: M3-3F — legacy asset cleanup (refactor finalized)
 
 **Rationale:** Remove rollback-only assets with no active consumers; finalize the
