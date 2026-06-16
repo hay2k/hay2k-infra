@@ -61,18 +61,16 @@ if [ -d "$ASRC" ]; then
   # models, genome/transcript FASTAs, GTFs, VCFs) so we don't checksum tens of GB.
   ( cd "$ASRC" && find . -type f \
       ! -name '*.sif' ! -path './reference/index/*' ! -path './reference/model/*' \
-      ! -name '*.fa' ! -name '*.fa.gz' ! -name '*.fasta' ! -name '*.fasta.gz' \
-      ! -name '*.gtf.gz' ! -name '*.gff*.gz' ! -name '*.vcf.gz' ! -name '*.tbi' \
+      ! -name '*.gz' ! -name '*.tbi' \
       -exec sha256sum {} \; ) > "$AMAN" 2>/dev/null || true
   for h in "${PEERS[@]}"; do
-    rsync -a --delete \
+    # --delete-excluded so the backup mirrors ONLY the precious set (purges
+    # regenerables, incl. any previously-copied bulk, from the destination).
+    rsync -a --delete --delete-excluded \
       --exclude='container/apptainer/**/*.sif' \
       --exclude='**/_engine-cache/**' \
       --exclude='reference/index/**' --exclude='reference/model/**' \
-      --exclude='reference/**/*.fa' --exclude='reference/**/*.fa.gz' \
-      --exclude='reference/**/*.fasta' --exclude='reference/**/*.fasta.gz' \
-      --exclude='reference/**/*.gtf.gz' --exclude='reference/**/*.gff*.gz' \
-      --exclude='reference/**/*.vcf.gz' --exclude='reference/**/*.tbi' \
+      --exclude='reference/**/*.gz' --exclude='reference/**/*.tbi' \
       "$ASRC"/ "$h":/srv/backup/analysis/ \
       && log "analysis -> $h OK ($(wc -l < "$AMAN") precious files; SIFs/indexes/models/refdata excluded)" || log "analysis -> $h FAILED"
     scp -q "$AMAN" "$h":/srv/backup/analysis.manifest.sha256 || true
