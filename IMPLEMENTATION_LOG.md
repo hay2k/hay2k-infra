@@ -450,6 +450,42 @@ clean (`analysis` + `infra` + dotfiles).
 
 **Storage refactor (M3-3B→C→D→E→F) COMPLETE. Cluster ready for M3-4 (Reference Layer).**
 
+## M3-4B — Reference Layer: human references + RNA indexes ✅ COMPLETE (2026-06-15, 20260615-01)
+
+**Summary:** Populated the reference layer with the operator-prioritized **human
+references** (GENCODE + GRCh38 primary) + the near-term **STAR/Salmon indexes**, all
+version-governed via `analysis-install` under `/data/analysis/reference`. Nanopore
+model assets remain deferred (need P0001 scoping). New doc: **REFERENCE_LAYER.md**.
+
+**Registered (all `--regenerable`, pinned + SHA256 + MANIFEST):**
+| Asset | Version | SHA256 |
+|-------|---------|--------|
+| `genome/homo_sapiens-GRCh38` | gencode-v50 | b760d18d… |
+| `annotation/gencode-human` | v50 (GTF + transcripts) | dd6d33ba… |
+| `variation/clinvar` | 2026-06-06 | 2ef1a453… |
+| `variation/dbsnp` | b157-GRCh38p14 (28 GB) | 329da439… |
+| `index/star-GRCh38-gencode-v50` | 2.7.11b-sjdb100 (29 GB) | 49cc0fac… |
+| `index/salmon-GRCh38-gencode-v50` | 2.0.0-k31 (11 GB) | 8dcf267b… |
+
+- **Source:** GENCODE v50 (genome `chr`-prefixed + GTF + transcripts); ClinVar/dbSNP
+  from NCBI. **Chrom-naming caveat** recorded (GENCODE `chr1` vs ClinVar `1` vs dbSNP
+  `NC_…`) — rename when intersecting (REFERENCE_LAYER §3).
+- **Indexes (I4):** STAR 2.7.11b (sjdbOverhang 100) + salmon 2.0.0 (decoy-aware, k=31)
+  built from the registered genome+annotation; builder versions + source recorded in
+  each index MANIFEST. Build-env pinned: **`infra/rnaseq-buildenv.yml`** (host conda
+  `rnaseq`: STAR 2.7.11b, salmon 2.0.0). Pipelines themselves use containers.
+- **Backup fix:** `cluster-backup.sh` reference excludes corrected for the
+  category-first layout (`reference/index/**`, `model/**`, `*.{fa,fa.gz,gtf.gz,vcf.gz,tbi}`)
+  so the 28 GB dbSNP / 29 GB STAR index are **not** mirrored/hashed (regenerable);
+  only MANIFEST/CHECKSUMS backed up.
+- **Footprint:** reference store ~68 GB on `/data/analysis` (11 TB; 2% used). Build
+  scratch removed.
+- **Deferred:** Tier-1 Nanopore model assets (Dorado/Remora/ground-truth) — need P0001.
+
+**Rollback:** `analysis-install` set-current-away + remove per asset (or
+`rm -rf reference/<category>/<name>`); all `--regenerable` (re-fetch/re-build from
+recorded source + build-env). `rnaseq` build-env removable (`conda env remove -n rnaseq`).
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
