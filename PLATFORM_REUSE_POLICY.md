@@ -75,3 +75,18 @@ checks grep these declarations).
 - **DIRECTORY_STANDARD.md §3** — the project shape requires the declaring
   `ENVIRONMENT_MANIFEST.md`.
 - **PLATFORM_ARCHITECTURE.md** — defines the capabilities being reused.
+
+## 7. Agent Capability Resolution (automation = same rules) (20260616-03)
+Future **automation agents follow the identical Reuse-First / Project Capability
+Resolution** of §1–§2 — there is **no separate agent process**. The only difference is
+the input form: an agent reads the capability set **programmatically** (`analysis-install
+list pipeline|container|reference` + per-version `MANIFEST.md` + the PLATFORM_ARCHITECTURE
+catalog; lifecycle derived from `current`) and **writes its resolution into the project's
+`ENVIRONMENT_MANIFEST.md`** (§5).
+- **Reuse-First applies equally to humans and agents.** Reuse/extend is routine; a **new
+  platform capability** an agent proposes is still a **human/Supervisor decision** (§2),
+  built project-agnostically (PLATFORM_ARCHITECTURE) before consumption.
+- **Human Decision Layer is mandatory** for project creation/retirement and capability
+  approval (GOVERNANCE §2, PROJECT_LIFECYCLE §3/§4). Agents recommend; humans decide.
+- No agent-specific infrastructure or metadata is introduced — automation reuses existing
+  manifests/metadata (PLATFORM_ARCHITECTURE §8).
