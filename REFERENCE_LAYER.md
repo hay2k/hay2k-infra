@@ -55,8 +55,10 @@ scheme first. Recorded in each variation asset's MANIFEST.
 ## 5. Backup classification (cluster-backup.sh, updated M3-4B)
 `reference/` is **excluded from backup** (bulk is re-downloadable/re-buildable) — the
 backup mirrors only small provenance (`MANIFEST.md`/`VERSIONS.md`/`CHECKSUMS.md`).
-Excluded patterns now match the category-first layout: `reference/index/**`,
-`reference/model/**`, and `reference/**/*.{fa,fa.gz,fasta,gtf.gz,vcf.gz,tbi}`. Anything
+Excluded (category-first layout, validated): `reference/index/**`, `reference/model/**`,
+`reference/**/*.gz` (all genome/transcript/GTF/VCF payloads incl. the bare-`.gz` dbSNP),
+`reference/**/*.tbi` — with **`--delete-excluded`** so the destination mirrors only the
+precious set (peer `analysis` backup is ~192 KB / 29 files, no bulk). Anything
 non-re-downloadable (license-gated, curated, trained custom models) is flagged precious
 and backed up explicitly when added.
 
