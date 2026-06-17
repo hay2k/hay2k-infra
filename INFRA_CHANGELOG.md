@@ -5,6 +5,28 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-16 — 20260616-04: M3-4C.6 — canonical promotion of project-spec + agent-workflow standards
+
+**Rationale:** Promote the last two governance drafts (M3-1A) to canonical `infra/`,
+with corrections + cross-refs; apply the M3-1A-deferred project-shape/lifecycle edits.
+Documentation only.
+
+- **Promoted (canonical, new in `infra/`):** **PROJECT_SPECIFICATION_POLICY.md**
+  (added ENVIRONMENT_MANIFEST as a required project file + PLATFORM_REUSE_POLICY/
+  PLATFORM_ARCHITECTURE cross-refs); **AGENT_WORKFLOW_STANDARD.md** (added Capability
+  Resolution into Planning/Execution layers + PLATFORM_REUSE_POLICY §7 / PLATFORM_ARCHITECTURE
+  §8 cross-refs).
+- **DIRECTORY_STANDARD §3:** project shape now includes PROJECT_MASTER.md + TODO.md
+  (required), FIGURE_PLAN/MANUSCRIPT_PLAN (optional), `archive/`. **§5:** added the
+  project-spec snapshot naming exception (`PROJECT_MASTER_NN_reason.md`).
+- **PROJECT_LIFECYCLE §4:** creation records PROJECT_MASTER.md + TODO.md (with README +
+  ENVIRONMENT_MANIFEST).
+- **Handoff drafts** banner-marked HISTORICAL/SUPERSEDED (retained).
+- **Remaining governance-standard drafts: NONE.** Automation-readiness architecture complete.
+- **Prompt archived:** `prompts/20260616-04_m3-4C6_governance_finalization.md`.
+
+---
+
 ## 2026-06-16 — 20260616-03: Automation readiness & agent consumption governance
 
 **Rationale:** Make platform capabilities discoverable/consumable by **future automation

@@ -96,12 +96,19 @@ so the structure is predictable across all domains:
 <domain>/
 └── <project>/
     ├── README.md                # what it is, owner, status, created date
+    ├── PROJECT_MASTER.md         # REQUIRED: authoritative spec / source of truth (PROJECT_SPECIFICATION_POLICY)
+    ├── TODO.md                   # REQUIRED: actionable work queue
+    ├── FIGURE_PLAN.md            # optional: figure/presentation planning
+    ├── MANUSCRIPT_PLAN.md        # optional: manuscript/report planning
     ├── ENVIRONMENT_MANIFEST.md   # REQUIRED: pinned capability deps + Capability Resolution (PLATFORM_REUSE_POLICY)
     ├── src/                     # code (version-controlled)
     ├── data/                    # project-local inputs/outputs (research: symlink → /data/<ID>; §4)
     ├── results/                 # generated artifacts; figures as PNG + PDF
-    └── prompts/                 # project-significant prompts (same naming as infra)
+    ├── prompts/                 # project-significant prompts (same naming as infra)
+    └── archive/                 # sequential-numbered historical spec snapshots (PROJECT_SPECIFICATION_POLICY §4)
 ```
+The spec/plan documents (`PROJECT_MASTER.md` primary > `FIGURE_PLAN` > `MANUSCRIPT_PLAN`
+> `TODO`) follow PROJECT_SPECIFICATION_POLICY.md.
 `ENVIRONMENT_MANIFEST.md` **declares the project's pinned platform dependencies**
 (pipeline/container/reference/model) and its Reuse-First Capability Resolution —
 projects **consume** platform capabilities, never redefine them
@@ -157,6 +164,10 @@ covered by RESOURCE_POLICY.md.
   be pinned per project — not first-party code under VCS — so the prohibition above
   does not apply (ANALYSIS_ARCHITECTURE.md; operator decisions 20260604-03,
   20260605-03 added `reference/`).
+- **Exception — project spec snapshots** (`<project>/archive/`): historical spec
+  versions use **sequential `PROJECT_MASTER_NN_reason.md`** naming
+  (PROJECT_SPECIFICATION_POLICY.md §4); `final/final2/latest/vFinal`/date-only remain
+  prohibited as primary identifiers.
 
 ## 6. Directories within vs. outside this standard
 

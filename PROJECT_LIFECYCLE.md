@@ -65,9 +65,10 @@ place, and routine in-project work.
 2. On approval, the domain's Domain Orchestrator materializes the domain dir if it is
    the domain's first project, then the project tree (DIRECTORY_STANDARD.md §3).
 3. The project records `README.md` (name, owner, status, created date, approving
-   prompt ID — GOVERNANCE.md §8) **and `ENVIRONMENT_MANIFEST.md`** declaring its
-   **pinned** capability dependencies (pipeline/container/reference/model) + the
-   Capability Resolution record (template:
+   prompt ID — GOVERNANCE.md §8), **`PROJECT_MASTER.md`** (authoritative spec /
+   source of truth) + `TODO.md` (PROJECT_SPECIFICATION_POLICY.md), **and
+   `ENVIRONMENT_MANIFEST.md`** declaring its **pinned** capability dependencies
+   (pipeline/container/reference/model) + the Capability Resolution record (template:
    `infra/templates/project/ENVIRONMENT_MANIFEST.md`; PLATFORM_REUSE_POLICY.md §5).
 4. The creation is recorded in INFRA_CHANGELOG.md if it changes infrastructure
    structure (a new domain dir), otherwise in the project's own record.
