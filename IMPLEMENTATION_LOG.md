@@ -486,6 +486,29 @@ model assets remain deferred (need P0001 scoping). New doc: **REFERENCE_LAYER.md
 `rm -rf reference/<category>/<name>`); all `--regenerable` (re-fetch/re-build from
 recorded source + build-env). `rnaseq` build-env removable (`conda env remove -n rnaseq`).
 
+## M3-4D — Platform Wave 1 + Runtime tooling ✅ COMPLETE (2026-06-17, 20260617-01)
+
+**Summary:** Host productivity tools standardized on all 3 nodes; 3 reusable platform
+containers built/registered/validated; somatic + Dorado evaluated (deferred with rationale).
+
+- **Part A (host tools):** bat 0.26.1, eza, fd 10.4.2, fzf 0.73, btop 1.4.7, tree 2.3.2,
+  pv 1.6.6 → `bio` env, all 3 nodes (conda-forge; lockfile re-exported, 67 pkgs).
+  ripgrep/jq/yq/seqkit/csvtk/pigz/parallel already present (not reinstalled). 14/14 verified.
+- **Part B:** `RUNTIME_TOOLS.md` registry created.
+- **Part C (containers, reference-free, analysis-install, pinned+SHA256+MANIFEST+current):**
+  `ml/2.9.1-cuda13.0` (03a8725f; PyTorch 2.9.1+cu130 + Lightning 2.6.5 + XGBoost 3.2.0 +
+  LightGBM 4.6.0; GPU), `longread/2026-06-17` (e020d020; minimap2 2.31/samtools 1.23.1/
+  sniffles2 2.3.2/cuteSV 1.0.8/modkit 0.6.4; CPU), `bioconductor/bioc3.21` (d6975407;
+  DESeq2/edgeR/limma/fgsea/GSVA/clusterProfiler; CPU). `.def` recipes saved to
+  `container/docker/<env>/<version>/`.
+- **somatic:** evaluated → NOT built (Strelka2/Manta need Python 2.7, conflicts with
+  GATK4/CNVkit) → Wave-2 **nf-core/sarek** pipeline-first. **Dorado:** evaluated → separate
+  GPU container + models, deferred to Wave 2.
+- **Validation:** ml `--nv` (cuda True/2-dev) + longread + bioconductor all run, incl.
+  **cross-node on gpu-02**. Container store 8.0 GB; /data 78 GB/11 TB.
+- **Rollback:** `analysis-install` remove per container; host tools `mamba remove -n bio …`;
+  all regenerable from `.def`/lockfile.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
