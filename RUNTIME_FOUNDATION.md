@@ -14,6 +14,13 @@ VERSION_MANAGEMENT_TOOLING.md.
   `analysis/container/`, versioned + registered via `analysis-install`).
 - **GPU-first, CPU-compatible** (ENVIRONMENT_POLICY.md §9): prefer GPU execution when
   mature; keep a CPU path; both maintained where practical.
+- **Operator experience vs scientific control (the exposure boundary).**
+  *General-purpose* runtime utilities are part of the **operator experience** and must
+  behave like normal Linux commands **immediately after login** — no `conda activate`.
+  *Scientific / bioinformatics* software stays **environment-controlled and
+  container-first** (activate `bio`, or run inside a container/pipeline). `bio` remains
+  the single source of truth for both; the difference is only **what is exposed to the
+  login PATH** (see §5).
 
 ## 2. The three runtime tiers
 | Tier | What | Where | Managed by | Reproduced from |
@@ -43,7 +50,31 @@ Tier 1 (`bio`); needs full/GPU/system reproducibility or is large/shared → Tie
 - **Tier 3:** governed by PROJECT_SPECIFICATION_POLICY/ENVIRONMENT_POLICY; **no
   project created** (M3-2 builds no project).
 
-## 5. Pointers
+## 5. Runtime Utility Exposure Layer (operator experience)
+**Added 2026-06-17 (M3-4D follow-up, 20260617-02).** Implements the exposure boundary
+in §1.
+
+- **Mechanism:** per-node symlinks in **`~/.local/bin`** → the corresponding binary in
+  the `bio` env (`/data/local/runtime/miniforge3/envs/bio/bin/<tool>`). `~/.local/bin`
+  is already first-class on the login PATH via the stock `~/.bashrc`, so the tools work
+  in a **fresh login shell with no `conda activate`**. Symlinks (not copies) keep `bio`
+  the single source of truth; conda RPATH (`$ORIGIN/../lib`) resolves the env's shared
+  libs through the symlink, so no `LD_LIBRARY_PATH` or activation is needed.
+- **Managed by:** `infra/scripts/expose-runtime-utils.sh` (idempotent; `--remove` to
+  roll back). Run **per node** (home is local per-node). The script carries the
+  authoritative **allow-list** and a safety **deny-list**.
+- **Globally exposed (general-purpose only):** `bat eza fd rg fzf btop jq yq tree pv
+  parallel`.
+- **Deliberately NOT exposed (scientific → env/container-first):** `samtools bcftools
+  bedtools seqkit csvtk` and all heavier bioinformatics software. These remain available
+  via `conda activate bio`, containers, and pipelines only.
+- **PATH strategy:** no PATH edits introduced. Login PATH order keeps base-conda `bin`
+  ahead of `~/.local/bin`; none of the exposed tools exist in base, so symlinks resolve
+  unambiguously (a lower-priority system `jq` in `/usr/bin` is correctly overridden).
+- Full registry + per-tool table: **RUNTIME_TOOLS.md**.
+
+## 6. Pointers
 BIO_ENVIRONMENT.md (Tier 1) · CONTAINER_STANDARDS.md (Tier 2) ·
 VERSION_MANAGEMENT_TOOLING.md (`analysis-install`) · ENVIRONMENT_POLICY.md §7/§9 ·
-ANALYSIS_ARCHITECTURE.md.
+ANALYSIS_ARCHITECTURE.md · RUNTIME_TOOLS.md + `scripts/expose-runtime-utils.sh`
+(exposure layer).

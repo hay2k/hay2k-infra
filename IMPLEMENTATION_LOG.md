@@ -509,6 +509,27 @@ containers built/registered/validated; somatic + Dorado evaluated (deferred with
 - **Rollback:** `analysis-install` remove per container; host tools `mamba remove -n bio …`;
   all regenerable from `.def`/lockfile.
 
+## M3-4D follow-up — Runtime Utility Exposure Layer ✅ COMPLETE (2026-06-17, 20260617-02)
+
+**Summary:** Closed the M3-4D usability gap — 11 general-purpose utilities now work in a
+fresh login shell with **no `conda activate bio`**, while `bio` stays the single source of
+truth and bioinformatics tools stay env/container-controlled.
+
+- **Mechanism:** per-node symlinks `~/.local/bin/<tool>` → `bio` env binary, created by
+  new `scripts/expose-runtime-utils.sh` (idempotent; allow-list + deny-list; `--remove`).
+  Symlinks (not copies); conda RPATH `$ORIGIN/../lib` resolves env libs through the
+  symlink → runs with no activation, no `LD_LIBRARY_PATH`. No PATH/rc/system edits.
+- **Exposed (11):** bat eza fd rg fzf btop jq yq tree pv parallel.
+  **Not exposed (scientific):** samtools bcftools bedtools seqkit csvtk (+pigz).
+- **Validation (fresh login, no activate):** gpu-01/02/03 all **PASS** — 11 resolve to
+  `~/.local/bin` + run `--version`; 5 scientific tools confirmed hidden. No base-env
+  shadowing; `/usr/bin/jq` correctly overridden.
+- **Docs:** RUNTIME_TOOLS.md (exposure boundary + per-tool column), RUNTIME_FOUNDATION.md
+  (§1 principle + new §5), BIO_ENVIRONMENT.md (exposure note).
+- **Rollback:** `bash scripts/expose-runtime-utils.sh --remove` (per node).
+- **Reviewed (not installed):** candidate additions ncdu/dust/duf/tmux/delta/glow —
+  recommendation left to operator Decision Layer.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +

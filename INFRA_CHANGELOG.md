@@ -5,6 +5,21 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-17 — 20260617-02: M3-4D follow-up — Runtime Utility Exposure Layer
+
+- **Exposed 11 general-purpose utilities to the login shell** (no `conda activate`):
+  bat/eza/fd/rg/fzf/btop/jq/yq/tree/pv/parallel — via per-node symlinks in `~/.local/bin`
+  to the `bio` env (new `scripts/expose-runtime-utils.sh`, idempotent, `--remove` rollback).
+  `bio` stays the single source of truth (symlinks, not copies; no parallel pkg manager).
+- **Scientific tools NOT exposed** (samtools/bcftools/bedtools/seqkit/csvtk + pigz) — stay
+  `bio`/container/pipeline-controlled by policy.
+- **Validated** fresh-login on gpu-01/02/03 (all PASS); no base-env shadowing.
+- **Docs:** RUNTIME_TOOLS.md, RUNTIME_FOUNDATION.md (§1 principle + §5), BIO_ENVIRONMENT.md.
+- **Prompt archived:** `prompts/20260617-02_m3-4D-followup_runtime_exposure_layer.md`.
+- Detail: IMPLEMENTATION_LOG.md; handoff 2026-06-17_m3-4D-followup-runtime-exposure-layer.md.
+
+---
+
 ## 2026-06-17 — 20260617-01: M3-4D — Wave 1 platform containers + runtime tooling
 
 - **Host tools (all 3 nodes, `bio` env):** bat/eza/fd/fzf/btop/tree/pv (others already
