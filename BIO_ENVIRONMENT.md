@@ -21,6 +21,12 @@ it is containerized (CONTAINER_STANDARDS.md).
   existing `~/.local` toolchain pattern and the runtime philosophy (host-local for
   speed; conda envs are not NFS-friendly).
 - **Activation:** `conda activate bio` (enabled via `conda init bash`).
+- **Login exposure:** a defined subset of **general-purpose** utilities
+  (`bat eza fd rg fzf btop jq yq tree pv parallel`) is also reachable in a **fresh login
+  shell without activation**, via the Runtime Utility Exposure Layer (symlinks into
+  `~/.local/bin`; RUNTIME_FOUNDATION.md §5, RUNTIME_TOOLS.md, `scripts/expose-runtime-utils.sh`).
+  Scientific tools (`samtools`/`bcftools`/`bedtools`/`seqkit`/`csvtk`/…) stay
+  activation/container-only by policy.
 
 ## 3. Final tool list (M3-2)
 `samtools`, `bcftools`, `htslib` (provides **bgzip + tabix**), `bedtools`, `seqkit`,
