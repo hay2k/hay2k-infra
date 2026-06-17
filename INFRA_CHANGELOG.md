@@ -5,6 +5,22 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-06-17 — 20260617-01: M3-4D — Wave 1 platform containers + runtime tooling
+
+- **Host tools (all 3 nodes, `bio` env):** bat/eza/fd/fzf/btop/tree/pv (others already
+  present); lockfile re-exported (67 pkgs). **RUNTIME_TOOLS.md** registry created.
+- **Containers (analysis-install, reference-free, pinned+SHA256+current):**
+  `ml/2.9.1-cuda13.0` (GPU; PyTorch+Lightning+XGBoost+LightGBM), `longread/2026-06-17`
+  (CPU; minimap2/samtools/sniffles2/cuteSV/modkit), `bioconductor/bioc3.21` (CPU; DESeq2/
+  edgeR/limma/fgsea/GSVA/clusterProfiler). `.def` recipes in container/docker/.
+- **Evaluated/deferred:** somatic → nf-core/sarek pipeline-first (Py2/3 conflict makes a
+  mega-container unmaintainable); Dorado → separate GPU container + models, Wave 2.
+- **Validated** incl. cross-node (gpu-02). Container store 8 GB.
+- **Prompt archived:** `prompts/20260617-01_m3-4D_wave1_platform_deployment.md`.
+- Detail: IMPLEMENTATION_LOG.md (M3-4D); handoff 2026-06-16_m3-4D-wave1-platform-deployment.md.
+
+---
+
 ## 2026-06-16 — 20260616-04: M3-4C.6 — canonical promotion of project-spec + agent-workflow standards
 
 **Rationale:** Promote the last two governance drafts (M3-1A) to canonical `infra/`,
