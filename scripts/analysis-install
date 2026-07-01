@@ -59,6 +59,7 @@ atomic_set_current() { # base version  -> base/current -> version (atomic, lock 
 cmd_install() {
   local kind="$1" group="$2" name="$3" version="$4"; shift 4
   local from="" source="" sha="" accel="cpu" preferred="" regen=0 setcur=0 note=""
+  local category="" provides="" requires="" compat=""   # optional discovery metadata (M4-2)
   while [ $# -gt 0 ]; do case "$1" in
     --from) from="$2"; shift 2;;
     --source) source="$2"; shift 2;;
@@ -68,6 +69,10 @@ cmd_install() {
     --regenerable) regen=1; shift;;
     --set-current) setcur=1; shift;;
     --note) note="$2"; shift 2;;
+    --category) category="$2"; shift 2;;   # discovery: category label (e.g. single-cell, longread, ml)
+    --provides) provides="$2"; shift 2;;    # discovery: capabilities offered (comma-sep)
+    --requires) requires="$2"; shift 2;;    # discovery: reference/model requirements (comma-sep)
+    --compat)   compat="$2";   shift 2;;    # discovery: compatible pipelines/containers (comma-sep)
     *) die "unknown install option: $1";;
   esac; done
   valid_kind "$kind"; valid_group "$kind" "$group"
@@ -99,6 +104,12 @@ installed: $(NOW)
 installed_by: $WHO
 note: ${note:-<none>}
 EOF
+  # Optional discovery metadata (M4-2) — appended only when provided; MANIFEST sha already
+  # computed above, and payload_hash excludes MANIFEST.md, so this does not affect the hash.
+  [ -n "$category" ] && echo "category: $category"   >> "$b/$version/MANIFEST.md"
+  [ -n "$provides" ] && echo "provides: $provides"   >> "$b/$version/MANIFEST.md"
+  [ -n "$requires" ] && echo "requires: $requires"   >> "$b/$version/MANIFEST.md"
+  [ -n "$compat"   ] && echo "compat: $compat"       >> "$b/$version/MANIFEST.md"
   local vlog="$b/VERSIONS.md"
   [ -f "$vlog" ] || printf '# VERSIONS — %s/%s/%s\n\n' "$kind" "$group" "$name" >"$vlog"
   printf -- '- %s  install %s  sha256=%s  accel=%s  preferred=%s  by=%s  %s\n' "$(NOW)" "$version" "${sha:-<none>}" "$accel" "$preferred" "$WHO" "${note:-}" >>"$vlog"
@@ -185,12 +196,86 @@ cmd_list() {
   done
 }
 
+manifest_field() { sed -n "s/^$2: //p" "$1" 2>/dev/null | head -1; }  # value may contain ': '
+
+infer_category() { # kind group name  -> discovery category when MANIFEST has none
+  case "$1/$3" in
+    container/scanpy|container/scvi-tools|container/seurat) echo "single-cell";;
+    container/dorado|container/longread)                   echo "long-read";;
+    container/ml|container/pytorch)                        echo "ml";;
+    container/bioconductor)                                echo "bulk-rnaseq/stats";;
+    pipeline/*rnaseq|pipeline/*scrnaseq)                   echo "nf-core";;
+    reference/*)                                           echo "$2";;   # reference category = its group
+    *) echo "-";;
+  esac
+}
+
+cmd_describe() { # kind group name [version]  — full capability detail (discovery layer)
+  local kind="$1" group="$2" name="$3" version="${4:-}"
+  valid_kind "$kind"; valid_group "$kind" "$group"
+  local b; b="$(base_dir "$kind" "$group" "$name")"
+  [ -d "$b" ] || die "not found: $kind/$group/$name"
+  local cur=""; [ -L "$b/current" ] && cur="$(readlink "$b/current")"
+  [ -z "$version" ] && version="${cur:-}"
+  [ -n "$version" ] || die "no version installed for $kind/$group/$name"
+  local m="$b/$version/MANIFEST.md"; [ -f "$m" ] || die "no manifest: $version"
+  local cat; cat="$(manifest_field "$m" category)"; [ -n "$cat" ] || cat="$(infer_category "$kind" "$group" "$name") (inferred)"
+  echo "== $kind/$group/$name/$version ${cur:+ (current=$cur)}"
+  echo "category:  $cat"
+  echo "accel:     $(manifest_field "$m" accel)   preferred: $(manifest_field "$m" preferred)"
+  echo "sha256:    $(manifest_field "$m" sha256)"
+  echo "source:    $(manifest_field "$m" source)"
+  echo "provides:  $(manifest_field "$m" provides || echo -)"
+  echo "requires:  $(manifest_field "$m" requires || echo -)"
+  echo "compat:    $(manifest_field "$m" compat   || echo -)"
+  echo "note:      $(manifest_field "$m" note)"
+  echo "versions:"
+  find "$b" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | while read -r d; do
+    local v; v="$(basename "$d")"; [ -f "$d/MANIFEST.md" ] || continue
+    printf '  - %s%s  (accel=%s)\n' "$v" "$([ "$v" = "$cur" ] && echo ' *current*')" "$(manifest_field "$d/MANIFEST.md" accel)"
+  done
+}
+
+cmd_catalog() { # [--kind K] [--accel A] [--category C] [--json]  — discovery over the live registry
+  local fk="" fa="" fc="" json=0
+  while [ $# -gt 0 ]; do case "$1" in
+    --kind) fk="$2"; shift 2;; --accel) fa="$2"; shift 2;;
+    --category) fc="$2"; shift 2;; --json) json=1; shift;;
+    *) die "unknown catalog option: $1";;
+  esac; done
+  local first=1
+  [ $json -eq 1 ] && printf '[\n'
+  find "$ROOT" -name MANIFEST.md 2>/dev/null | sort | while read -r m; do
+    local d b v cur; d="$(dirname "$m")"; b="$(dirname "$d")"; v="$(basename "$d")"
+    cur=""; [ -L "$b/current" ] && cur="$(readlink "$b/current")"
+    [ "$v" = "$cur" ] || continue    # catalog lists the CURRENT version of each capability
+    local kind group name; kind="$(manifest_field "$m" kind)"; group="$(manifest_field "$m" group)"; name="$(manifest_field "$m" name)"
+    local acc pref cat; acc="$(manifest_field "$m" accel)"; pref="$(manifest_field "$m" preferred)"
+    cat="$(manifest_field "$m" category)"; [ -n "$cat" ] || cat="$(infer_category "$kind" "$group" "$name")"
+    [ -n "$fk" ] && [ "$fk" != "$kind" ] && continue
+    [ -n "$fa" ] && [ "$fa" != "$acc" ] && continue
+    [ -n "$fc" ] && [ "$fc" != "$cat" ] && continue
+    if [ $json -eq 1 ]; then
+      [ $first -eq 1 ] || printf ',\n'; first=0
+      printf '  {"kind":"%s","group":"%s","name":"%s","version":"%s","category":"%s","accel":"%s","preferred":"%s","requires":"%s","compat":"%s"}' \
+        "$kind" "$group" "$name" "$v" "$cat" "$acc" "$pref" "$(manifest_field "$m" requires)" "$(manifest_field "$m" compat)"
+    else
+      printf '%-9s %-16s %-28s %-14s accel=%-4s cat=%s\n' "$kind" "$group" "$name" "$v" "$acc" "$cat"
+    fi
+  done
+  [ $json -eq 1 ] && printf '\n]\n'
+  return 0
+}
+
 usage() {
   cat <<EOF
 $SELF — version-management tooling (ANALYSIS_ROOT=$ROOT)
 Commands:
   install  <kind> <group> <name> <version> [--from P] [--source S] [--sha256 H]
            [--accel cpu|gpu|both] [--preferred cpu|gpu] [--regenerable] [--set-current] [--note T]
+           [--category C] [--provides CSV] [--requires CSV] [--compat CSV]   # discovery metadata (M4-2)
+  describe <kind> <group> <name> [version]   # full capability detail (Discovery Layer)
+  catalog  [--kind K] [--accel cpu|gpu|both] [--category C] [--json]   # discover current capabilities
   set-current <kind> <group> <name> <version>
   rollback-current <kind> <group> <name>
   show-current <kind> <group> <name>
@@ -207,6 +292,8 @@ main() {
   local cmd="$1"; shift || true
   case "$cmd" in
     install)          [ $# -ge 4 ] || die "install needs <kind> <group> <name> <version>"; cmd_install "$@";;
+    describe)         [ $# -ge 3 ] || die "describe needs <kind> <group> <name> [version]"; cmd_describe "$@";;
+    catalog)          cmd_catalog "$@";;
     set-current)      [ $# -eq 4 ] || die "set-current needs <kind> <group> <name> <version>"; cmd_set_current "$@";;
     rollback-current) [ $# -eq 3 ] || die "rollback-current needs <kind> <group> <name>"; cmd_rollback_current "$@";;
     show-current)     [ $# -eq 3 ] || die "show-current needs <kind> <group> <name>"; cmd_show_current "$@";;

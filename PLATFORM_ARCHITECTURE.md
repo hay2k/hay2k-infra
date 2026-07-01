@@ -103,3 +103,30 @@ infrastructure and no separate framework: automation rides the existing layers.
   (PLATFORM_REUSE_POLICY §7).
 - Human references remain the **default priority**; other capabilities follow the
   research-program tiers and actual project need.
+
+## 8a. Platform Discovery Layer (M4-2, 20260701-06)
+The §8 machine-discoverability is implemented as **read-only discovery commands in
+`analysis-install`** (extended, not redesigned) over the **live registry** — the MANIFESTs
+are the single source of truth, so there is no parallel catalog to drift:
+- **`analysis-install catalog [--kind K] [--accel A] [--category C] [--json]`** — enumerate
+  the **current** version of every capability with kind/group/name/version/category/accel/
+  preferred (+ requires/compat in `--json`). `--json` is the agent-facing interface
+  (Provider-agnostic, Automation-ready); filters support discovery **by category,
+  accelerator, kind**.
+- **`analysis-install describe <kind> <group> <name> [version]`** — full detail for one
+  capability incl. `requires` (reference/model requirements) and `compat` (pipeline/container
+  compatibility) + version history.
+- **Discovery metadata** (optional, additive install flags `--category/--provides/--requires/
+  --compat`) is recorded in the MANIFEST; where absent, `catalog` **infers category** from
+  kind/name. Backfilled for current capabilities. Appended lines do not affect `verify`
+  (payload_hash excludes MANIFEST.md).
+
+**Project Bootstrap (`scripts/project-bootstrap`)** materializes a governance-compliant
+project tree (DIRECTORY_STANDARD §3) for both origins (PROJECT_LIFECYCLE §4/§4a):
+- **`create <ID> --domain D`** — canonical files (from `templates/project/`) + `src/ results/
+  prompts/ docs/proposal/` + per-project git.
+- **`import <ID> --domain D [--from SRC] --source "..."`** — additionally the full `docs/`
+  substructure + `docs/RECONSTRUCTION.md` checklist; `--from` stages prior materials as
+  **reference-only**. Import = reproducible reconstruction, not file migration.
+- Materialization presupposes **User approval** (GOVERNANCE §2); the tool does not grant it.
+  `--dry-run` previews without writing.

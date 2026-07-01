@@ -642,6 +642,36 @@ and never treat imported docs as canonical execution instructions. Extended exis
 - **Prompt archived:** `prompts/20260701-05_m4_project_documentation_refinement.md`.
   (Handoff folded into the M4-2 milestone handoff.)
 
+## M4-2 — Platform Discovery Layer + Project Bootstrap ✅ COMPLETE (2026-07-01, 20260701-06)
+
+**Summary:** Implementation milestone (not governance). Built the **Platform Discovery Layer**
+(reusable capability catalog for humans + agents) by **extending** `analysis-install`, and
+**Project Bootstrap** (create + import) that materializes the standard project tree incl.
+`docs/`. Prepared — but did **not** run — the reusable import framework that P0003 (TBI
+scRNA-seq) will be the first to use. Reuse-First / container-first / pipeline-driven /
+provider-agnostic throughout; the live MANIFEST registry stays the single source of truth.
+
+- **Discovery Layer (extend, not redesign):** `analysis-install`
+  - `catalog [--kind|--accel|--category] [--json]` — lists the **current** version of each
+    capability; `--json` is the agent interface (validated: 17 entries, valid JSON, queryable
+    by category/accel/requires/compat).
+  - `describe <kind> <group> <name> [version]` — full detail + version history.
+  - Optional additive install metadata `--category/--provides/--requires/--compat` (MANIFEST
+    append; `verify`-safe). Category **inferred** when absent. Backfilled current capabilities
+    (pipelines' reference requirements + single-cell/dorado compat) — `verify` re-confirmed OK.
+  - Fixed a field-parse bug (`manifest_field` → robust `sed`; handles values with `: `).
+- **Project Bootstrap:** `scripts/project-bootstrap create|import` + `templates/project/`
+  (README, PROJECT_MASTER, TODO, RECONSTRUCTION; reuses existing ENVIRONMENT_MANIFEST).
+  `create` → canonical files + `docs/proposal/`; `import` → full `docs/` substructure +
+  `docs/RECONSTRUCTION.md` + `--from` staging (reference-only) + per-project git.
+  Materialization presupposes User approval; `--dry-run` previews. **Validated** both modes
+  into a throwaway temp dir (token substitution, manifest identity fill, git init) — **no real
+  project created.**
+- **Docs:** PLATFORM_ARCHITECTURE §8a (discovery layer + bootstrap, concrete). PROJECT_REGISTRY
+  §4 notes P0003 as anticipated first import (framework ready; not approved/registered/materialized).
+- **Prompt archived:** `prompts/20260701-06_m4-2_discovery_and_bootstrap.md`.
+- Foundation: consumes the 20260701-05 `docs/` standard.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
