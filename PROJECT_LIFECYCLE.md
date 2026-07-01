@@ -77,15 +77,19 @@ place, and routine in-project work.
    `ENVIRONMENT_MANIFEST.md`** declaring its **pinned** capability dependencies
    (pipeline/container/reference/model) + the Capability Resolution record (template:
    `infra/templates/project/ENVIRONMENT_MANIFEST.md`; PLATFORM_REUSE_POLICY.md §5).
+   A fresh project also creates the standard **`docs/`** directory, normally beginning with
+   **`docs/proposal/`** for the proposal / grant application / planning materials
+   (DIRECTORY_STANDARD.md §3; 20260701-05); other `docs/` subdirs are added when needed.
+   `docs/` is documentation only — never an execution input.
 4. The creation is recorded in INFRA_CHANGELOG.md if it changes infrastructure
    structure (a new domain dir), otherwise in the project's own record.
 
 ## 4a. Import / migration procedure (Project Import Policy)
 
-**Status:** CANONICAL from 2026-07-01 (20260701-04). Applies when a project is
-**migrated from another server or environment** rather than scoped fresh. Same approval
-gate as §4 (creating a project is User-approved, §3) — import is an origin, not a new
-gate.
+**Status:** CANONICAL from 2026-07-01 (20260701-04; refined 20260701-05 — standard `docs/`
+substructure for all projects). Applies when a project is **migrated from another server or
+environment** rather than scoped fresh. Same approval gate as §4 (creating a project is
+User-approved, §3) — import is an origin, not a new gate.
 
 **Principle:** *The goal of import is **reproducible reconstruction**, not simple file
 migration.* Previous outputs are **reference material**; the **current platform remains
@@ -97,9 +101,12 @@ the authoritative execution environment**.
    in `ENVIRONMENT_MANIFEST.md`. Legacy tooling is **not** rehosted verbatim — it is
    reconstructed on the platform (Reuse-First; container-first; pipeline-driven).
 2. **Preserve prior materials, read-only, under `analysis/projects/<PROJECT_ID>/docs/`**
-   (DIRECTORY_STANDARD.md §3): previous **documentation, handoff records, protocols, and
-   planning materials**. This directory is **reference only** — it is *not* an execution
-   input and its contents are never treated as current canonical files
+   using the standard `docs/` substructure (DIRECTORY_STANDARD.md §3; 20260701-05):
+   handoff records → **`docs/handoff/`**, protocols/SOPs → **`docs/protocol/`**, prior
+   proposals/planning → **`docs/proposal/`**, references → **`docs/literature/`**, meeting
+   notes → **`docs/meeting/`**, superseded docs → **`docs/archive/`**. This directory is
+   **documentation only, reference only** — it is *not* an execution workspace and its
+   contents are never treated as current canonical execution instructions
    (AGENT_WORKFLOW_STANDARD.md §2: execution reads only current canonical files).
    `docs/` is committed to the project repo (text/markdown); large legacy **datasets or
    outputs**, if retained at all, follow the normal `data/` rules + `.gitignore`

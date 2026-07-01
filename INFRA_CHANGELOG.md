@@ -5,6 +5,18 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-01 — 20260701-05: M4 — Project Documentation Refinement
+
+- **`docs/` is now standard in every project** (not imported-only) with a fixed substructure
+  `proposal/handoff/protocol/literature/meeting/archive/`, created lazily (fresh projects
+  begin with `docs/proposal/`). `docs/` is **documentation only — not an execution
+  workspace**; agents read it as **reference only**, never as canonical execution instructions.
+- **DIRECTORY_STANDARD.md §3** — docs/ promoted to REQUIRED + substructure + rewritten rule.
+- **PROJECT_LIFECYCLE.md §4/§4a** — fresh projects create `docs/proposal/`; imports map prior
+  materials into `docs/handoff/`, `docs/protocol/`, etc.
+- Governance-only; extended existing docs (no new standard). Prompt:
+  `prompts/20260701-05_m4_project_documentation_refinement.md`. (Handoff folded into M4-2.)
+
 ## 2026-07-01 — 20260701-04: M4 — Project Import Policy
 
 - **Adopted the Project Import Policy:** projects originate as **newly approved** or

@@ -105,9 +105,30 @@ so the structure is predictable across all domains:
     ├── data/                    # project-local inputs/outputs (research: symlink → /data/<ID>; §4)
     ├── results/                 # generated artifacts; figures as PNG + PDF
     ├── prompts/                 # project-significant prompts (same naming as infra)
-    ├── docs/                    # IMPORTED projects only: preserved prior docs/handoff/protocols/planning — reference-only, NOT an execution input (PROJECT_LIFECYCLE §4a)
+    ├── docs/                    # REQUIRED (all projects): documentation only — reference material, NOT an execution workspace (PROJECT_LIFECYCLE §4/§4a); substructure below
     └── archive/                 # sequential-numbered historical spec snapshots (PROJECT_SPECIFICATION_POLICY §4)
 ```
+
+**Standard `docs/` substructure (all projects, 20260701-05).** Consistent across every
+project so automation and agents can rely on it. Created **lazily** — a fresh project
+normally begins with only `docs/proposal/`; other subdirs are added when first needed:
+```
+docs/
+├── proposal/     # proposals, grant applications, planning & background materials (fresh projects start here)
+├── handoff/      # imported/prior handoff records
+├── protocol/     # imported/prior protocols, SOPs, methods
+├── literature/   # references, prior reading, background papers (citations still via Zotero, GOVERNANCE §7)
+├── meeting/      # meeting notes / decisions log
+└── archive/      # superseded documentation (distinct from the project-level archive/ spec snapshots)
+```
+`docs/` is **documentation only — not an execution workspace.** Current execution is
+governed **only** by the canonical project files (`PROJECT_MASTER.md`,
+`ENVIRONMENT_MANIFEST.md`, `TODO.md`, project configs). Agents **read `docs/` as reference
+material only** and **never** treat imported documents as canonical execution instructions
+(PROJECT_LIFECYCLE §4a; AGENT_WORKFLOW_STANDARD §2). Fresh projects put proposals/grants/
+planning under `docs/proposal/`; imported projects additionally preserve prior materials
+under `docs/handoff/`, `docs/protocol/`, etc.
+
 The spec/plan documents (`PROJECT_MASTER.md` primary > `FIGURE_PLAN` > `MANUSCRIPT_PLAN`
 > `TODO`) follow PROJECT_SPECIFICATION_POLICY.md.
 `ENVIRONMENT_MANIFEST.md` **declares the project's pinned platform dependencies**
@@ -120,10 +141,12 @@ Rules:
 - **Do not** add `notes/`, `tmp/`, `misc/`, `old/`, `scratch/`, `final/`,
   `final_v2/` and similar. Use version control for history; use `results/` for
   outputs. These catch-all dirs are the most common sprawl and are prohibited.
-- **`docs/` is sanctioned only for imported projects** (PROJECT_LIFECYCLE.md §4a): it holds
-  the preserved prior documentation/handoff/protocols/planning as **reference-only**
-  material (not an execution input, not catch-all sprawl). A freshly scoped project does
-  not create `docs/`; use `PROJECT_MASTER.md`/`results/`/version control instead.
+- **`docs/` is standard in every project** (20260701-05) — documentation only, **not** an
+  execution workspace, and **not** catch-all sprawl. It uses the fixed substructure above
+  (`proposal/handoff/protocol/literature/meeting/archive/`), created lazily (fresh projects
+  begin with `docs/proposal/`). Never put code, data, or generated outputs in `docs/` — those
+  belong in `src/`/`data/`/`results/`. This fixed shape is what lets automation/agents locate
+  materials predictably (PROJECT_LIFECYCLE.md §4/§4a).
 - A subdirectory is added only when a project clearly needs it now (e.g. a
   `models/` cache that is genuinely project-local). Adding a directory is a
   documented decision (GOVERNANCE.md §10).

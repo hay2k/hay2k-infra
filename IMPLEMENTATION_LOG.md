@@ -622,6 +622,26 @@ reference.* Codified by **extending** PROJECT_LIFECYCLE + DIRECTORY_STANDARD (no
 - **No approval gate added/relaxed** (import = existing project-creation gate). Governance-only.
 - **Prompt archived:** `prompts/20260701-04_m4_project_import_policy.md`.
 
+## M4 — Project Documentation Refinement ✅ CODIFIED (2026-07-01, 20260701-05)
+
+**Summary:** Refined the Project Import Policy: **`docs/` is now standard in every project**
+(not imported-only), with a fixed substructure so automation/agents can rely on it. `docs/`
+is **documentation only — not an execution workspace**; agents read it as **reference only**
+and never treat imported docs as canonical execution instructions. Extended existing docs
+(no new governance doc).
+
+- **DIRECTORY_STANDARD.md §3** — `docs/` promoted to REQUIRED (all projects); standard
+  substructure `proposal/handoff/protocol/literature/meeting/archive/` created **lazily**
+  (fresh projects begin with `docs/proposal/`); `docs/archive/` distinguished from the
+  project-level `archive/` (spec snapshots); rule bullet rewritten (docs-only, not sprawl).
+- **PROJECT_LIFECYCLE.md** — §4 (fresh projects create `docs/proposal/` for proposals/
+  grants/planning); §4a (imported materials mapped to `docs/handoff/`, `docs/protocol/`,
+  etc.); status line notes the refinement.
+- Canonical execution stays governed only by PROJECT_MASTER / ENVIRONMENT_MANIFEST / TODO /
+  project configs (AGENT_WORKFLOW_STANDARD §2).
+- **Prompt archived:** `prompts/20260701-05_m4_project_documentation_refinement.md`.
+  (Handoff folded into the M4-2 milestone handoff.)
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
