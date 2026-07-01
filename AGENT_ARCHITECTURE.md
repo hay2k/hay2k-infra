@@ -100,6 +100,13 @@ the Senior Engineer advises and reviews but does not relay decisions.
 A good escalation is a *decision request with a recommendation*, not an open
 question.
 
+**Default is autonomous progress (GOVERNANCE.md §3b — M4 Execution Principle).** Steps 1–3
+are the norm, not the exception: reversible, in-scope work runs `Plan → Execute → Validate
+→ Document → Handoff` without intermediate confirmation, batched into logical milestones
+with a single handoff. Step 4 (escalate/confirm) fires **only** on a §3b trigger
+(irreversible/destructive · security/credential · financial · licensing/legal · alters
+approved architecture · governance-unresolvable ambiguity · scientific human-judgment).
+
 ## 5. Scope boundaries
 
 - A **Worker** operates inside **one task** and touches only that task's scope.

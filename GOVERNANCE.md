@@ -187,6 +187,62 @@ libraries, reusable workflows, or infrastructure standards** must receive
 work touching none of these needs no such review. See AGENT_ARCHITECTURE.md
 §3.2.
 
+## 3b. Autonomous execution (default) — M4 Execution Principle
+
+**Status:** CANONICAL from 2026-07-01 (20260701-03). Sharpens §0 and the §2
+default-to-proceed clause into an explicit operating default; changes no approval
+row in §2.
+
+**Default behavior is autonomous progress:**
+```
+Plan → Execute → Validate → Document → Handoff
+```
+**not** `Plan → Ask → Execute → Ask → Continue`. Human interruption is **minimized**:
+necessary, in-scope, reversible work proceeds without intermediate confirmation and is
+simply documented (§10). This is the execution-time expression of the §2 rule that
+reversible in-scope work proceeds without approval.
+
+**Operator confirmation is required only when one or more applies** (these are the §2
+User-approval rows, made explicit and slightly extended):
+
+1. **Irreversible or destructive operations** — data deletion not regenerable from VCS,
+   project retire/delete (§2; verify-before-destructive §5.5).
+2. **Security or credential changes** — secrets, keys, auth, exposed surface (§6a,
+   SECRETS_POLICY.md; high-risk §2.3).
+3. **Significant financial cost** — spend money / incur external cost (§2).
+4. **External service licensing or legal implications** — SaaS integration, license/ToS,
+   data-use/redistribution constraints (§2.3).
+5. **Changes that alter previously approved architecture** — deviating from a decision
+   already ratified in governance/handoff (change process §9/§10).
+6. **Ambiguity that cannot be resolved from existing governance** — after applying the
+   Supervisor decision procedure (AGENT_ARCHITECTURE.md §4): policy → precedent →
+   reversible-minimal → escalate.
+7. **Project-specific scientific decisions requiring human judgment** — the mandatory
+   Decision Layer (AGENT_WORKFLOW_STANDARD.md §3); AI recommends, humans decide.
+
+**Otherwise:** choose the most reasonable option from existing governance, **document the
+decision**, **explain the rationale in the handoff**, and **continue autonomously**.
+
+**Tie-breaker (when multiple reasonable implementation choices exist)** — prefer the one
+most consistent with, in order:
+```
+Reuse-First → Shared-by-default → Container-first → Pipeline-driven
+           → Provider-agnostic → Automation-ready
+```
+(Reuse-First / Shared-by-default: PLATFORM_REUSE_POLICY.md §0–§1; Container-first &
+Pipeline-driven: ENVIRONMENT_POLICY.md / PIPELINE_STANDARDS.md; Provider-agnostic:
+AGENT_WORKFLOW_STANDARD.md §5; Automation-ready: PLATFORM_ARCHITECTURE.md §8.)
+
+**Batch into logical milestones.** Do not interrupt a long implementation sequence with
+piecemeal confirmations. Group related work into one coherent milestone, **complete it,
+validate it**, and report the outcome with a **single handoff** whenever practical
+(§12) — rather than many small handoffs or repeated status checks. If a genuine
+confirmation trigger (above) arises mid-sequence, pause only for that decision, then
+resume the batch.
+
+This section is an operating default; it may be strengthened by a Supervisor and
+documented (§10). It does **not** weaken §4/§5/§6/§7 or relax any §2 approval gate.
+
 ## 4. Reproducibility (mandatory)
 
 Every result must be reproducible by another operator on a clean host:

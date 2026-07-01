@@ -580,6 +580,25 @@ applied to governance itself — no new redundant docs).
 - **No functional/platform change** — governance-only; no assets rebuilt.
 - **Prompt archived:** `prompts/20260701-02_m4_core_principle.md`.
 
+## M4 — Execution principle: autonomous progress ✅ CODIFIED (2026-07-01, 20260701-03)
+
+**Summary:** Adopted the M4 Execution Principle — **default behavior is autonomous progress**
+(`Plan → Execute → Validate → Document → Handoff`), human interruption minimized, related
+work **batched into logical milestones** with a **single handoff**. Operator confirmation is
+required only on explicit triggers; otherwise choose per governance, document, and continue.
+Codified by **extending GOVERNANCE.md** (Reuse-First on governance — no new doc).
+
+- **GOVERNANCE.md §3b** (new, CANONICAL) — the autonomous-execution default; the 7 confirmation
+  triggers (irreversible/destructive · security/credential · financial · licensing/legal ·
+  alters approved architecture · governance-unresolvable ambiguity · scientific human-judgment)
+  mapped to the §2 User-approval rows; **tie-breaker order** `Reuse-First → Shared-by-default →
+  Container-first → Pipeline-driven → Provider-agnostic → Automation-ready`; **batching** clause
+  (one milestone → validate → single handoff, don't interrupt long sequences).
+- **AGENT_ARCHITECTURE.md §4** — decision procedure now states autonomous progress is the norm;
+  escalate only on a §3b trigger.
+- **No approval gate relaxed** (§2 unchanged); does not weaken §4/§5/§6/§7. Governance-only.
+- **Prompt archived:** `prompts/20260701-03_m4_execution_principle_autonomous.md`.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
