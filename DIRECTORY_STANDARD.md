@@ -105,6 +105,7 @@ so the structure is predictable across all domains:
     ├── data/                    # project-local inputs/outputs (research: symlink → /data/<ID>; §4)
     ├── results/                 # generated artifacts; figures as PNG + PDF
     ├── prompts/                 # project-significant prompts (same naming as infra)
+    ├── docs/                    # IMPORTED projects only: preserved prior docs/handoff/protocols/planning — reference-only, NOT an execution input (PROJECT_LIFECYCLE §4a)
     └── archive/                 # sequential-numbered historical spec snapshots (PROJECT_SPECIFICATION_POLICY §4)
 ```
 The spec/plan documents (`PROJECT_MASTER.md` primary > `FIGURE_PLAN` > `MANUSCRIPT_PLAN`
@@ -119,6 +120,10 @@ Rules:
 - **Do not** add `notes/`, `tmp/`, `misc/`, `old/`, `scratch/`, `final/`,
   `final_v2/` and similar. Use version control for history; use `results/` for
   outputs. These catch-all dirs are the most common sprawl and are prohibited.
+- **`docs/` is sanctioned only for imported projects** (PROJECT_LIFECYCLE.md §4a): it holds
+  the preserved prior documentation/handoff/protocols/planning as **reference-only**
+  material (not an execution input, not catch-all sprawl). A freshly scoped project does
+  not create `docs/`; use `PROJECT_MASTER.md`/`results/`/version control instead.
 - A subdirectory is added only when a project clearly needs it now (e.g. a
   `models/` cache that is genuinely project-local). Adding a directory is a
   documented decision (GOVERNANCE.md §10).
