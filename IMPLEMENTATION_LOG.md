@@ -557,6 +557,29 @@ committed to git or handed off — this milestone anchors it (git = authority).
   from `.def`/`pin.txt` (recipes-of-record under `container/docker/…` and the pipeline payloads).
 - **Deferred (per brief):** VEP/SnpEff, Structure-AI (AlphaFold/ESM/Chai/Boltz) — until a concrete project requires them.
 
+## M4 — Core principle: shared-by-default platform assets ✅ CODIFIED (2026-07-01, 20260701-02)
+
+**Summary:** Adopted the M4 core principle — infrastructure, agents, pipelines, containers,
+references, models, and **reusable scripts** are **shared platform assets by default**,
+easy to update/version/deprecate/reuse; projects **consume** them by pinning exact versions
+in `ENVIRONMENT_MANIFEST.md` and **do not copy/fork** into project trees without a
+documented reason. Codified by **extending existing canonical governance** (Reuse-First
+applied to governance itself — no new redundant docs).
+
+- **PLATFORM_REUSE_POLICY.md** (the canonical hub) — new **§0 M4 core principle**; **§1**
+  broadened asset scope (infra/agents/scripts, not just the 4 `analysis-install` kinds) +
+  the full **4-rung ladder** `Reuse > Extend > New shared > Project-specific (justified)`;
+  **§4** reconciled the "never fork" rule to a **documented-exception** (rung 4) recorded in
+  the project's Capability Resolution; new **§8 Agent components are shared assets** (shared
+  logic/prompts in the platform layer; project-specific instructions in PROJECT_MASTER/TODO;
+  Model ≠ Role; no premature materialization of a prompt store).
+- **AGENT_WORKFLOW_STANDARD.md §4** — cross-ref: agent components are shared assets
+  (PLATFORM_REUSE_POLICY §8).
+- **Refinement flagged:** the prior "projects **never** fork" (binding) is now "no fork
+  **unless a documented project-specific reason**", per the operator's stated principle.
+- **No functional/platform change** — governance-only; no assets rebuilt.
+- **Prompt archived:** `prompts/20260701-02_m4_core_principle.md`.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
