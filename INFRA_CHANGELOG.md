@@ -5,6 +5,22 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-01 — 20260701-02: M4 — Core principle (shared-by-default platform assets)
+
+- **Adopted the M4 core principle:** infrastructure, agents, pipelines, containers,
+  references, models, and reusable scripts are **shared platform assets by default**;
+  projects **consume** them by pinning exact versions in `ENVIRONMENT_MANIFEST.md` and do
+  **not** copy/fork into project trees without a documented reason.
+- **PLATFORM_REUSE_POLICY.md** — new §0 (M4 principle); §1 broadened asset scope + full
+  4-rung ladder `Reuse > Extend > New shared > Project-specific (justified)`; §4 reconciled
+  no-fork → **documented-exception**; new §8 (agent components are shared assets).
+- **AGENT_WORKFLOW_STANDARD.md §4** — cross-ref to PLATFORM_REUSE_POLICY §8.
+- **Refinement:** prior "projects never fork" → "no fork unless documented project-specific
+  reason" (per operator principle). Governance-only; no assets changed. Codified by
+  **extending** existing canonical docs (Reuse-First on governance — no new redundant docs).
+- **Prompt archived:** `prompts/20260701-02_m4_core_principle.md`.
+- Detail: IMPLEMENTATION_LOG.md (M4); handoff 2026-07-01_m4-core-principle-shared-assets.md.
+
 ## 2026-07-01 — 20260701-01: M3-4E — Platform Wave 2 (single-cell + nf-core + Dorado/Remora)
 
 - **Single-cell platform completed** (all reference-free, `analysis-install`, pinned+SHA256+MANIFEST+current):

@@ -65,7 +65,11 @@ revisions to `PROJECT_MASTER.md`, **new platform capabilities** (PLATFORM_REUSE_
   orthogonal: a role performs work *within* a layer (a Worker executes; a Supervisor /
   Senior Engineer validate; the User decides).
 - **PLATFORM_REUSE_POLICY.md** governs how the Planning/Execution layers select and pin
-  capabilities (Reuse-First; agents and humans use the identical workflow, §7).
+  capabilities (Reuse-First; agents and humans use the identical workflow, §7). **Agent
+  components are themselves shared assets** (PLATFORM_REUSE_POLICY §8): shared agent logic
+  and reusable prompts live in the platform layer (versioned, consumed by pinning);
+  project-specific instructions live in `PROJECT_MASTER.md` / `TODO.md` / project configs
+  — never by forking shared agent logic into the project.
 - **GOVERNANCE.md / PROJECT_LIFECYCLE.md** provide the approval gates the Decision Layer
   enacts. This standard **adds no new infrastructure** and does not change the M2/M3
   governance model — it formalizes the work lifecycle on top of it.
