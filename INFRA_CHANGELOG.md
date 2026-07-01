@@ -5,6 +5,22 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-01 — 20260701-03: M4 — Execution principle (autonomous progress)
+
+- **Adopted the M4 Execution Principle:** default behavior is autonomous progress
+  (`Plan → Execute → Validate → Document → Handoff`); minimize human interruption; **batch
+  related work into logical milestones with a single handoff**. Confirm only on explicit
+  triggers; otherwise choose per governance, document, continue.
+- **GOVERNANCE.md §3b** (new, canonical) — autonomous-execution default; 7 confirmation
+  triggers mapped to §2 User-approval rows; tie-breaker order `Reuse-First → Shared-by-default
+  → Container-first → Pipeline-driven → Provider-agnostic → Automation-ready`; batching clause.
+- **AGENT_ARCHITECTURE.md §4** — decision procedure: autonomous progress is the norm, escalate
+  only on a §3b trigger.
+- **No §2 approval gate relaxed**; §4/§5/§6/§7 unchanged. Governance-only; codified by
+  **extending** GOVERNANCE (Reuse-First on governance — no new doc).
+- **Prompt archived:** `prompts/20260701-03_m4_execution_principle_autonomous.md`.
+- Detail: IMPLEMENTATION_LOG.md (M4 execution); handoff 2026-07-01_m4-execution-principle-autonomous.md.
+
 ## 2026-07-01 — 20260701-02: M4 — Core principle (shared-by-default platform assets)
 
 - **Adopted the M4 core principle:** infrastructure, agents, pipelines, containers,
