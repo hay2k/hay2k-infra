@@ -5,6 +5,23 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-01 — 20260701-01: M3-4E — Platform Wave 2 (single-cell + nf-core + Dorado/Remora)
+
+- **Single-cell platform completed** (all reference-free, `analysis-install`, pinned+SHA256+MANIFEST+current):
+  `seurat/2026-06-18` (Seurat 5.5.0 + harmony 2.0.5) promoted from scratch; `scanpy/2026-06-24`
+  built adding **CellTypist 1.7.1** (scanpy 1.12.1) → now current, supersedes `scanpy/2026-06-18`.
+  (scvi-tools 1.4.2 GPU + original scanpy already registered 06-18.)
+- **nf-core pipelines registered** (nextflow, container-first, local-reference): `scrnaseq/4.1.0`
+  (preview PASS; **requires `NXF_SYNTAX_PARSER=v1`** — upstream missing `conf/test_multiome.config`
+  vs Nextflow 26.04.3 strict parser; baked into pin.txt) and `rnaseq/3.26.0` (preview PASS, no flag).
+- **Dorado + Remora (Tier-1 anchor):** `dorado/2.0.1-cuda13.0` — ONT dorado 2.0.1 + ont-remora 3.3.0,
+  FROM the pytorch base (Reuse-First), torch 2.9.1+cu130 preserved; **GPU `--nv` validated (2-dev)**.
+  Model-free; models mount from `reference/model/dorado/` (new `reference/model/README.md` scaffold).
+- **Deferred (per brief):** VEP/SnpEff, Structure-AI — until a concrete project requires them.
+- **Container store:** 21 GB; `/data` 123 GB / 11 TB (2%). Wave-2 scratch cleaned.
+- **Prompt archived:** `prompts/20260701-01_m3-4E_wave2_singlecell_pipelines_dorado.md`.
+- Detail: IMPLEMENTATION_LOG.md (M3-4E); handoff 2026-07-01_m3-4E-wave2-singlecell-pipelines-dorado.md.
+
 ## 2026-06-17 — 20260617-02: M3-4D follow-up — Runtime Utility Exposure Layer
 
 - **Exposed 11 general-purpose utilities to the login shell** (no `conda activate`):
