@@ -5,6 +5,21 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-01 — 20260701-04: M4 — Project Import Policy
+
+- **Adopted the Project Import Policy:** projects originate as **newly approved** or
+  **imported/migrated** (same User-approval gate, same standard tree). Imports **preserve**
+  prior docs/handoff/protocols/planning under `analysis/projects/<PROJECT_ID>/docs/`
+  (reference-only) and are **reconstructed** on the current platform via shared capabilities.
+  Goal = **reproducible reconstruction, not file migration**; platform = authoritative
+  execution env; prior outputs = reference.
+- **PROJECT_LIFECYCLE.md** — §2 (two origins); new §4a (import/migration procedure).
+- **DIRECTORY_STANDARD.md §3** — added `docs/` to the project shape, **imported projects
+  only**, reference-only (not sprawl); fresh projects don't create it.
+- Governance-only; no approval gate added/relaxed; codified by **extending** existing docs.
+- **Prompt archived:** `prompts/20260701-04_m4_project_import_policy.md`.
+- Detail: IMPLEMENTATION_LOG.md (M4 import); handoff 2026-07-01_m4-project-import-policy.md.
+
 ## 2026-07-01 — 20260701-03: M4 — Execution principle (autonomous progress)
 
 - **Adopted the M4 Execution Principle:** default behavior is autonomous progress

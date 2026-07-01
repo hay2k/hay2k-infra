@@ -599,6 +599,29 @@ Codified by **extending GOVERNANCE.md** (Reuse-First on governance — no new do
 - **No approval gate relaxed** (§2 unchanged); does not weaken §4/§5/§6/§7. Governance-only.
 - **Prompt archived:** `prompts/20260701-03_m4_execution_principle_autonomous.md`.
 
+## M4 — Project Import Policy ✅ CODIFIED (2026-07-01, 20260701-04)
+
+**Summary:** Adopted the Project Import Policy — a project may originate as a **newly
+approved** project or an **imported/migrated** one; both use the **same User-approval gate
+and standard project tree**. Imports **preserve** prior docs/handoff/protocols/planning
+under `analysis/projects/<PROJECT_ID>/docs/` (reference-only) and are **reconstructed** on
+the current platform via shared capabilities. *Goal = reproducible reconstruction, not file
+migration; the platform is the authoritative execution environment; prior outputs are
+reference.* Codified by **extending** PROJECT_LIFECYCLE + DIRECTORY_STANDARD (no new doc).
+
+- **PROJECT_LIFECYCLE.md** — §2 two origins (fresh / imported, same gate); new **§4a Import
+  / migration procedure** (approve as project w/ Capability Resolution mapping legacy →
+  shared capabilities; preserve prior materials read-only in `docs/`, not an execution
+  input; reconstruct current canonical files; provenance in README; re-derive results
+  before reporting).
+- **DIRECTORY_STANDARD.md §3** — added **`docs/`** to the project shape, **sanctioned for
+  imported projects only** (reference-only; explicitly not catch-all sprawl); fresh projects
+  don't create it.
+- Ties to Reuse-First (PLATFORM_REUSE_POLICY), reproducibility (GOVERNANCE §4/§6), and the
+  "execution reads only current canonical files" rule (AGENT_WORKFLOW_STANDARD §2).
+- **No approval gate added/relaxed** (import = existing project-creation gate). Governance-only.
+- **Prompt archived:** `prompts/20260701-04_m4_project_import_policy.md`.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +

@@ -28,6 +28,13 @@ project gates.
   directory exists yet.
 - **active** — User-approved; the domain dir (if first) and the project tree
   (DIRECTORY_STANDARD.md §3) are materialized by the Supervisor.
+
+**Origin (two paths, same gate).** A project originates either as (a) a **newly
+approved** project (scoped fresh, §4) or (b) an **imported/migrated** project from
+another server or environment (§4a). Both enter at `proposed → active` through the
+**same User-approval gate** (§3) and produce the **same standard project tree**
+(DIRECTORY_STANDARD.md §3). Import differs only in that it seeds `docs/` with preserved
+prior materials and reconstructs — it is not a new approval class.
 - **archived** — read-only, retained for reproducibility; no further work.
 - **retired** — slated for removal; data may still exist.
 - **deleted** — irreversible; only on explicit User approval.
@@ -72,6 +79,40 @@ place, and routine in-project work.
    `infra/templates/project/ENVIRONMENT_MANIFEST.md`; PLATFORM_REUSE_POLICY.md §5).
 4. The creation is recorded in INFRA_CHANGELOG.md if it changes infrastructure
    structure (a new domain dir), otherwise in the project's own record.
+
+## 4a. Import / migration procedure (Project Import Policy)
+
+**Status:** CANONICAL from 2026-07-01 (20260701-04). Applies when a project is
+**migrated from another server or environment** rather than scoped fresh. Same approval
+gate as §4 (creating a project is User-approved, §3) — import is an origin, not a new
+gate.
+
+**Principle:** *The goal of import is **reproducible reconstruction**, not simple file
+migration.* Previous outputs are **reference material**; the **current platform remains
+the authoritative execution environment**.
+
+1. **Approve as a project** (§3/§4): the Supervisor scopes the import with a completed
+   **Capability Resolution** (PLATFORM_REUSE_POLICY.md §2) mapping the legacy environment
+   onto **shared platform capabilities** (pipelines/containers/references/models), pinned
+   in `ENVIRONMENT_MANIFEST.md`. Legacy tooling is **not** rehosted verbatim — it is
+   reconstructed on the platform (Reuse-First; container-first; pipeline-driven).
+2. **Preserve prior materials, read-only, under `analysis/projects/<PROJECT_ID>/docs/`**
+   (DIRECTORY_STANDARD.md §3): previous **documentation, handoff records, protocols, and
+   planning materials**. This directory is **reference only** — it is *not* an execution
+   input and its contents are never treated as current canonical files
+   (AGENT_WORKFLOW_STANDARD.md §2: execution reads only current canonical files).
+   `docs/` is committed to the project repo (text/markdown); large legacy **datasets or
+   outputs**, if retained at all, follow the normal `data/` rules + `.gitignore`
+   (DIRECTORY_STANDARD.md §3) and are referenced by content hash (GOVERNANCE.md §4/§6),
+   not copied as authoritative.
+3. **Reconstruct on the current platform:** author the project's **current** canonical
+   files (`PROJECT_MASTER.md`, `TODO.md`, `ENVIRONMENT_MANIFEST.md`) from the preserved
+   `docs/` as *source input*, then execute against the pinned shared capabilities. The
+   reconstruction — not the legacy artifacts — is the authoritative, reproducible result
+   (GOVERNANCE.md §4).
+4. **Provenance:** `README.md` records the origin (source server/environment, import date,
+   approving prompt ID). Cross-domain implications, if any, follow §6. Prior results are
+   cited as reference; they are re-derived on-platform before being reported as final.
 
 ## 5. Retirement procedure
 
