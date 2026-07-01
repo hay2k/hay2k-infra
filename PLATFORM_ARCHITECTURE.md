@@ -130,3 +130,25 @@ project tree (DIRECTORY_STANDARD §3) for both origins (PROJECT_LIFECYCLE §4/§
   **reference-only**. Import = reproducible reconstruction, not file migration.
 - Materialization presupposes **User approval** (GOVERNANCE §2); the tool does not grant it.
   `--dry-run` previews without writing.
+
+## 8b. Project Execution Framework (M4-3, 20260701-07)
+`scripts/project-run` — the reusable, **project-independent** execution harness. It **performs
+execution**; agents (any provider) **orchestrate** it. **Model ≠ Execution Framework** — no LLM
+calls inside; the same harness runs P0001/P0002/P0003 unchanged.
+- **Starts only from the canonical files** `PROJECT_MASTER.md` + `ENVIRONMENT_MANIFEST.md`; it
+  **never reads `docs/`** (historical material is reference-only, PROJECT_LIFECYCLE §4a).
+- **Stages** (`project-run stages`), each reusable/agent-orchestratable:
+  `Project → Planning → Capability Resolution → Execution → Validation → Figure Generation →
+  Result Packaging → Project Update → Handoff`.
+- **Capability Resolution** (`resolve`) parses the manifest pins, **verifies each against the
+  live registry** (§8a), forbids `current`, records exact version+sha256 — Reuse-First made executable.
+- **Execution** (`exec` / project `src/runspec.sh`) runs **container-first** in the pinned
+  container with references mounted **read-only** (`/refs/<name>`); containers stay reference-free.
+- **Figure Generation** enforces, by default, the triad **Figure (PNG+PDF) + Source Data Table
+  (TSV) + Metadata (MD)** (GOVERNANCE §9; Figure Policy) — packaging fails if any figure is incomplete.
+- **Reproducibility metadata** (`metadata` → `RUN_MANIFEST.md`) reuses the resolved pins +
+  registry sha256 (no duplication) + project git commit + host/GPU + date.
+- **Result Packaging** writes `CHECKSUMS.sha256` and re-verifies the triad; **Handoff** emits a
+  run handoff to `/data/admin/handoff/`.
+Driver: `project-run run <project_dir> [--nv]`. Provider-agnostic (pure shell over the existing
+CLI); directly consumable by future automation agents.

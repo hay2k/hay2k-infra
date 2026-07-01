@@ -672,6 +672,32 @@ provider-agnostic throughout; the live MANIFEST registry stays the single source
 - **Prompt archived:** `prompts/20260701-06_m4-2_discovery_and_bootstrap.md`.
 - Foundation: consumes the 20260701-05 `docs/` standard.
 
+## M4-3 — Project Execution Framework ✅ COMPLETE (2026-07-01, 20260701-07)
+
+**Summary:** Built the reusable, **project-independent** Project Execution Framework
+(`scripts/project-run`) — a **provider-agnostic** harness that will run P0001/P0002/P0003 with
+the same execution model. **Agents orchestrate; the framework executes (Model ≠ Execution
+Framework).** Execution starts **only** from `PROJECT_MASTER.md` + `ENVIRONMENT_MANIFEST.md` and
+**never** from `docs/`. Extends the existing CLI/registry; no redesign.
+
+- **Stages** (`project-run stages`): Project → Planning → Capability Resolution → Execution →
+  Validation → Figure Generation → Result Packaging → Project Update → Handoff. Commands:
+  `resolve` (verify manifest pins against the live registry; forbid `current`; record
+  version+sha), `metadata` (RUN_MANIFEST reproducibility — reuses pins+registry sha+git+host+GPU
+  +date, no duplication), `exec` (container-first, references mounted read-only at `/refs/<name>`),
+  `figure` (enforce Figure PNG+PDF + Source-Data TSV + Metadata MD — GOVERNANCE §9), `package`
+  (CHECKSUMS + triad re-check), `handoff`, and `run` (driver).
+- **Figure pipeline** makes the triad the **default** — packaging fails on any incomplete figure.
+- **Validated end-to-end (temp only; no real project):** bootstrapped a `create` project with
+  real pins → `run` did resolve→metadata→exec(scanpy container, generated a figure)→triad
+  check→package→RUN_LOG update→handoff. **Objective 7:** the SAME framework ran an `import`-mode
+  project **unmodified** (docs/ present but excluded). Negative test: lone PNG correctly fails the
+  triad; `figure --register` creates source-data+metadata stubs. All temp artifacts + stray
+  handoffs cleaned; `/data/analysis/projects` still empty.
+- **Docs:** PLATFORM_ARCHITECTURE §8b; AGENT_WORKFLOW_STANDARD §5 (execution mechanics; Model ≠
+  Execution Framework).
+- **Prompt archived:** `prompts/20260701-07_m4-3_project_execution_framework.md`.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
