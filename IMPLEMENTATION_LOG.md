@@ -530,6 +530,33 @@ truth and bioinformatics tools stay env/container-controlled.
 - **Reviewed (not installed):** candidate additions ncdu/dust/duf/tmux/delta/glow —
   recommendation left to operator Decision Layer.
 
+## M3-4E — Platform Wave 2: single-cell + nf-core pipelines + Dorado/Remora ✅ COMPLETE (2026-07-01, 20260701-01)
+
+**Summary:** Completed + anchored the in-flight Wave-2 build. Single-cell platform finished
+(scanpy/scvi-tools/seurat/CellTypist/Harmony), nf-core scRNA-seq + RNA-seq pipelines
+registered, and the Tier-1 anchor **Dorado + Remora** GPU container built/validated/registered.
+All reference-free, version-governed via `analysis-install`, Reuse-First. Recovery note: the
+06-18/19 build work (scanpy/scvi-tools registered; seurat/pipelines staged) had not been
+committed to git or handed off — this milestone anchors it (git = authority).
+
+- **Single-cell containers (apptainer, pinned+SHA256+MANIFEST+current; `.def` → `container/docker/…`):**
+  - `seurat/2026-06-18` (545a7db2; Seurat 5.5.0 + harmony 2.0.5 + Matrix; CPU; FROM bioconductor base) — promoted from scratch, functionally validated.
+  - `scanpy/2026-06-24` (3c87892e; scanpy 1.12.1 + **celltypist 1.7.1** + anndata 0.12.17 + leidenalg/igraph/louvain/harmonypy/scrublet/scikit-misc; CPU) — **now current**, adds CellTypist; supersedes `scanpy/2026-06-18` (retained).
+  - (already registered 06-18: `scanpy/2026-06-18`, `scvi-tools/2026-06-18-cuda13.0` scvi-tools 1.4.2 GPU.)
+- **Pipelines (nextflow, container-first, local-reference `igenomes_ignore`, engine cache `/data/local/cache/engine`):**
+  - `pipeline/nextflow/scrnaseq/4.1.0` — nf-core/scrnaseq; **preview test PASS**. Upstream/parser issue: 4.1.0 `nextflow.config` includes a missing `conf/test_multiome.config`; Nextflow 26.04.3 strict (v2) parser aborts → **requires `NXF_SYNTAX_PARSER=v1`** (baked into the pinned `pin.txt`).
+  - `pipeline/nextflow/rnaseq/3.26.0` — nf-core/rnaseq; preview PASS 2026-06-19; strict parser OK (no flag). Reuses local STAR/Salmon indexes.
+- **Dorado + Remora (Tier-1 anchor):** `container/apptainer/dorado/2.0.1-cuda13.0` (0a1ac2f2;
+  **dorado 2.0.1** self-contained ONT binary + **ont-remora 3.3.0**; **torch 2.9.1+cu130 preserved**;
+  FROM the validated pytorch base — Reuse-First; build tools added in %post for remora's Cython
+  ext). **GPU `--nv` validated: cuda True, 2-dev RTX 6000 Ada.** Model-free — models mount
+  read-only from `reference/model/dorado/`. New scaffold: `reference/model/README.md` (+ `dorado/`).
+- **Storage:** container store 21 GB (dorado 6.6 GB, scvi 3.2, ml 3.2, pytorch 2.9, bioconductor 1.7,
+  seurat 1.6, scanpy 1.2, longread 0.3); `/data` 123 GB / 11 TB (2%). Wave-2 scratch (`/data/local/scratch/m3-4e`) cleaned post-registration.
+- **Rollback:** `analysis-install` set-current-away + remove per container/pipeline; all regenerable
+  from `.def`/`pin.txt` (recipes-of-record under `container/docker/…` and the pipeline payloads).
+- **Deferred (per brief):** VEP/SnpEff, Structure-AI (AlphaFold/ESM/Chai/Boltz) — until a concrete project requires them.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
