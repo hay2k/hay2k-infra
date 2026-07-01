@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+# project-bootstrap — materialize a governance-compliant project tree (M4-2, 20260701-06).
+#
+#   project-bootstrap create <PROJECT_ID> --domain <d> [--name N] [--owner O] [--prompt ID] [--dest DIR] [--dry-run]
+#   project-bootstrap import <PROJECT_ID> --domain <d> [--name N] [--owner O] [--prompt ID]
+#                            [--source "server/env desc"] [--from SRC_DIR] [--dest DIR] [--dry-run]
+#
+# Produces the standard shape (DIRECTORY_STANDARD.md §3): canonical files (README,
+# PROJECT_MASTER, TODO, ENVIRONMENT_MANIFEST) + src/ results/ prompts/ docs/.
+#   create : docs/ begins with proposal/ only.
+#   import : full docs/ substructure {proposal,handoff,protocol,literature,meeting,archive}
+#            + docs/RECONSTRUCTION.md; optional --from stages prior materials into docs/ (reference-only).
+#
+# GOVERNANCE: creating/importing a project is USER-APPROVED (GOVERNANCE §2, PROJECT_LIFECYCLE
+# §3/§4/§4a). This tool performs the *materialization* of an already-approved project; it does
+# not grant approval. Projects consume shared platform capabilities (Reuse-First) — pin them in
+# ENVIRONMENT_MANIFEST.md; discover via `analysis-install catalog`.
+set -euo pipefail
+
+SELF="project-bootstrap"
+TPL="$(cd "$(dirname "$0")/.." && pwd)/templates/project"
+die() { echo "$SELF: error: $*" >&2; exit 1; }
+[ -d "$TPL" ] || die "templates not found: $TPL"
+
+mode="${1:-}"; case "$mode" in create|import) shift;; *) die "first arg must be 'create' or 'import'";; esac
+pid="${1:-}"; [ -n "$pid" ] && [[ "$pid" != --* ]] || die "need <PROJECT_ID> (e.g. P0003_tbi_scrnaseq)"; shift
+
+domain="" name="" owner="hha" prompt="<prompt-id>" source="-" from="" dest="" dry=0
+while [ $# -gt 0 ]; do case "$1" in
+  --domain) domain="$2"; shift 2;;
+  --name)   name="$2"; shift 2;;
+  --owner)  owner="$2"; shift 2;;
+  --prompt) prompt="$2"; shift 2;;
+  --source) source="$2"; shift 2;;
+  --from)   from="$2"; shift 2;;
+  --dest)   dest="$2"; shift 2;;
+  --dry-run) dry=1; shift;;
+  *) die "unknown option: $1";;
+esac; done
+[ -n "$domain" ] || die "--domain required (Research|Business|Investment|Surplus)"
+[ -n "$name" ] || name="$pid"
+DATE="$(date +%F)"
+
+# Resolve destination from domain (only analysis/Research is realized today).
+if [ -z "$dest" ]; then
+  case "$domain" in
+    Research|research|analysis) dest="/data/analysis/projects/$pid";;
+    Business|business)   dest="/data/business/$pid";;
+    Investment|investment) dest="/data/investment/$pid";;
+    Surplus|surplus)     dest="/data/surplus/$pid";;
+    *) die "unknown domain '$domain'";;
+  esac
+fi
+[ -e "$dest" ] && die "destination already exists (never overwrite): $dest"
+
+first_task="Draft PROJECT_MASTER.md objective & scope"
+[ "$mode" = import ] && first_task="Work docs/RECONSTRUCTION.md — reconstruct on-platform (reference: docs/)"
+
+echo "== $SELF $mode: $pid"
+echo "   domain=$domain  dest=$dest  origin=$mode  source=$source"
+[ "$mode" = import ] && [ -n "$from" ] && echo "   stage prior materials from: $from"
+if [ $dry -eq 1 ]; then echo "   [DRY-RUN] no files written"; fi
+
+subst() { # template -> dest, with token substitution
+  sed -e "s|{{PROJECT_ID}}|$pid|g" -e "s|{{PROJECT_NAME}}|$name|g" \
+      -e "s|{{DOMAIN}}|$domain|g" -e "s|{{DATE}}|$DATE|g" -e "s|{{OWNER}}|$owner|g" \
+      -e "s|{{ORIGIN}}|$mode|g" -e "s|{{SOURCE}}|$source|g" -e "s|{{PROMPT_ID}}|$prompt|g" \
+      -e "s|{{ORIGIN_FIRST_TASK}}|$first_task|g" "$1"
+}
+
+if [ $dry -eq 1 ]; then
+  echo "   would create:"
+  echo "     $dest/{README.md,PROJECT_MASTER.md,TODO.md,ENVIRONMENT_MANIFEST.md,.gitignore}"
+  echo "     $dest/{src,results,prompts}/"
+  if [ "$mode" = create ]; then echo "     $dest/docs/proposal/";
+  else echo "     $dest/docs/{proposal,handoff,protocol,literature,meeting,archive}/ + docs/RECONSTRUCTION.md"; fi
+  echo "   (git init + initial commit in real run)"
+  exit 0
+fi
+
+mkdir -p "$dest"/{src,results,prompts}
+subst "$TPL/README.md"          > "$dest/README.md"
+subst "$TPL/PROJECT_MASTER.md"  > "$dest/PROJECT_MASTER.md"
+subst "$TPL/TODO.md"            > "$dest/TODO.md"
+cp "$TPL/ENVIRONMENT_MANIFEST.md" "$dest/ENVIRONMENT_MANIFEST.md"
+sed -i \
+  -e "s|^- project_id:.*|- project_id:        $pid|" \
+  -e "s|^- domain:.*|- domain:            $domain|" \
+  -e "s|^- created:.*|- created:           $DATE|" \
+  "$dest/ENVIRONMENT_MANIFEST.md"
+
+if [ "$mode" = create ]; then
+  mkdir -p "$dest/docs/proposal"
+else
+  mkdir -p "$dest/docs"/{proposal,handoff,protocol,literature,meeting,archive}
+  subst "$TPL/RECONSTRUCTION.md" > "$dest/docs/RECONSTRUCTION.md"
+  echo "docs/ is DOCUMENTATION ONLY — reference material, not an execution input (PROJECT_LIFECYCLE §4a)." > "$dest/docs/README.md"
+  if [ -n "$from" ]; then
+    [ -d "$from" ] || die "--from not found: $from"
+    echo "   staging prior materials (reference-only) → docs/proposal/_imported/"
+    mkdir -p "$dest/docs/proposal/_imported"
+    cp -a "$from"/. "$dest/docs/proposal/_imported/" 2>/dev/null || true
+  fi
+fi
+
+cat > "$dest/.gitignore" <<'GI'
+# regenerables / large data (per-project VCS, DIRECTORY_STANDARD §3)
+data/
+results/
+*.sif
+.venv/
+__pycache__/
+*.tmp
+GI
+
+# Per-project git repo (off-host remote added separately). Safe if git present.
+if command -v git >/dev/null 2>&1; then
+  git -C "$dest" init -q
+  git -C "$dest" add -A
+  git -C "$dest" -c user.name="$owner" -c user.email="$owner@localhost" commit -q \
+    -m "bootstrap $pid ($mode) — standard project tree" || true
+fi
+
+echo "   created: $dest"
+find "$dest" -maxdepth 2 -not -path '*/.git/*' | sort | sed "s|$dest|  .|"
+echo "NEXT: complete Capability Resolution in ENVIRONMENT_MANIFEST.md (Reuse-First; 'analysis-install catalog')."

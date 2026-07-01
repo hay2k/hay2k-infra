@@ -49,3 +49,7 @@ active project):
 - Research-internal **Tier** (T1/T2) is tracked in the project's `README.md` /
   `ENVIRONMENT_MANIFEST.md`, not as a registry column (optional, research-only).
 - Subprojects (`<ID>-S##`) may be listed as their own rows or noted under the parent.
+- **Anticipated first import (M4-2, 20260701-06):** `P0003` (TBI scRNA-seq) is expected to be
+  the **first imported project** (PROJECT_LIFECYCLE §4a). The reusable import framework is
+  **ready** (`scripts/project-bootstrap import`). **Not yet approved, registered, or
+  materialized** — no row is added until the User approves the import (§1; GOVERNANCE §2).

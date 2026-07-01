@@ -5,6 +5,25 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-01 — 20260701-06: M4-2 — Platform Discovery Layer + Project Bootstrap
+
+- **Platform Discovery Layer:** extended `analysis-install` (read-only) with `catalog`
+  (`--kind/--accel/--category/--json`) and `describe`; optional additive install metadata
+  `--category/--provides/--requires/--compat`; category inference; backfilled current
+  capabilities. Live MANIFEST registry stays single source of truth. Fixed `manifest_field`
+  parse bug. `verify` re-confirmed after MANIFEST metadata append.
+- **Project Bootstrap:** new `scripts/project-bootstrap create|import` + `templates/project/`
+  (README, PROJECT_MASTER, TODO, RECONSTRUCTION). Materializes the standard tree incl. `docs/`
+  (create → docs/proposal/; import → full substructure + RECONSTRUCTION.md + `--from` staging,
+  reference-only) + per-project git. Presupposes User approval; `--dry-run` previews. Validated
+  both modes in a temp dir — no real project created.
+- **PLATFORM_ARCHITECTURE §8a** (discovery layer + bootstrap, concrete). **PROJECT_REGISTRY §4**
+  notes P0003 (TBI scRNA-seq) as anticipated first import — framework ready, not
+  approved/registered/materialized.
+- Implementation milestone (Reuse-First / container-first / pipeline-driven / provider-agnostic).
+  Prompt: `prompts/20260701-06_m4-2_discovery_and_bootstrap.md`.
+- Detail: IMPLEMENTATION_LOG.md (M4-2); handoff 2026-07-01_m4-2-platform-discovery-and-bootstrap.md.
+
 ## 2026-07-01 — 20260701-05: M4 — Project Documentation Refinement
 
 - **`docs/` is now standard in every project** (not imported-only) with a fixed substructure
