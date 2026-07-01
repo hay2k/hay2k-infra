@@ -79,6 +79,15 @@ Layers and stages are **capabilities, not products.** Any AI system may fill any
 no vendor or model is named or assumed. Swapping the underlying AI changes nothing about
 the model, the canonical documents, the capability metadata, or the human authority.
 
+**Execution mechanics: `project-run` (M4-3, PLATFORM_ARCHITECTURE §8b).** The Execution layer's
+mechanics are implemented by the provider-agnostic **Project Execution Framework**
+(`scripts/project-run`): `Project → Planning → Capability Resolution → Execution → Validation →
+Figure Generation → Result Packaging → Project Update → Handoff`. It starts **only** from
+`PROJECT_MASTER.md` + `ENVIRONMENT_MANIFEST.md` (never `docs/`, §2), consumes pinned platform
+capabilities, and enforces the figure triad + reproducibility metadata by default. **Agents
+orchestrate; the framework executes — Model ≠ Execution Framework.** Any provider (Claude / GPT /
+Kimi / Gemini / DeepSeek / local) drives the same harness with identical results.
+
 ## 6. Example flow (vendor-neutral)
 1. *Planning:* an agent drafts/updates `PROJECT_MASTER.md` (+ `TODO.md`) and performs
    Capability Resolution → pins reused capabilities in `ENVIRONMENT_MANIFEST.md`.

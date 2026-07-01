@@ -5,6 +5,23 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-01 — 20260701-07: M4-3 — Project Execution Framework
+
+- **`scripts/project-run`** — reusable, project-independent, **provider-agnostic** execution
+  harness (Model ≠ Execution Framework; agents orchestrate, framework executes). Runs
+  P0001/P0002/P0003 with the same model.
+- Starts **only** from `PROJECT_MASTER.md` + `ENVIRONMENT_MANIFEST.md`; **never** reads `docs/`.
+- Stages: Project → Planning → Capability Resolution → Execution → Validation → Figure
+  Generation → Result Packaging → Project Update → Handoff. `resolve` verifies pins vs the live
+  registry (forbids `current`); `exec` is container-first with references mounted read-only;
+  figure stage enforces **PNG+PDF + Source-Data TSV + Metadata MD** (GOVERNANCE §9); `metadata`
+  writes RUN_MANIFEST reusing pins+registry sha (no duplication).
+- Extends the existing CLI (no redesign). Validated end-to-end on temp create + import projects
+  (import ran unmodified — Objective 7); no real project created.
+- **PLATFORM_ARCHITECTURE §8b**; **AGENT_WORKFLOW_STANDARD §5**. Prompt:
+  `prompts/20260701-07_m4-3_project_execution_framework.md`.
+- Detail: IMPLEMENTATION_LOG.md (M4-3); handoff 2026-07-01_m4-3-project-execution-framework.md.
+
 ## 2026-07-01 — 20260701-06: M4-2 — Platform Discovery Layer + Project Bootstrap
 
 - **Platform Discovery Layer:** extended `analysis-install` (read-only) with `catalog`

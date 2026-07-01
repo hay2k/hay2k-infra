@@ -1,0 +1,301 @@
+#!/usr/bin/env bash
+# project-run — reusable, project-independent Project Execution Framework (M4-3, 20260701-07).
+#
+# Provider-agnostic execution HARNESS. It performs execution; agents (Claude/GPT/Kimi/Gemini/
+# DeepSeek/local) ORCHESTRATE it. Model != Execution Framework. No LLM calls here.
+#
+# Execution ALWAYS begins from the canonical files PROJECT_MASTER.md + ENVIRONMENT_MANIFEST.md,
+# and NEVER depends on historical documents under docs/ (docs/ is reference-only,
+# PROJECT_LIFECYCLE §4a). The same model runs P0001/P0002/P0003 unchanged.
+#
+# Stages (see `project-run stages`):
+#   Project → Planning → Capability Resolution → Execution → Validation
+#           → Figure Generation → Result Packaging → Project Update → Handoff
+#
+# Commands:
+#   project-run stages
+#   project-run resolve  <project_dir>                         # Capability Resolution (verify pins)
+#   project-run metadata <project_dir> [run_id]                # reproducibility RUN_MANIFEST
+#   project-run exec     <project_dir> --container G/N/V [--nv] [--ref K/G/N/V]... -- <cmd...>
+#   project-run figure   <project_dir> [--register BASE | --check]   # enforce Figure+SourceData+Metadata
+#   project-run package  <project_dir> [run_id]
+#   project-run handoff  <project_dir> [run_id]
+#   project-run run      <project_dir> [--nv]                  # full staged pipeline (driver)
+set -euo pipefail
+
+SELF="project-run"
+AR="${ANALYSIS_ROOT:-/data/analysis}"
+AI="$(cd "$(dirname "$0")" && pwd)/analysis-install"
+die() { echo "$SELF: error: $*" >&2; exit 1; }
+info() { echo "[$SELF] $*"; }
+NOW() { date -u +%FT%TZ; }
+mf() { sed -n "s/^$2: //p" "$1" 2>/dev/null | head -1; }   # manifest field
+
+need_canonical() { # a project MUST start from these; docs/ is never an execution input
+  local p="$1"
+  [ -f "$p/PROJECT_MASTER.md" ] || die "missing canonical PROJECT_MASTER.md in $p (execution starts here)"
+  [ -f "$p/ENVIRONMENT_MANIFEST.md" ] || die "missing canonical ENVIRONMENT_MANIFEST.md in $p"
+}
+run_dir() { echo "$1/results/run_$2"; }
+new_run_id() { date +%Y%m%d-%H%M%S; }
+pid_of() { # ENVIRONMENT_MANIFEST identity line is "- project_id:   <value>"; fall back to dir name
+  local v; v="$(sed -n 's/^- project_id:[[:space:]]*//p' "$1/ENVIRONMENT_MANIFEST.md" 2>/dev/null | head -1)"
+  [ -n "$v" ] || v="$(basename "$1")"; echo "$v"
+}
+
+cmd_stages() {
+  cat <<'EOF'
+Project → Planning → Capability Resolution → Execution → Validation
+        → Figure Generation → Result Packaging → Project Update → Handoff
+Each stage is reusable and agent-orchestratable. Source of truth: PROJECT_MASTER.md +
+ENVIRONMENT_MANIFEST.md. docs/ is reference-only and never an execution input.
+EOF
+}
+
+# --- Capability Resolution: parse pinned deps from ENVIRONMENT_MANIFEST, verify in registry ---
+resolve_pins() { # project_dir -> TSV: kind\tgroup\tname\tversion\tsha\taccel  (to stdout)
+  local em="$1/ENVIRONMENT_MANIFEST.md" kind=""
+  local line tok grp nm ver base m sha acc
+  while IFS= read -r line; do
+    case "$line" in
+      *"### Pipelines"*)  kind="pipeline";  continue;;
+      *"### Containers"*) kind="container"; continue;;
+      *"### References"*) kind="reference"; continue;;
+      *"### Models"*)     kind="model";     continue;;
+      "## "*) kind="";;                      # left the dependency subsections
+    esac
+    [ -n "$kind" ] || continue
+    case "$line" in "- "*) ;; *) continue;; esac      # only bullet pins
+    tok="${line#- }"; tok="${tok%%[[:space:]]*}"       # first field
+    case "$tok" in *"<"*|*">"*|"") continue;; esac      # skip template placeholders
+    IFS='/' read -r grp nm ver <<<"$tok"
+    [ -n "$grp" ] && [ -n "$nm" ] && [ -n "$ver" ] || { echo "WARN: unparseable pin '$tok'" >&2; continue; }
+    [ "$ver" = "current" ] && die "pin must be exact, not 'current': $tok (GOVERNANCE §4)"
+    # Models are a reference category: token model/<name>/<ver> parses to grp=model,name,ver.
+    local rkind="$kind" rgrp="$grp"
+    if [ "$kind" = "model" ]; then rkind="reference"; rgrp="model"; fi
+    base="$AR/$rkind/$rgrp/$nm/$ver"
+    m="$base/MANIFEST.md"
+    [ -f "$m" ] || { echo "MISSING	$rkind	$rgrp	$nm	$ver	-	-" ; echo "WARN: pin not found in registry: $rkind/$rgrp/$nm/$ver" >&2; continue; }
+    sha="$(mf "$m" sha256)"; acc="$(mf "$m" accel)"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$rkind" "$rgrp" "$nm" "$ver" "${sha:--}" "${acc:--}"
+  done < "$em"
+}
+
+cmd_resolve() {
+  local p="$1"; need_canonical "$p"
+  local rid="${2:-$(new_run_id)}" rd; rd="$(run_dir "$p" "$rid")"; mkdir -p "$rd"
+  info "Capability Resolution (Reuse-First) — from ENVIRONMENT_MANIFEST.md"
+  local tsv="$rd/resolved.tsv"; : > "$tsv"
+  local out; out="$(resolve_pins "$p")"
+  printf 'kind\tgroup\tname\tversion\tsha256\taccel\n' > "$tsv"
+  [ -n "$out" ] && printf '%s\n' "$out" >> "$tsv"
+  local missing; missing="$(grep -c '^MISSING' <<<"$out" || true)"
+  column -t -s $'\t' "$tsv"
+  [ "${missing:-0}" -gt 0 ] && die "$missing pinned capability(ies) not in registry — resolve before executing"
+  info "resolved → $tsv"
+  echo "$rid"
+}
+
+# --- Execution: run a command inside a pinned container, with reference mounts ---
+sif_path() { # group name version -> path to .sif
+  find "$AR/container/$1/$2/$3" -name '*.sif' 2>/dev/null | head -1
+}
+cmd_exec() {
+  local p="$1"; shift; need_canonical "$p"
+  local cont="" nv="" rid=""; local -a refs=(); local -a cmd=()
+  while [ $# -gt 0 ]; do case "$1" in
+    --container) cont="$2"; shift 2;;
+    --nv) nv="--nv"; shift;;
+    --run-id) rid="$2"; shift 2;;
+    --ref) refs+=("$2"); shift 2;;
+    --) shift; cmd=("$@"); break;;
+    *) die "exec: unknown option $1";;
+  esac; done
+  [ -n "$cont" ] || die "exec needs --container G/N/V"
+  [ "${#cmd[@]}" -gt 0 ] || die "exec needs -- <command>"
+  [ -n "$rid" ] || rid="$(new_run_id)"
+  local rd; rd="$(run_dir "$p" "$rid")"; mkdir -p "$rd"
+  IFS='/' read -r cg cn cv <<<"$cont"; local sif; sif="$(sif_path "$cg" "$cn" "$cv")"
+  [ -n "$sif" ] && [ -f "$sif" ] || die "container sif not found for $cont"
+  local -a binds=(--bind "$p:$p")
+  local r rk rg rn rv rp
+  for r in "${refs[@]}"; do
+    IFS='/' read -r rk rg rn rv <<<"$r"; rp="$AR/$rk/$rg/$rn/$rv"
+    [ -e "$rp" ] || die "reference not found: $r ($rp)"
+    binds+=(--bind "$rp:/refs/$rn:ro")
+  done
+  info "Execution: $cont ${nv:+(GPU) }→ ${cmd[*]}"
+  local log="$rd/exec.log"
+  {
+    echo "== exec $(NOW)  container=$cont  sif=$sif  refs=${refs[*]:-none}"
+    echo "== cmd: ${cmd[*]}"
+  } >> "$log"
+  # OUTDIR available to the workload; container is reference-free, refs mounted read-only.
+  APPTAINERENV_OUTDIR="$rd" APPTAINERENV_RUN_ID="$rid" \
+    apptainer exec $nv "${binds[@]}" "$sif" "${cmd[@]}" 2>&1 | tee -a "$log"
+  local ec=${PIPESTATUS[0]}
+  echo "== exit $ec $(NOW)" >> "$log"
+  [ "$ec" -eq 0 ] || die "execution failed (exit $ec) — see $log"
+  info "execution ok → $rd"
+}
+
+# --- Figure Generation: enforce Figure + Source Data Table + Metadata (GOVERNANCE §9, Phase 9) ---
+cmd_figure() {
+  local p="$1"; shift
+  local mode="check" base=""
+  while [ $# -gt 0 ]; do case "$1" in
+    --check) mode="check"; shift;;
+    --register) mode="register"; base="$2"; shift 2;;
+    *) die "figure: unknown option $1";;
+  esac; done
+  local fdir="$p/results"
+  if [ "$mode" = register ]; then
+    [ -n "$base" ] || die "figure --register needs BASE (e.g. Figure_001_umap)"
+    mkdir -p "$fdir"
+    [ -f "$fdir/$base.tsv" ] || printf '# source data for %s\n# columns: <...>\n' "$base" > "$fdir/$base.tsv"
+    [ -f "$fdir/$base.md" ]  || cat > "$fdir/$base.md" <<EOF
+# $base — figure metadata
+figure: $base.png (+ $base.pdf)
+source_data: $base.tsv
+project: $(pid_of "$p")
+generated: $(NOW)
+inputs: <data hashes / capability versions — see RUN_MANIFEST>
+method: <how this figure was produced>
+EOF
+    info "registered figure triad stubs for $base (add $base.png + $base.pdf)"
+    return 0
+  fi
+  # check: every *.png must have .pdf + .tsv + .md siblings
+  local ok=1 png b miss
+  shopt -s nullglob
+  local pngs=("$fdir"/*.png "$fdir"/figures/*.png)
+  shopt -u nullglob
+  if [ "${#pngs[@]}" -eq 0 ]; then info "Figure check: no figures present (ok)"; return 0; fi
+  for png in "${pngs[@]}"; do
+    b="${png%.png}"; miss=""
+    [ -f "$b.pdf" ] || miss+=" pdf"
+    [ -f "$b.tsv" ] || miss+=" source-data(tsv)"
+    [ -f "$b.md" ]  || miss+=" metadata(md)"
+    if [ -n "$miss" ]; then echo "  INCOMPLETE $(basename "$png") — missing:$miss"; ok=0
+    else echo "  OK $(basename "$b") (png+pdf+tsv+md)"; fi
+  done
+  [ "$ok" -eq 1 ] || die "figure policy violation: every figure needs PNG+PDF + source-data TSV + metadata MD"
+  info "Figure check passed (triad complete)"
+}
+
+# --- Metadata: reproducibility RUN_MANIFEST (reuse resolved pins + registry sha; no duplication) ---
+cmd_metadata() {
+  local p="$1"; need_canonical "$p"
+  local rid="${2:-$(new_run_id)}" rd; rd="$(run_dir "$p" "$rid")"; mkdir -p "$rd"
+  [ -f "$rd/resolved.tsv" ] || cmd_resolve "$p" "$rid" >/dev/null
+  local pid; pid="$(pid_of "$p")"
+  local gsha; gsha="$(git -C "$p" rev-parse --short HEAD 2>/dev/null || echo '<uncommitted>')"
+  local host; host="$(hostname 2>/dev/null || echo '?')"
+  local gpu; gpu="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | sort | uniq -c | tr '\n' ';' || echo 'none')"
+  local man="$rd/RUN_MANIFEST.md"
+  {
+    echo "# RUN_MANIFEST — $pid  run $rid"
+    echo "project: $pid"
+    echo "run_id: $rid"
+    echo "execution_date: $(NOW)"
+    echo "host: $host"
+    echo "gpu: ${gpu:-none}"
+    echo "project_git_commit: $gsha"
+    echo "framework: project-run (M4-3); provider-agnostic (Model != Execution Framework)"
+    echo "source_of_truth: PROJECT_MASTER.md + ENVIRONMENT_MANIFEST.md (docs/ NOT used)"
+    echo
+    echo "## Platform capability versions (pinned, verified in registry — reused, not duplicated)"
+    echo '```'
+    column -t -s $'\t' "$rd/resolved.tsv" 2>/dev/null || cat "$rd/resolved.tsv"
+    echo '```'
+    echo "Each capability's full provenance lives in its registry MANIFEST"
+    echo "(\`analysis-install describe <kind> <group> <name> <version>\`); sha256 above pins it."
+  } > "$man"
+  info "reproducibility metadata → $man"
+}
+
+# --- Result Packaging ---
+cmd_package() {
+  local p="$1"; need_canonical "$p"
+  local rid="${2:-}"; [ -n "$rid" ] || rid="$(ls -1 "$p/results" 2>/dev/null | sed -n 's/^run_//p' | sort | tail -1)"
+  [ -n "$rid" ] || die "no run to package (run resolve/metadata first)"
+  local rd; rd="$(run_dir "$p" "$rid")"; [ -d "$rd" ] || die "run dir not found: $rd"
+  info "Result Packaging: run $rid"
+  ( cd "$rd" && find . -type f ! -name CHECKSUMS.sha256 -print0 | sort -z | xargs -0 sha256sum > CHECKSUMS.sha256 )
+  cmd_figure "$p" --check
+  info "packaged: $rd (CHECKSUMS.sha256 written; figure triad verified)"
+}
+
+# --- Handoff ---
+cmd_handoff() {
+  local p="$1"; need_canonical "$p"
+  local rid="${2:-}"; [ -n "$rid" ] || rid="$(ls -1 "$p/results" 2>/dev/null | sed -n 's/^run_//p' | sort | tail -1)"
+  local rd; rd="$(run_dir "$p" "$rid")"
+  local pid; pid="$(pid_of "$p")"
+  local hdir="/data/admin/handoff"; mkdir -p "$hdir"
+  local f="$hdir/$(date +%F)_${pid}_run_${rid}.md"
+  {
+    echo "---"
+    echo "title: \"$pid — execution run $rid\""
+    echo "type: project-run"
+    echo "date: $(date +%F)"
+    echo "project: $pid"
+    echo "run_id: $rid"
+    echo "---"
+    echo
+    echo "# $pid — execution run $rid"
+    echo
+    echo "Executed via the reusable Project Execution Framework (project-run, M4-3),"
+    echo "from PROJECT_MASTER.md + ENVIRONMENT_MANIFEST.md (docs/ not used)."
+    echo
+    echo "## Reproducibility"
+    [ -f "$rd/RUN_MANIFEST.md" ] && sed 's/^/    /' "$rd/RUN_MANIFEST.md" || echo "  (no RUN_MANIFEST)"
+    echo
+    echo "## Artifacts"
+    [ -d "$rd" ] && ( cd "$rd" && find . -maxdepth 2 -type f | sort | sed 's/^/  - /' )
+  } > "$f"
+  info "handoff → $f"
+  echo "$f"
+}
+
+# --- Driver: full staged pipeline ---
+cmd_run() {
+  local p="$1"; shift || true
+  local nv=""; [ "${1:-}" = "--nv" ] && nv="--nv"
+  need_canonical "$p"
+  info "Project: $(pid_of "$p")  ($p)"
+  info "Planning: canonical files present; docs/ excluded from execution"
+  local rid; rid="$(cmd_resolve "$p" | tail -1)"          # Capability Resolution
+  cmd_metadata "$p" "$rid"                                 # reproducibility
+  if [ -x "$p/src/runspec.sh" ]; then                     # Execution (project-provided entrypoint)
+    info "Execution: running project src/runspec.sh (project-defined steps)"
+    ( cd "$p" && RUN_ID="$rid" ANALYSIS_ROOT="$AR" OUTDIR="$(run_dir "$p" "$rid")" NV="$nv" bash src/runspec.sh )
+  else
+    info "Execution: no src/runspec.sh — skipping (framework harness ready; use 'project-run exec')"
+  fi
+  cmd_figure "$p" --check                                  # Validation + Figure Generation policy
+  cmd_package "$p" "$rid"                                  # Result Packaging
+  # Project Update: append a run record (canonical files remain source of truth)
+  printf -- '- %s  run %s  (framework=project-run)\n' "$(NOW)" "$rid" >> "$p/RUN_LOG.md"
+  info "Project Update: appended run $rid to RUN_LOG.md"
+  cmd_handoff "$p" "$rid"                                  # Handoff
+  info "run complete: $rid"
+}
+
+main() {
+  local cmd="${1:-}"; shift || true
+  case "$cmd" in
+    stages)   cmd_stages;;
+    resolve)  [ $# -ge 1 ] || die "resolve needs <project_dir>"; cmd_resolve "$@";;
+    metadata) [ $# -ge 1 ] || die "metadata needs <project_dir>"; cmd_metadata "$@";;
+    exec)     [ $# -ge 1 ] || die "exec needs <project_dir> ..."; cmd_exec "$@";;
+    figure)   [ $# -ge 1 ] || die "figure needs <project_dir> ..."; cmd_figure "$@";;
+    package)  [ $# -ge 1 ] || die "package needs <project_dir>"; cmd_package "$@";;
+    handoff)  [ $# -ge 1 ] || die "handoff needs <project_dir>"; cmd_handoff "$@";;
+    run)      [ $# -ge 1 ] || die "run needs <project_dir>"; cmd_run "$@";;
+    -h|--help|help|"") cmd_stages; echo; grep -E '^#   project-run' "$0" | sed 's/^#   /  /';;
+    *) die "unknown command: $cmd (try --help)";;
+  esac
+}
+main "$@"
