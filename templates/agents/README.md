@@ -19,7 +19,7 @@ independent of any model. Project-specific instructions stay in the project's `P
 | Role | Workflow layer (AGENT_WORKFLOW_STANDARD §2) | Primary platform tools |
 |------|----------------------------------------------|------------------------|
 | `supervisor` | across all (orchestration, ambiguity, escalation) | all; enforces §3b triggers |
-| `knowledge`  | Planning | `knowledge_transfer/` (kt-init), literature synthesis |
+| `knowledge`  | Planning | `knowledge/` package (kt-init), literature synthesis |
 | `reference`  | Planning / Validation | PubMed/CrossRef/EuropePMC → Zotero citekeys (GOVERNANCE §7) |
 | `analysis`   | Execution | `project-run` (container-first, pinned capabilities) |
 | `figure`     | Figure Generation | `project-run figure` (Figure+SourceData+Metadata) |

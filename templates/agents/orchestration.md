@@ -8,7 +8,7 @@ this is the pattern agents follow when they run.
 ```
 PROJECT_MASTER.md + ENVIRONMENT_MANIFEST.md   (source of truth; docs/ never an execution input)
         │
-Planning ───────────── Knowledge Agent (+ Reference Agent)         → drafts spec / knowledge_transfer
+Planning ───────────── Knowledge Agent (+ Reference Agent)         → drafts spec / knowledge/ package
         │
 Capability Resolution ─ Analysis Agent      → project-run resolve  (pins verified vs registry)
         │

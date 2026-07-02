@@ -69,4 +69,13 @@ Surplus domains consume the same platform when activated (no architecture change
 ---
 
 ## v1.1+ changelog
-_(none yet — record post-freeze platform changes here; INFRA_CHANGELOG.md has full detail.)_
+Post-freeze platform changes (v1.0 tag `platform-v1.0` is immutable; these land on `main`).
+
+- **2026-07-02 — 20260702-03 — M5-1: Research Knowledge Acquisition Framework.** Evolved the M4-4
+  Knowledge Transfer framework into the definitive, project-independent standard:
+  `templates/knowledge_transfer/` → **`templates/knowledge/`** (package `knowledge/`), with
+  `05_claude_summary`+`06_chatgpt_summary` → **`05_ai_knowledge`** (by origin) + new
+  **`06_literature`**, `04_refactoring_summary` → `04_refactoring`, trial-and-error gains a
+  **Reason** step, `Attachments/` → `attachments/`. `project-bootstrap kt-init` and
+  PROJECT_LIFECYCLE §4a updated to `docs/knowledge/`; feeds PROJECT_MASTER/TODO/ENVIRONMENT_MANIFEST
+  generation (no duplication). Tooling/template change; no capability re-registration.

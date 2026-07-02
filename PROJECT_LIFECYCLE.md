@@ -117,15 +117,17 @@ the authoritative execution environment**.
    `docs/` as *source input*, then execute against the pinned shared capabilities. The
    reconstruction — not the legacy artifacts — is the authoritative, reproducible result
    (GOVERNANCE.md §4).
-   - **Knowledge Transfer package (preferred distilled input, M4-4, 20260702-01).** Prefer a
-     **`docs/knowledge_transfer/`** package (scaffold: `project-bootstrap kt-init`; template:
-     `infra/templates/knowledge_transfer/`) — the *distilled research knowledge* (overview,
-     analysis strategy, **trial-and-error history**, refactoring summary, prior Claude/ChatGPT
-     knowledge, open questions, **recommended reconstruction plan**) rather than raw file
-     migration. *Transfer knowledge, not files* (GOVERNANCE §5 — no fabrication; every entry
-     source-cited). The platform **consumes this package** to generate `PROJECT_MASTER.md`,
-     `TODO.md`, and the execution plan. It is **input to reconstruction, never an execution
-     input** (`project-run` reads only the canonical files).
+   - **Knowledge Acquisition package (preferred distilled input; M5-1, 20260702-03; refines
+     M4-4).** Prefer a **`docs/knowledge/`** package (scaffold: `project-bootstrap kt-init`;
+     template: `infra/templates/knowledge/`) — the *distilled research knowledge*: project
+     overview, analysis strategy (the *why*), **trial-and-error** (attempt→problem→reason→
+     solution→final decision), refactoring, **AI knowledge by origin** (Claude/ChatGPT/other),
+     **literature** (summary, not duplicated bibliography), open questions, and the **recommended
+     reconstruction plan on Platform v1.0** — rather than migrating code/results. *Acquire
+     knowledge, not files* (GOVERNANCE §5 — no fabrication; every entry source-cited). The platform
+     **consumes this package** to generate `PROJECT_MASTER.md`, `TODO.md`, and the pinned
+     `ENVIRONMENT_MANIFEST.md` (no duplicated information). It is **input to reconstruction, never
+     an execution input** (`project-run` reads only the canonical files).
 4. **Provenance:** `README.md` records the origin (source server/environment, import date,
    approving prompt ID). Cross-domain implications, if any, follow §6. Prior results are
    cited as reference; they are re-derived on-platform before being reported as final.

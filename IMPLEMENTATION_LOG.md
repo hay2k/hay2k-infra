@@ -750,6 +750,31 @@ explicitly not governance); extended existing assets.
 
 **Platform v1.0 is frozen. Research projects (P0001/P0002/P0003) may now begin.**
 
+## M5-1 — Research Knowledge Acquisition Framework ✅ COMPLETE (2026-07-02, 20260702-03) [platform v1.1]
+
+**Summary:** First platform-utilization milestone on frozen v1.0. Established the reusable,
+project-independent **Research Knowledge Acquisition Framework** by **evolving the M4-4 Knowledge
+Transfer framework** (Reuse-First; one framework, no duplication) into the definitive `knowledge/`
+standard. Recorded as **v1.1** (freeze-compliant: `platform-v1.0` tag unchanged; main → v1.1). Not
+P0003-specific — P0001/P0002/P0003 will all use it.
+
+- **`templates/knowledge/`** (was `knowledge_transfer/`): `README` + `01_project_overview` …
+  `08_reconstruction_plan` + `attachments/`. Changes vs M4-4: `05_claude_summary`+`06_chatgpt_summary`
+  → **`05_ai_knowledge`** (knowledge **by origin**: Claude/ChatGPT/other) + **new `06_literature`**
+  (papers/concepts/landmark methods/future directions — summary, not duplicated bibliography);
+  `04_refactoring_summary` → `04_refactoring`; trial-and-error now **attempt→problem→reason→solution
+  →final decision**; `Attachments/` → `attachments/`. Anti-fabrication + source-citation rules kept.
+- **Integration (no duplication):** `project-bootstrap kt-init` scaffolds `knowledge/`;
+  PROJECT_LIFECYCLE §4a → `docs/knowledge/`; package **feeds** PROJECT_MASTER / TODO /
+  ENVIRONMENT_MANIFEST generation; never an execution input (`project-run` reads only canonical
+  files). Agent specs (knowledge/README/orchestration) updated.
+- **Future workflow:** Legacy Research → Knowledge Acquisition → PROJECT_MASTER → Capability
+  Resolution → Execution → Validation → Figures → Publication.
+- **Validated** (temp): kt-init produces the 10-file `knowledge/` package; Reason step, 05 by-origin,
+  06 literature, token substitution all present; no residual `knowledge_transfer` refs outside
+  historical records. No real project created (P0001/P0002/P0003 not acquired).
+- **PLATFORM_VERSION.md** v1.1 changelog updated. **Prompt:** `prompts/20260702-03_m5-1_knowledge_acquisition_framework.md`.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +

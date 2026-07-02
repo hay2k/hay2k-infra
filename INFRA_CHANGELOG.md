@@ -5,6 +5,23 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-02 — 20260702-03: M5-1 — Research Knowledge Acquisition Framework [platform v1.1]
+
+- **Evolved** the M4-4 Knowledge Transfer framework into the definitive, project-independent
+  **Research Knowledge Acquisition Framework** (Reuse-First; one framework, no duplication):
+  `templates/knowledge_transfer/` → **`templates/knowledge/`** (package `knowledge/`).
+- Structure: `05_claude_summary`+`06_chatgpt_summary` → **`05_ai_knowledge`** (by origin) + new
+  **`06_literature`** (summary, not duplicated bibliography); `04_refactoring_summary` →
+  `04_refactoring`; trial-and-error → attempt→problem→**reason**→solution→final decision;
+  `Attachments/` → `attachments/`.
+- Integration: `project-bootstrap kt-init` → `knowledge/`; PROJECT_LIFECYCLE §4a → `docs/knowledge/`;
+  feeds PROJECT_MASTER/TODO/ENVIRONMENT_MANIFEST generation (no duplication); never an execution
+  input. Agent specs updated.
+- **Freeze-compliant v1.1** (tag `platform-v1.0` unchanged; recorded in PLATFORM_VERSION.md v1.1
+  changelog). Validated via kt-init in temp; no real project acquired (P0001/P0002/P0003 pending).
+- Prompt: `prompts/20260702-03_m5-1_knowledge_acquisition_framework.md`.
+- Detail: IMPLEMENTATION_LOG.md (M5-1); handoff 2026-07-02_m5-1-knowledge-acquisition-framework.md.
+
 ## 2026-07-02 — 20260702-02: M4 Final Sprint — Platform v1.0 COMPLETE + FROZEN
 
 - **Platform v1.0 frozen.** `PLATFORM_VERSION.md` (frozen manifest: governance set, CLI,
