@@ -723,6 +723,33 @@ M4 Execution-Principle confirmation trigger (project-specific scientific judgmen
 - **Prompt archived:** `prompts/20260702-01_m4-4_knowledge_transfer_framework.md`.
 - **Next (operator):** provide P0003 source materials → I populate the package from real content.
 
+## M4 Final Sprint — Platform v1.0 COMPLETE + FROZEN ✅ (2026-07-02, 20260702-02)
+
+**Summary:** Completed the remaining reusable platform components and **froze Platform v1.0**.
+P0001/P0002/P0003 will all begin on this version; the platform is **not** specialized for any of
+them. Rapid implementation; no new governance docs (Constitution is the architectural north star,
+explicitly not governance); extended existing assets.
+
+- **Priority 1 — Platform Constitution:** `PLATFORM_CONSTITUTION.md` — concise philosophical north
+  star (read first by humans + AI): the 10 principles (Reuse-First, Shared-by-default, Container-
+  first, Pipeline-driven, Provider-agnostic, Automation-ready, Reproducibility, Human Decision
+  Layer, Knowledge-not-files, Minimalism) + domains + acceleration. Points to detailed docs.
+- **Priority 2+3 — Agent Layer + Supervisor orchestration:** `templates/agents/` — reusable,
+  provider-agnostic **role library** (supervisor, knowledge, reference, analysis, figure, writing,
+  validation) + `orchestration.md` sequencing roles over `project-run` stages; multi-domain
+  (Research>Business>Investment>Surplus, same orchestration). **Model ≠ Role**; agents orchestrate,
+  framework executes. Materializes PLATFORM_REUSE_POLICY §8 (shared agent logic in platform layer).
+- **Priority 4 — Knowledge Transfer:** already delivered project-independent in M4-4
+  (`templates/knowledge_transfer/` + `kt-init`); referenced by the Knowledge Agent. No rework.
+- **Hardware policy:** RESOURCE_POLICY §6a — GPU-first, CPU parallelism when appropriate, MPI only
+  when justified, **aria2** preferred for large downloads (low-risk CLI; SHA256-verify).
+- **FREEZE:** `PLATFORM_VERSION.md` — frozen component manifest (constitution/governance set, CLI,
+  frameworks, runtime, capability versions @ freeze, deferred list) + **git tag `platform-v1.0`**.
+  Freeze policy: future changes are v1.1+, not in-place edits during active projects.
+- **Prompt archived:** `prompts/20260702-02_m4-final-sprint_platform_v1.0.md`.
+
+**Platform v1.0 is frozen. Research projects (P0001/P0002/P0003) may now begin.**
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
