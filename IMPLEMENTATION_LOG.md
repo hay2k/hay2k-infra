@@ -698,6 +698,31 @@ Framework).** Execution starts **only** from `PROJECT_MASTER.md` + `ENVIRONMENT_
   Execution Framework).
 - **Prompt archived:** `prompts/20260701-07_m4-3_project_execution_framework.md`.
 
+## M4-4 — Research Knowledge Transfer Framework ✅ FRAMEWORK COMPLETE / ⛔ P0003 extraction BLOCKED (2026-07-02, 20260702-01)
+
+**Summary:** Built the reusable **Knowledge Transfer Framework** (package structure + scaffold +
+governance integration). **Did NOT fabricate P0003 content:** an exhaustive search found **no
+P0003 (TBI scRNA-seq) source materials on this platform** — no legacy project, no refactored
+version, no prior Claude Code work (only this infra transcript exists), no ChatGPT exports. P0003
+is to be migrated *from another environment*; its materials live there. Extracting real research
+knowledge is therefore **blocked pending the operator providing the source materials** (GOVERNANCE
+§5 — ground or abstain; fabricated science would poison the reconstruction). This is a legitimate
+M4 Execution-Principle confirmation trigger (project-specific scientific judgment + missing input).
+
+- **Framework built:** `templates/knowledge_transfer/` — README + `01_project_overview` …
+  `08_reconstruction_plan` + `Attachments/`, each encoding the required structure (03 trial-and-error
+  = attempt→problem→solution→final decision; 04 = original→refactor→improvements→limitations; 05
+  Claude reusable design decisions; 06 ChatGPT ideas/lit/rejected/future; 07 open vs completed; 08
+  recommended NEW GPU implementation). Anti-fabrication + source-citation rules baked in.
+- **Scaffold:** `project-bootstrap kt-init <dest> --project <ID> --source <env>` (token-substituted).
+- **Governance:** PROJECT_LIFECYCLE §4a — imported projects carry `docs/knowledge_transfer/` as the
+  **preferred distilled input**; platform consumes it to generate PROJECT_MASTER/TODO/execution plan
+  ("transfer knowledge, not files"); never an execution input.
+- **Validated** (temp only): kt-init scaffolds all 10 files, tokens substituted, scaffolds remain
+  empty (no fabricated P0003 content). No real project created.
+- **Prompt archived:** `prompts/20260702-01_m4-4_knowledge_transfer_framework.md`.
+- **Next (operator):** provide P0003 source materials → I populate the package from real content.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +

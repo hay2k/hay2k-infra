@@ -5,6 +5,22 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-02 — 20260702-01: M4-4 — Research Knowledge Transfer Framework
+
+- **Framework built** (reusable): `templates/knowledge_transfer/` (README + 01…08 +
+  Attachments/) encoding overview / analysis strategy / **trial-and-error** / refactoring /
+  Claude / ChatGPT / open questions / **reconstruction plan**, with anti-fabrication +
+  source-citation rules. Scaffold: `project-bootstrap kt-init`. Governance: PROJECT_LIFECYCLE §4a
+  (imported projects carry `docs/knowledge_transfer/` as preferred distilled input; platform
+  consumes it → PROJECT_MASTER/TODO/execution plan; transfer knowledge, not files).
+- **P0003 extraction BLOCKED (not fabricated):** exhaustive search found **no P0003/TBI
+  scRNA-seq source materials on this platform** (no legacy/refactored project, no prior Claude
+  work beyond this infra transcript, no ChatGPT exports) — they live on the source environment.
+  Populating the package requires the operator to provide them (GOVERNANCE §5 no-fabrication).
+- Validated kt-init in temp (empty scaffolds, tokens substituted); no real project created.
+- Prompt: `prompts/20260702-01_m4-4_knowledge_transfer_framework.md`.
+- Detail: IMPLEMENTATION_LOG.md (M4-4); handoff 2026-07-02_m4-4-knowledge-transfer-framework.md.
+
 ## 2026-07-01 — 20260701-07: M4-3 — Project Execution Framework
 
 - **`scripts/project-run`** — reusable, project-independent, **provider-agnostic** execution

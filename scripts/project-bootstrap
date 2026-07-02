@@ -4,6 +4,8 @@
 #   project-bootstrap create <PROJECT_ID> --domain <d> [--name N] [--owner O] [--prompt ID] [--dest DIR] [--dry-run]
 #   project-bootstrap import <PROJECT_ID> --domain <d> [--name N] [--owner O] [--prompt ID]
 #                            [--source "server/env desc"] [--from SRC_DIR] [--dest DIR] [--dry-run]
+#   project-bootstrap kt-init <dest_dir> --project <ID> [--name N] [--source "env"] [--by WHO] [--dry-run]
+#            # scaffold a knowledge_transfer/ package (M4-4) — input for a future imported project
 #
 # Produces the standard shape (DIRECTORY_STANDARD.md §3): canonical files (README,
 # PROJECT_MASTER, TODO, ENVIRONMENT_MANIFEST) + src/ results/ prompts/ docs/.
@@ -22,7 +24,40 @@ TPL="$(cd "$(dirname "$0")/.." && pwd)/templates/project"
 die() { echo "$SELF: error: $*" >&2; exit 1; }
 [ -d "$TPL" ] || die "templates not found: $TPL"
 
-mode="${1:-}"; case "$mode" in create|import) shift;; *) die "first arg must be 'create' or 'import'";; esac
+kt_init() { # scaffold a knowledge_transfer/ package from templates (M4-4). transfer knowledge, not files.
+  local dest="${1:-}"; [ -n "$dest" ] && [[ "$dest" != --* ]] || die "kt-init needs <dest_dir>"; shift
+  local ktp="$TPL/../knowledge_transfer"; [ -d "$ktp" ] || die "kt templates not found: $ktp"
+  local kpid="<PROJECT_ID>" kname="" ksrc="-" kby="hha" kdry=0
+  while [ $# -gt 0 ]; do case "$1" in
+    --project) kpid="$2"; shift 2;; --name) kname="$2"; shift 2;;
+    --source) ksrc="$2"; shift 2;; --by) kby="$2"; shift 2;;
+    --dry-run) kdry=1; shift;;
+    *) die "kt-init: unknown option $1";;
+  esac; done
+  [ -n "$kname" ] || kname="$kpid"
+  local out="$dest/knowledge_transfer"
+  [ -e "$out" ] && die "already exists (never overwrite): $out"
+  local KDATE; KDATE="$(date +%F)"
+  echo "== $SELF kt-init: $out  (project=$kpid source=$ksrc)"
+  if [ $kdry -eq 1 ]; then echo "   [DRY-RUN] would scaffold 01..08 + README + Attachments/ from $ktp"; return 0; fi
+  mkdir -p "$out"
+  local f b
+  find "$ktp" -type f | while read -r f; do
+    b="${f#$ktp/}"; mkdir -p "$out/$(dirname "$b")"
+    sed -e "s|{{PROJECT_ID}}|$kpid|g" -e "s|{{PROJECT_NAME}}|$kname|g" \
+        -e "s|{{SOURCE}}|$ksrc|g" -e "s|{{DATE}}|$KDATE|g" -e "s|{{PREPARED_BY}}|$kby|g" "$f" > "$out/$b"
+  done
+  echo "   created: $out"
+  find "$out" -type f | sort | sed "s|$out|  knowledge_transfer|"
+  echo "FILL from REAL source materials only (GOVERNANCE §5 — no fabrication). Then the platform"
+  echo "consumes it to generate PROJECT_MASTER.md / TODO.md / execution plan (PROJECT_LIFECYCLE §4a)."
+}
+
+mode="${1:-}"; case "$mode" in
+  create|import) shift;;
+  kt-init) shift; kt_init "$@"; exit 0;;
+  *) die "first arg must be 'create', 'import', or 'kt-init'";;
+esac
 pid="${1:-}"; [ -n "$pid" ] && [[ "$pid" != --* ]] || die "need <PROJECT_ID> (e.g. P0003_tbi_scrnaseq)"; shift
 
 domain="" name="" owner="hha" prompt="<prompt-id>" source="-" from="" dest="" dry=0
