@@ -5,6 +5,23 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-02 — 20260702-02: M4 Final Sprint — Platform v1.0 COMPLETE + FROZEN
+
+- **Platform v1.0 frozen.** `PLATFORM_VERSION.md` (frozen manifest: governance set, CLI,
+  frameworks, runtime, capability versions @ freeze, deferred list) + git tag **`platform-v1.0`**.
+  Future changes → v1.1+ (not in-place during active projects). P0001/P0002/P0003 begin on this version.
+- **PLATFORM_CONSTITUTION.md** (new) — concise architectural north star (NOT governance): 10
+  principles + domains + acceleration; read first by humans + AI.
+- **Agent Layer** `templates/agents/` (new) — reusable provider-agnostic role library (supervisor,
+  knowledge, reference, analysis, figure, writing, validation) + orchestration.md (roles over
+  project-run stages; multi-domain). Model ≠ Role; materializes PLATFORM_REUSE_POLICY §8.
+- **Knowledge Transfer** (Priority 4) — already project-independent from M4-4; referenced, no rework.
+- **RESOURCE_POLICY §6a** — GPU-first / CPU parallelism / MPI-when-justified / **aria2** for large
+  downloads (low-risk).
+- No new governance docs; extended existing assets. Prompt:
+  `prompts/20260702-02_m4-final-sprint_platform_v1.0.md`.
+- Detail: IMPLEMENTATION_LOG.md; handoff 2026-07-02_m4-final-sprint-platform-v1.0.md.
+
 ## 2026-07-02 — 20260702-01: M4-4 — Research Knowledge Transfer Framework
 
 - **Framework built** (reusable): `templates/knowledge_transfer/` (README + 01…08 +

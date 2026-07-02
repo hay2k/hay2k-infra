@@ -109,6 +109,17 @@ cost.
 4. **Add control only when sharing fails.** Schedulers, cgroups, and quotas are
    introduced in response to demonstrated contention, not in anticipation of it.
 
+## 6a. Compute acceleration & downloads (20260702-02)
+- **GPU-first where beneficial.** Prefer GPU acceleration (`--nv`) whenever a workload benefits;
+  containers are built GPU-capable where applicable (§2; GPU-first is the platform default).
+- **CPU parallelism when appropriate.** Use OpenMP / multithreading for CPU-bound steps; set thread
+  counts to the allocation, not the whole node (fairness, §6).
+- **Distributed (MPI, etc.) only when justified.** Single-node GPU/CPU parallelism is the default;
+  multi-node distribution is introduced only when a workload genuinely exceeds one node.
+- **Large downloads prefer `aria2`** (`aria2c`, segmented/resumable) whenever practical — faster,
+  resilient reference/model pulls. `aria2` is a low-risk CLI (GOVERNANCE §2.1 class: single-host,
+  no daemon, removable); install on first real need. SHA256-verify every download (GOVERNANCE §6).
+
 ## 7. Deferred decisions
 
 - **Shared storage** — **RATIFIED: NFS** is the canonical primary shared
