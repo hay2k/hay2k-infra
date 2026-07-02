@@ -1,7 +1,9 @@
 # 08 — Recommended Reconstruction Plan — {{PROJECT_ID}}
 
-> Describe the **recommended NEW implementation** on the GPU platform — **not** the legacy one.
-> Reuse-First: map every need onto shared platform capabilities (`analysis-install catalog`).
+> Describe the **recommended NEW implementation on Platform v1.0** — **never** the legacy
+> environment as the execution target. Reuse-First: map every need onto the frozen shared
+> capabilities (`analysis-install catalog`; PLATFORM_VERSION.md). This section is the primary input
+> to `PROJECT_MASTER.md` generation.
 
 ## Target outcome
 <what the reconstructed project must produce/answer (from §01)>

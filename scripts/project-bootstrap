@@ -5,7 +5,8 @@
 #   project-bootstrap import <PROJECT_ID> --domain <d> [--name N] [--owner O] [--prompt ID]
 #                            [--source "server/env desc"] [--from SRC_DIR] [--dest DIR] [--dry-run]
 #   project-bootstrap kt-init <dest_dir> --project <ID> [--name N] [--source "env"] [--by WHO] [--dry-run]
-#            # scaffold a knowledge_transfer/ package (M4-4) — input for a future imported project
+#            # scaffold a knowledge/ package (Research Knowledge Acquisition Framework, M5-1) —
+#            # the input to PROJECT_MASTER generation for a reconstructed/imported project
 #
 # Produces the standard shape (DIRECTORY_STANDARD.md §3): canonical files (README,
 # PROJECT_MASTER, TODO, ENVIRONMENT_MANIFEST) + src/ results/ prompts/ docs/.
@@ -24,9 +25,9 @@ TPL="$(cd "$(dirname "$0")/.." && pwd)/templates/project"
 die() { echo "$SELF: error: $*" >&2; exit 1; }
 [ -d "$TPL" ] || die "templates not found: $TPL"
 
-kt_init() { # scaffold a knowledge_transfer/ package from templates (M4-4). transfer knowledge, not files.
+kt_init() { # scaffold a knowledge/ package from templates (M5-1). acquire knowledge, not files/code/results.
   local dest="${1:-}"; [ -n "$dest" ] && [[ "$dest" != --* ]] || die "kt-init needs <dest_dir>"; shift
-  local ktp="$TPL/../knowledge_transfer"; [ -d "$ktp" ] || die "kt templates not found: $ktp"
+  local ktp="$TPL/../knowledge"; [ -d "$ktp" ] || die "knowledge templates not found: $ktp"
   local kpid="<PROJECT_ID>" kname="" ksrc="-" kby="hha" kdry=0
   while [ $# -gt 0 ]; do case "$1" in
     --project) kpid="$2"; shift 2;; --name) kname="$2"; shift 2;;
@@ -35,11 +36,11 @@ kt_init() { # scaffold a knowledge_transfer/ package from templates (M4-4). tran
     *) die "kt-init: unknown option $1";;
   esac; done
   [ -n "$kname" ] || kname="$kpid"
-  local out="$dest/knowledge_transfer"
+  local out="$dest/knowledge"
   [ -e "$out" ] && die "already exists (never overwrite): $out"
   local KDATE; KDATE="$(date +%F)"
   echo "== $SELF kt-init: $out  (project=$kpid source=$ksrc)"
-  if [ $kdry -eq 1 ]; then echo "   [DRY-RUN] would scaffold 01..08 + README + Attachments/ from $ktp"; return 0; fi
+  if [ $kdry -eq 1 ]; then echo "   [DRY-RUN] would scaffold 01..08 + README + attachments/ from $ktp"; return 0; fi
   mkdir -p "$out"
   local f b
   find "$ktp" -type f | while read -r f; do
@@ -48,9 +49,9 @@ kt_init() { # scaffold a knowledge_transfer/ package from templates (M4-4). tran
         -e "s|{{SOURCE}}|$ksrc|g" -e "s|{{DATE}}|$KDATE|g" -e "s|{{PREPARED_BY}}|$kby|g" "$f" > "$out/$b"
   done
   echo "   created: $out"
-  find "$out" -type f | sort | sed "s|$out|  knowledge_transfer|"
+  find "$out" -type f | sort | sed "s|$out|  knowledge|"
   echo "FILL from REAL source materials only (GOVERNANCE §5 — no fabrication). Then the platform"
-  echo "consumes it to generate PROJECT_MASTER.md / TODO.md / execution plan (PROJECT_LIFECYCLE §4a)."
+  echo "consumes it to generate PROJECT_MASTER.md / TODO.md / ENVIRONMENT_MANIFEST.md (PROJECT_LIFECYCLE §4a)."
 }
 
 mode="${1:-}"; case "$mode" in

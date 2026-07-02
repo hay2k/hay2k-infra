@@ -8,6 +8,7 @@ Repeat per attempt:
 ### Attempt: <short title>
 - **Attempt:** <what was tried, and why it seemed reasonable>
 - **Problem:** <what went wrong — error, artifact, biological implausibility, performance>
+- **Reason:** <the root cause — *why* it failed (not just the symptom)>
 - **Solution:** <what was changed to address it>
 - **Final decision:** <adopted | abandoned | superseded by … — and why>
 - **Carry-forward:** <what the reconstruction should do/avoid because of this>
