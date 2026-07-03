@@ -128,6 +128,13 @@ the authoritative execution environment**.
      **consumes this package** to generate `PROJECT_MASTER.md`, `TODO.md`, and the pinned
      `ENVIRONMENT_MANIFEST.md` (no duplicated information). It is **input to reconstruction, never
      an execution input** (`project-run` reads only the canonical files).
+   - **Knowledge is a lifecycle asset (M5-2, 20260702-04).** The `knowledge/` package is maintained
+     continuously with **`project-knowledge`** (init → ingest → classify → curate → update → reuse →
+     completion): ingest operator-specified sources (any type/location) into `attachments/_inbox/`,
+     incrementally `add` distilled, **provenance-stamped**, **deduplicated** knowledge into the
+     relevant section (no full rewrite), and `derive` PROJECT_MASTER/TODO drafts. Provider-agnostic
+     (agents supply judgment; the tool records/merges — Model ≠ Execution Framework). Provenance in
+     `knowledge/PROVENANCE.tsv`. Knowledge never becomes an execution input.
 4. **Provenance:** `README.md` records the origin (source server/environment, import date,
    approving prompt ID). Cross-domain implications, if any, follow §6. Prior results are
    cited as reference; they are re-derived on-platform before being reported as final.
