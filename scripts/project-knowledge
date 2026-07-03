@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+# project-knowledge — Project Knowledge Lifecycle (M5-2, 20260702-04).
+# EXTENDS the M5-1 knowledge/ framework (templates/knowledge/); does not redesign it.
+#
+# Knowledge is a continuously evolving project asset. This is a deterministic, PROVIDER-AGNOSTIC
+# harness (no LLM calls): agents supply the distilled, reusable knowledge + semantic judgment
+# (what is reusable, which section, dedup); this tool ingests it, records provenance, deduplicates,
+# targets the right canonical section, and derives PROJECT_MASTER/TODO. Model ≠ Execution Framework.
+#
+# Knowledge is NEVER an execution input — PROJECT_MASTER.md is the execution entry point.
+#
+# Lifecycle: Initialize → Ingestion → Classification → Curation → Update → Reuse → Completion.
+#
+#   project-knowledge init      <parent_dir> --project <ID> [--name N] [--source ENV]
+#   project-knowledge ingest    <knowledge_dir> --from <PATH> [--label L] [--section NN]
+#   project-knowledge classify  <knowledge_dir> <path>            # heuristic destination hint
+#   project-knowledge add       <knowledge_dir> --section NN --source "PROV" (--from FILE | --note TEXT) [--title T]
+#   project-knowledge provenance <knowledge_dir>
+#   project-knowledge status    <knowledge_dir>
+#   project-knowledge archive   <knowledge_dir> <inbox_item>
+#   project-knowledge derive    <knowledge_dir> --out <project_dir> [--force]
+set -euo pipefail
+
+SELF="project-knowledge"
+BIN="$(cd "$(dirname "$0")" && pwd)"
+die() { echo "$SELF: error: $*" >&2; exit 1; }
+info() { echo "[$SELF] $*"; }
+NOW() { date -u +%FT%TZ; }
+DATE() { date +%F; }
+shac() { sha256sum | awk '{print $1}'; }               # sha256 of stdin
+shafile() { sha256sum "$1" | awk '{print $1}'; }
+
+is_kpkg() { [ -f "$1/01_project_overview.md" ] || die "not a knowledge package (no 01_project_overview.md): $1"; }
+section_file() { # knowledge_dir NN -> path
+  local f; f="$(find "$1" -maxdepth 1 -name "${2}_*.md" 2>/dev/null | head -1)"
+  [ -n "$f" ] || die "no section '$2' in $1 (expect 01..08)"; echo "$f"
+}
+ledger() { echo "$1/PROVENANCE.tsv"; }
+ledger_init() {
+  local l; l="$(ledger "$1")"
+  [ -f "$l" ] || printf 'timestamp\top\tsource\ttype\tsha256\tsection\tstatus\tlabel\n' > "$l"
+}
+ledger_add() { # kdir op source type sha section status label
+  local l; l="$(ledger "$1")"; ledger_init "$1"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(NOW)" "$2" "$3" "$4" "${5:-}" "${6:--}" "$7" "${8:-}" >> "$l"
+}
+
+hint_section() { # path/label -> suggested NN (heuristic only; agent confirms)
+  local s; s="$(printf '%s' "$1" | tr 'A-Z' 'a-z')"
+  case "$s" in
+    *claude*|*chatgpt*|*gpt*|*llm*|*handoff*|*conversation*|*chat*) echo "05";;
+    *paper*|*doi*|*pubmed*|*pmid*|*literature*|*citation*|*review*)  echo "06";;
+    *error*|*fail*|*attempt*|*trial*|*debug*|*bug*)                  echo "03";;
+    *refactor*|*cleanup*|*optimi*)                                   echo "04";;
+    *question*|*open*|*todo*|*unknown*|*unresolved*)                 echo "07";;
+    *plan*|*reconstruct*|*rebuild*)                                  echo "08";;
+    *overview*|*dataset*|*design*|*objective*)                       echo "01";;
+    *) echo "02";;
+  esac
+}
+
+cmd_init() {
+  local parent="${1:-}"; [ -n "$parent" ] && [[ "$parent" != --* ]] || die "init needs <parent_dir>"; shift
+  "$BIN/project-bootstrap" kt-init "$parent" "$@"
+  info "knowledge package: $parent/knowledge  (lifecycle ready — ingest/add/derive)"
+}
+
+cmd_ingest() {
+  local kdir="${1:-}"; [ -n "$kdir" ] && [[ "$kdir" != --* ]] || die "ingest needs <knowledge_dir>"; shift
+  is_kpkg "$kdir"
+  local from="" label="" section=""
+  while [ $# -gt 0 ]; do case "$1" in
+    --from) from="$2"; shift 2;; --label) label="$2"; shift 2;; --section) section="$2"; shift 2;;
+    *) die "ingest: unknown option $1";;
+  esac; done
+  [ -n "$from" ] || die "ingest needs --from <PATH> (operator-specified; no fixed directory assumed)"
+  [ -e "$from" ] || die "--from not found: $from"
+  local inbox="$kdir/attachments/_inbox"; mkdir -p "$inbox"
+  local base sha typ
+  base="$(basename "$from")"; [ -n "$label" ] || label="$base"
+  if [ -d "$from" ]; then
+    typ="dir"; sha="$(cd "$from" && find . -type f | LC_ALL=C sort | while read -r f; do sha256sum "$f"; done | shac)"
+  else
+    typ="$(printf '%s' "${base##*.}" | tr 'A-Z' 'a-z')"; [ "$typ" = "$base" ] && typ="file"
+    sha="$(shafile "$from")"
+  fi
+  # dedup: same content already ingested?
+  if [ -f "$(ledger "$kdir")" ] && awk -F'\t' -v s="$sha" '$2=="ingest"&&$5==s{f=1} END{exit !f}' "$(ledger "$kdir")"; then
+    info "already ingested (sha ${sha:0:12}) — skipping copy: $from"; return 0
+  fi
+  local dst="$inbox/$base"
+  [ -e "$dst" ] && dst="$inbox/${sha:0:8}_$base"
+  cp -a "$from" "$dst"
+  [ -z "$section" ] && section="$(hint_section "$label")"
+  ledger_add "$kdir" ingest "$from" "$typ" "$sha" "$section" "ingested" "$label"
+  info "ingested → attachments/_inbox/$(basename "$dst")  type=$typ sha=${sha:0:12}"
+  info "classification hint → section $section  (agent: extract reusable knowledge, then 'add --section')"
+}
+
+cmd_classify() {
+  local kdir="${1:-}"; is_kpkg "$kdir"; shift || true
+  local p="${1:-}"; [ -n "$p" ] || die "classify needs <path>"
+  echo "hint: section $(hint_section "$p")  ($(basename "$p"))"
+  echo "(heuristic only — the agent decides the destination and extracts reusable knowledge)"
+}
+
+cmd_add() {
+  local kdir="${1:-}"; [ -n "$kdir" ] && [[ "$kdir" != --* ]] || die "add needs <knowledge_dir>"; shift
+  is_kpkg "$kdir"
+  local section="" source="" from="" note="" title=""
+  while [ $# -gt 0 ]; do case "$1" in
+    --section) section="$2"; shift 2;; --source) source="$2"; shift 2;;
+    --from) from="$2"; shift 2;; --note) note="$2"; shift 2;; --title) title="$2"; shift 2;;
+    *) die "add: unknown option $1";;
+  esac; done
+  [ -n "$section" ] || die "add needs --section NN"
+  [ -n "$source" ] || die "add needs --source \"provenance\" (traceability, GOVERNANCE §5)"
+  local sf; sf="$(section_file "$kdir" "$section")"
+  local content
+  if [ -n "$from" ]; then [ -f "$from" ] || die "--from not found: $from"; content="$(cat "$from")";
+  elif [ -n "$note" ]; then content="$note";
+  else die "add needs --from FILE or --note TEXT"; fi
+  local csha short; csha="$(printf '%s' "$content" | shac)"; short="${csha:0:12}"
+  # dedup: identical knowledge already present in this section?
+  if grep -qF "sha:$short" "$sf" 2>/dev/null; then
+    info "duplicate knowledge (sha:$short) already in $(basename "$sf") — skipped"; return 0
+  fi
+  [ -n "$title" ] || title="$(printf '%s' "$content" | head -1 | cut -c1-60)"
+  grep -qF "## Ingested knowledge (provenance-tracked)" "$sf" 2>/dev/null || {
+    printf '\n## Ingested knowledge (provenance-tracked)\n' >> "$sf"; }
+  {
+    printf '\n### %s — %s (sha:%s)\n' "$title" "$(DATE)" "$short"
+    printf '%s\n' "$content"
+    printf '_source: %s_\n' "$source"
+  } >> "$sf"
+  ledger_add "$kdir" add "$source" "knowledge" "$csha" "$section" "incorporated" "$title"
+  info "added to $(basename "$sf") (sha:$short) ← $source"
+}
+
+cmd_provenance() {
+  local kdir="${1:-}"; is_kpkg "$kdir"
+  local l; l="$(ledger "$kdir")"; [ -f "$l" ] || { info "no provenance yet"; return 0; }
+  column -t -s $'\t' "$l"
+}
+
+cmd_status() {
+  local kdir="${1:-}"; is_kpkg "$kdir"
+  echo "== knowledge status: $kdir"
+  local f nn cnt
+  for f in "$kdir"/0[1-8]_*.md; do
+    nn="$(basename "$f")"; cnt="$(grep -cE '^### .*\(sha:' "$f" 2>/dev/null || true)"; cnt="${cnt:-0}"
+    printf '  %-28s  ingested-items=%s\n' "$nn" "$cnt"
+  done
+  local inbox="$kdir/attachments/_inbox"
+  echo "  inbox pending: $([ -d "$inbox" ] && find "$inbox" -mindepth 1 -maxdepth 1 | wc -l || echo 0)"
+  local l; l="$(ledger "$kdir")"
+  [ -f "$l" ] && echo "  provenance records: $(($(wc -l < "$l")-1))" || echo "  provenance records: 0"
+}
+
+cmd_archive() {
+  local kdir="${1:-}"; is_kpkg "$kdir"; shift || true
+  local item="${1:-}"; [ -n "$item" ] || die "archive needs <inbox_item>"
+  local src="$kdir/attachments/_inbox/$item"; [ -e "$src" ] || die "inbox item not found: $item"
+  local arch="$kdir/attachments/_archive"; mkdir -p "$arch"
+  mv "$src" "$arch/"
+  ledger_add "$kdir" archive "$item" "-" "" "-" "archived" "$item"
+  info "archived processed material → attachments/_archive/$item"
+}
+
+cmd_derive() { # assemble PROJECT_MASTER/TODO drafts from the knowledge sections (Reuse stage)
+  local kdir="${1:-}"; [ -n "$kdir" ] && [[ "$kdir" != --* ]] || die "derive needs <knowledge_dir>"; shift
+  is_kpkg "$kdir"
+  local out="" force=0
+  while [ $# -gt 0 ]; do case "$1" in
+    --out) out="$2"; shift 2;; --force) force=1; shift;; *) die "derive: unknown option $1";;
+  esac; done
+  [ -n "$out" ] || die "derive needs --out <project_dir>"
+  mkdir -p "$out"
+  local pm="$out/PROJECT_MASTER.md" td="$out/TODO.md"
+  { [ $force -eq 0 ] && [ -e "$pm" ]; } && die "refusing to overwrite $pm (use --force)"
+  {
+    echo "# PROJECT_MASTER (DRAFT — generated from knowledge/ $(DATE); review before use)"
+    echo "> Assembled from the knowledge package; NOT auto-approved. PROJECT_MASTER is the execution"
+    echo "> entry point (knowledge/ is never an execution input). Fill/verify before running project-run."
+    echo; echo "## Objective & overview (from 01)"; sed -n '/^## /,$p' "$(section_file "$kdir" 01)" | sed '1d'
+    echo; echo "## Method — reconstruction plan (from 08)"; sed -n '/^## /,$p' "$(section_file "$kdir" 08)" | sed '1d'
+    echo; echo "## Key decisions (from 02)"; sed -n '/^## /,$p' "$(section_file "$kdir" 02)" | sed '1d'
+  } > "$pm"
+  {
+    echo "# TODO (DRAFT — generated from knowledge/ $(DATE))"
+    echo; echo "## Open questions (from 07)"; sed -n '/^## /,$p' "$(section_file "$kdir" 07)" | sed '1d'
+    echo; echo "## Trial-and-error carry-forwards (from 03)"; grep -E 'Carry-forward|Pitfall|^- ' "$(section_file "$kdir" 03)" || true
+  } > "$td"
+  info "derived DRAFT canonical files → $pm , $td  (review; then Capability Resolution in ENVIRONMENT_MANIFEST)"
+}
+
+main() {
+  local cmd="${1:-}"; shift || true
+  case "$cmd" in
+    init)       cmd_init "$@";;
+    ingest)     cmd_ingest "$@";;
+    classify)   cmd_classify "$@";;
+    add)        cmd_add "$@";;
+    provenance) cmd_provenance "$@";;
+    status)     cmd_status "$@";;
+    archive)    cmd_archive "$@";;
+    derive)     cmd_derive "$@";;
+    -h|--help|help|"") grep -E '^#   project-knowledge' "$0" | sed 's/^#   /  /';;
+    *) die "unknown command: $cmd (try --help)";;
+  esac
+}
+main "$@"

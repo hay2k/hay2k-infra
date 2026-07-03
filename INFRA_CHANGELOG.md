@@ -5,6 +5,22 @@ Each entry: date, prompt ID, what changed, why.
 
 ---
 
+## 2026-07-02 — 20260702-04: M5-2 — Project Knowledge Lifecycle [platform v1.2]
+
+- **New CLI `scripts/project-knowledge`** — continuous knowledge maintenance, extending the M5-1
+  `knowledge/` framework (not a redesign): `init · ingest · classify · add · provenance · status ·
+  archive · derive`. Provider-agnostic (no LLM): agents supply distilled knowledge + judgment; the
+  tool ingests/records/dedups/merges/derives.
+- **Ingestion** is operator-specified (`--from <PATH>`) and **source-agnostic** (md/pdf/txt/docx/
+  xlsx/handoffs/chats/notes/scripts/figures) → `attachments/_inbox/` + sha256 + provenance +
+  classification hint. **`add`** is incremental, provenance-stamped, deduplicated (by content sha) —
+  never a full rewrite. **`derive`** assembles PROJECT_MASTER/TODO drafts (Reuse). Provenance in
+  `knowledge/PROVENANCE.tsv`. Knowledge is never an execution input.
+- Freeze-compliant **v1.2** (`platform-v1.0` unchanged). PROJECT_LIFECYCLE §4a + PLATFORM_VERSION
+  v1.2 changelog updated. Validated in temp (repeated updates + dedup); no real project touched.
+- Prompt: `prompts/20260702-04_m5-2_project_knowledge_lifecycle.md`.
+- Detail: IMPLEMENTATION_LOG.md (M5-2); handoff 2026-07-02_m5-2-project-knowledge-lifecycle.md.
+
 ## 2026-07-02 — 20260702-03: M5-1 — Research Knowledge Acquisition Framework [platform v1.1]
 
 - **Evolved** the M4-4 Knowledge Transfer framework into the definitive, project-independent

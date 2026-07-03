@@ -71,6 +71,13 @@ Surplus domains consume the same platform when activated (no architecture change
 ## v1.1+ changelog
 Post-freeze platform changes (v1.0 tag `platform-v1.0` is immutable; these land on `main`).
 
+- **2026-07-02 — 20260702-04 — M5-2: Project Knowledge Lifecycle.** New CLI `scripts/project-knowledge`
+  extends the M5-1 `knowledge/` framework with continuous maintenance: `init · ingest · classify ·
+  add · provenance · status · archive · derive`. Operator-specified, source-agnostic ingestion into
+  `attachments/_inbox/`; incremental, provenance-stamped, deduplicated section updates
+  (`knowledge/PROVENANCE.tsv`); `derive` assembles PROJECT_MASTER/TODO drafts. Provider-agnostic (no
+  LLM). PROJECT_LIFECYCLE §4a updated. Tooling only; no capability re-registration.
+
 - **2026-07-02 — 20260702-03 — M5-1: Research Knowledge Acquisition Framework.** Evolved the M4-4
   Knowledge Transfer framework into the definitive, project-independent standard:
   `templates/knowledge_transfer/` → **`templates/knowledge/`** (package `knowledge/`), with

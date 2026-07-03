@@ -775,6 +775,30 @@ P0003-specific — P0001/P0002/P0003 will all use it.
   historical records. No real project created (P0001/P0002/P0003 not acquired).
 - **PLATFORM_VERSION.md** v1.1 changelog updated. **Prompt:** `prompts/20260702-03_m5-1_knowledge_acquisition_framework.md`.
 
+## M5-2 — Project Knowledge Lifecycle ✅ COMPLETE (2026-07-02, 20260702-04) [platform v1.2]
+
+**Summary:** Made project knowledge a **continuously evolving asset**. New CLI
+**`scripts/project-knowledge`** extends (does not redesign) the M5-1 `knowledge/` framework with the
+full lifecycle: Initialize → Ingestion → Classification → Curation → Update → Reuse → Completion.
+Deterministic + **provider-agnostic** (no LLM): agents supply distilled reusable knowledge + judgment;
+the tool ingests, records provenance, deduplicates, targets the right section, and derives canonical
+files. Knowledge is never an execution input — PROJECT_MASTER is the entry point.
+
+- **Commands:** `init` (delegates to `project-bootstrap kt-init`), `ingest --from <PATH>`
+  (operator-specified, **source-agnostic** — md/pdf/txt/docx/xlsx/handoffs/chats/notes/scripts/
+  figures; copies to `attachments/_inbox/`, sha256, provenance ledger, classification **hint**),
+  `classify` (heuristic hint), `add --section NN --source "PROV"` (**incremental**, provenance-
+  stamped, **deduplicated** append — never a full rewrite), `provenance`, `status`, `archive`
+  (optional), `derive --out` (assemble PROJECT_MASTER/TODO **drafts** from sections — the Reuse stage).
+- **No fixed-directory assumption** (source always via `--from`); knowledge **more organized over
+  time** (append under a provenance marker); **no duplication** (dedup by content sha; literature
+  summarized not duplicated; feeds — not copies — canonical files). Provenance in `PROVENANCE.tsv`.
+- **Validated (temp only; no real project):** init → ingest (md + pdf) → classify → add to 03/05 →
+  **dedup** (repeat skipped) → **repeated update** (second wave accumulates a 2nd item in 03) →
+  status → provenance ledger (6 records) → archive → derive drafts. `/data/analysis/projects` empty.
+- **Freeze-compliant platform v1.2** (`platform-v1.0` tag unchanged; PLATFORM_VERSION v1.2 log).
+  PROJECT_LIFECYCLE §4a updated. **Prompt:** `prompts/20260702-04_m5-2_project_knowledge_lifecycle.md`.
+
 ## Maximum operational state reached
 
 - **gpu-01 control node is operational:** Apptainer 1.5.0; Prometheus 3.11.2 +
